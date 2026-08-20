@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodieHub | Restaurants</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="css/res_style.css">
+
+</head>
+
+<body>
+
+    <!-- =====================================================
+                         NAVBAR
+    ===================================================== -->
+
+    <nav class="navbar navbar-expand-lg foodie-navbar">
+
+        <div class="container">
+
+            <!-- LOGO -->
+
+            <a class="navbar-brand" href="restaurant.html">
+
+                <i class="bi bi-egg-fried"></i>
+
+                Foodie<span>Hub</span>
+
+            </a>
+
+
+            <!-- MOBILE MENU BUTTON -->
+
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+
+            <!-- NAVIGATION -->
+
+            <div
+                class="collapse navbar-collapse"
+                id="mainNavbar">
+
+                <ul class="navbar-nav mx-auto">
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link active"
+                            href="index.html">
+
+                            Home
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="restaurant.html">
+
+                            Restaurants
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="menu.html">
+
+                            Menu
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="about.html">
+
+                            About
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="contact.html">
+
+                            Contact
+
+                        </a>
+
+                    </li>
+
+                </ul>
+
+
+                <!-- SEARCH -->
+
+                <div class="nav-search">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search for food...">
+
+                </div>
+
+
+                <!-- CART -->
+
+                <a
+                    href="cart.html"
+                    class="nav-cart">
+
+                    <i class="bi bi-cart3"></i>
+
+                </a>
+
+
+                <!-- LOGIN -->
+
+                <a
+                    href="login/login_register.html"
+                    class="nav-login">
+
+                    Login
+
+                </a>
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+    <!-- =====================================================
+                         HERO SECTION
+    ===================================================== -->
+
+    <section class="restaurant-hero">
+
+        <div class="container">
+
+            <div class="hero-content">
+
+                <span class="hero-badge">
+                    <i class="bi bi-stars"></i>
+                    Premium Dining Experience
+                </span>
+
+                <h1>
+                    Discover Your
+                    <span>Perfect Table</span>
+                </h1>
+
+                <p>
+                    Explore the finest restaurants, discover amazing
+                    cuisines and reserve your table in just a few clicks.
+                </p>
+
+                <div class="hero-search">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="heroSearch"
+                        placeholder="Search restaurants, cuisines or locations...">
+
+                    <button
+                        type="button"
+                        id="heroSearchBtn">
+
+                        Search
+
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+                         RESTAURANT SECTION
+    ===================================================== -->
+
+    <section
+        class="restaurant-section"
+        id="restaurants">
+
+        <div class="container">
+
+            <div class="section-heading">
+
+                <div>
+
+                    <span class="section-label">
+                        EXPLORE
+                    </span>
+
+                    <h2>
+                        Popular Restaurants
+                    </h2>
+
+                    <p>
+                        Handpicked places for an unforgettable dining experience.
+                    </p>
+
+                </div>
+
+                <span
+                    class="restaurant-count"
+                    id="restaurantCount">
+
+                    6 Restaurants
+
+                </span>
+
+            </div>
+
+
+            <!-- FILTER AREA -->
+
+            <div class="filter-panel">
+
+                <div class="filter-search">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="restaurantSearch"
+                        placeholder="Search restaurants...">
+
+                </div>
+
+
+                <div class="filter-group">
+
+                    <select id="cuisineFilter">
+
+                        <option value="all">
+                            All Cuisines
+                        </option>
+
+                        <option value="Indian">
+                            Indian
+                        </option>
+
+                        <option value="Italian">
+                            Italian
+                        </option>
+
+                        <option value="Chinese">
+                            Chinese
+                        </option>
+
+                        <option value="Japanese">
+                            Japanese
+                        </option>
+
+                        <option value="Mexican">
+                            Mexican
+                        </option>
+
+                    </select>
+
+
+                    <select id="priceFilter">
+
+                        <option value="all">
+                            All Prices
+                        </option>
+
+                        <option value="$">
+                            $
+                        </option>
+
+                        <option value="$$">
+                            $$
+                        </option>
+
+                        <option value="$$$">
+                            $$$
+                        </option>
+
+                        <option value="$$$$">
+                            $$$$
+                        </option>
+
+                    </select>
+
+
+                    <select id="ratingFilter">
+
+                        <option value="all">
+                            All Ratings
+                        </option>
+
+                        <option value="4.5">
+                            4.5+
+                        </option>
+
+                        <option value="4">
+                            4.0+
+                        </option>
+
+                        <option value="3">
+                            3.0+
+                        </option>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+
+            <!-- RESTAURANT CARDS -->
+
+            <div
+                class="row g-4"
+                id="restaurantGrid">
+
+
+                <!-- CARD 1 -->
+
+                <div
+                    class="col-lg-4 col-md-6 restaurant-item"
+                    data-name="Spice Symphony"
+                    data-cuisine="Indian"
+                    data-price="$$"
+                    data-rating="4.8">
+
+                    <div class="restaurant-card">
+
+                        <div class="restaurant-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80"
+                                alt="Spice Symphony restaurant">
+
+                            <span class="featured-tag">
+                                Featured
+                            </span>
+
+                            <button
+                                class="favorite-btn"
+                                type="button">
+
+                                <i class="bi bi-heart"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="restaurant-card-body">
+
+                            <div class="restaurant-top">
+
+                                <div>
+
+                                    <h3>
+                                        Spice Symphony
+                                    </h3>
+
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i>
+                                        Downtown
+                                    </p>
+
+                                </div>
+
+                                <span class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    4.8
+                                </span>
+
+                            </div>
+
+
+                            <div class="restaurant-tags">
+
+                                <span>Indian</span>
+                                <span>Fine Dining</span>
+                                <span>$$</span>
+
+                            </div>
+
+
+                            <p class="restaurant-description">
+                                Modern Indian cuisine with traditional
+                                flavors and an elegant atmosphere.
+                            </p>
+
+
+                            <div class="restaurant-footer">
+
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    11:00 AM - 11:00 PM
+                                </span>
+
+                                <a
+                                    href="restaurant-details.html"
+                                    class="view-btn">
+
+                                    View Details
+                                    <i class="bi bi-arrow-right"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CARD 2 -->
+
+                <div
+                    class="col-lg-4 col-md-6 restaurant-item"
+                    data-name="Bella Italia"
+                    data-cuisine="Italian"
+                    data-price="$$$"
+                    data-rating="4.7">
+
+                    <div class="restaurant-card">
+
+                        <div class="restaurant-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1552566626-52f8b828add9?auto=format&fit=crop&w=900&q=80"
+                                alt="Bella Italia restaurant">
+
+                            <button
+                                class="favorite-btn"
+                                type="button">
+
+                                <i class="bi bi-heart"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="restaurant-card-body">
+
+                            <div class="restaurant-top">
+
+                                <div>
+
+                                    <h3>
+                                        Bella Italia
+                                    </h3>
+
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i>
+                                        Riverside
+                                    </p>
+
+                                </div>
+
+                                <span class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    4.7
+                                </span>
+
+                            </div>
+
+
+                            <div class="restaurant-tags">
+
+                                <span>Italian</span>
+                                <span>Romantic</span>
+                                <span>$$$</span>
+
+                            </div>
+
+
+                            <p class="restaurant-description">
+                                Authentic Italian dishes, handmade pasta
+                                and a warm European dining atmosphere.
+                            </p>
+
+
+                            <div class="restaurant-footer">
+
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    12:00 PM - 10:30 PM
+                                </span>
+
+                                <a
+                                    href="restaurant-details.html"
+                                    class="view-btn">
+
+                                    View Details
+                                    <i class="bi bi-arrow-right"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CARD 3 -->
+
+                <div
+                    class="col-lg-4 col-md-6 restaurant-item"
+                    data-name="Tokyo Table"
+                    data-cuisine="Japanese"
+                    data-price="$$$$"
+                    data-rating="4.9">
+
+                    <div class="restaurant-card">
+
+                        <div class="restaurant-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1579027989536-b7b1f875659b?auto=format&fit=crop&w=900&q=80"
+                                alt="Tokyo Table restaurant">
+
+                            <span class="featured-tag">
+                                Top Rated
+                            </span>
+
+                            <button
+                                class="favorite-btn"
+                                type="button">
+
+                                <i class="bi bi-heart"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="restaurant-card-body">
+
+                            <div class="restaurant-top">
+
+                                <div>
+
+                                    <h3>
+                                        Tokyo Table
+                                    </h3>
+
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i>
+                                        City Center
+                                    </p>
+
+                                </div>
+
+                                <span class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    4.9
+                                </span>
+
+                            </div>
+
+
+                            <div class="restaurant-tags">
+
+                                <span>Japanese</span>
+                                <span>Sushi</span>
+                                <span>$$$$</span>
+
+                            </div>
+
+
+                            <p class="restaurant-description">
+                                Premium Japanese cuisine featuring fresh
+                                sushi, sashimi and signature dishes.
+                            </p>
+
+
+                            <div class="restaurant-footer">
+
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    5:00 PM - 11:30 PM
+                                </span>
+
+                                <a
+                                    href="restaurant-details.html"
+                                    class="view-btn">
+
+                                    View Details
+                                    <i class="bi bi-arrow-right"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CARD 4 -->
+
+                <div
+                    class="col-lg-4 col-md-6 restaurant-item"
+                    data-name="Dragon Garden"
+                    data-cuisine="Chinese"
+                    data-price="$$"
+                    data-rating="4.5">
+
+                    <div class="restaurant-card">
+
+                        <div class="restaurant-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1515003197210-e0cd71810b5f?auto=format&fit=crop&w=900&q=80"
+                                alt="Dragon Garden restaurant">
+
+                            <button
+                                class="favorite-btn"
+                                type="button">
+
+                                <i class="bi bi-heart"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="restaurant-card-body">
+
+                            <div class="restaurant-top">
+
+                                <div>
+
+                                    <h3>
+                                        Dragon Garden
+                                    </h3>
+
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i>
+                                        East District
+                                    </p>
+
+                                </div>
+
+                                <span class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    4.5
+                                </span>
+
+                            </div>
+
+
+                            <div class="restaurant-tags">
+
+                                <span>Chinese</span>
+                                <span>Family</span>
+                                <span>$$</span>
+
+                            </div>
+
+
+                            <p class="restaurant-description">
+                                Delicious Chinese specialties served in a
+                                comfortable and family-friendly setting.
+                            </p>
+
+
+                            <div class="restaurant-footer">
+
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    11:30 AM - 10:00 PM
+                                </span>
+
+                                <a
+                                    href="restaurant-details.html"
+                                    class="view-btn">
+
+                                    View Details
+                                    <i class="bi bi-arrow-right"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CARD 5 -->
+
+                <div
+                    class="col-lg-4 col-md-6 restaurant-item"
+                    data-name="Casa Mexico"
+                    data-cuisine="Mexican"
+                    data-price="$$"
+                    data-rating="4.6">
+
+                    <div class="restaurant-card">
+
+                        <div class="restaurant-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1555396273-367ea4eb4db5?auto=format&fit=crop&w=900&q=80"
+                                alt="Casa Mexico restaurant">
+
+                            <button
+                                class="favorite-btn"
+                                type="button">
+
+                                <i class="bi bi-heart"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="restaurant-card-body">
+
+                            <div class="restaurant-top">
+
+                                <div>
+
+                                    <h3>
+                                        Casa Mexico
+                                    </h3>
+
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i>
+                                        West End
+                                    </p>
+
+                                </div>
+
+                                <span class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    4.6
+                                </span>
+
+                            </div>
+
+
+                            <div class="restaurant-tags">
+
+                                <span>Mexican</span>
+                                <span>Casual</span>
+                                <span>$$</span>
+
+                            </div>
+
+
+                            <p class="restaurant-description">
+                                Bold Mexican flavors, fresh ingredients
+                                and handcrafted signature cocktails.
+                            </p>
+
+
+                            <div class="restaurant-footer">
+
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    12:00 PM - 11:00 PM
+                                </span>
+
+                                <a
+                                    href="restaurant-details.html"
+                                    class="view-btn">
+
+                                    View Details
+                                    <i class="bi bi-arrow-right"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- CARD 6 -->
+
+                <div
+                    class="col-lg-4 col-md-6 restaurant-item"
+                    data-name="Urban Plate"
+                    data-cuisine="Indian"
+                    data-price="$$$"
+                    data-rating="4.4">
+
+                    <div class="restaurant-card">
+
+                        <div class="restaurant-image">
+
+                            <img
+                                src="https://images.unsplash.com/photo-1514933651103-005eec06c04b?auto=format&fit=crop&w=900&q=80"
+                                alt="Urban Plate restaurant">
+
+                            <button
+                                class="favorite-btn"
+                                type="button">
+
+                                <i class="bi bi-heart"></i>
+
+                            </button>
+
+                        </div>
+
+
+                        <div class="restaurant-card-body">
+
+                            <div class="restaurant-top">
+
+                                <div>
+
+                                    <h3>
+                                        Urban Plate
+                                    </h3>
+
+                                    <p>
+                                        <i class="bi bi-geo-alt"></i>
+                                        Central Avenue
+                                    </p>
+
+                                </div>
+
+                                <span class="rating">
+                                    <i class="bi bi-star-fill"></i>
+                                    4.4
+                                </span>
+
+                            </div>
+
+
+                            <div class="restaurant-tags">
+
+                                <span>Indian</span>
+                                <span>Contemporary</span>
+                                <span>$$$</span>
+
+                            </div>
+
+
+                            <p class="restaurant-description">
+                                Contemporary dishes inspired by global
+                                cuisine in a stylish urban setting.
+                            </p>
+
+
+                            <div class="restaurant-footer">
+
+                                <span>
+                                    <i class="bi bi-clock"></i>
+                                    10:30 AM - 10:30 PM
+                                </span>
+
+                                <a
+                                    href="restaurant-details.html"
+                                    class="view-btn">
+
+                                    View Details
+                                    <i class="bi bi-arrow-right"></i>
+
+                                </a>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- NO RESULTS -->
+
+            <div
+                class="no-results"
+                id="noResults">
+
+                <i class="bi bi-search"></i>
+
+                <h3>
+                    No restaurants found
+                </h3>
+
+                <p>
+                    Try changing your search or filters.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+                         ABOUT
+    ===================================================== -->
+
+    <section
+        class="about-section"
+        id="about">
+
+        <div class="container">
+
+            <div class="about-box">
+
+                <span class="section-label">
+                    ABOUT FOODIEHUB
+                </span>
+
+                <h2>
+                    Great food deserves a great table.
+                </h2>
+
+                <p>
+                    FoodieHub makes discovering restaurants and
+                    reserving tables simple, fast and enjoyable.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- =====================================================
+                         FOOTER
+    ===================================================== -->
+
+    <footer
+        class="site-footer"
+        id="contact">
+
+        <div class="container">
+
+            <div class="footer-content">
+
+                <div>
+
+                    <a
+                        class="footer-logo"
+                        href="restaurant.html">
+
+                        <i class="bi bi-egg-fried"></i>
+                        Foodie<span>Hub</span>
+
+                    </a>
+
+                    <p>
+                        Your destination for exceptional dining.
+                    </p>
+
+                </div>
+
+                <div>
+
+                    <h5>
+                        Contact
+                    </h5>
+
+                    <p>
+                        <i class="bi bi-envelope"></i>
+                        hello@foodiehub.com
+                    </p>
+
+                    <p>
+                        <i class="bi bi-telephone"></i>
+                        +1 234 567 890
+                    </p>
+
+                </div>
+
+            </div>
+
+            <div class="footer-bottom">
+
+                <p>
+                    © 2026 FoodieHub. All rights reserved.
+                </p>
+
+            </div>
+
+        </div>
+
+    </footer>
+
+
+    <!-- Bootstrap JS -->
+
+    <script
+        src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <!-- Custom JS -->
+
+    <script src="js/app.js"></script>
+
+</body>
+
+</html>

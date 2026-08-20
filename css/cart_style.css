@@ -1,0 +1,453 @@
+/* =========================================================
+   FOODIEHUB
+   COMMON LAYOUT & NAVIGATION
+   WHITE + ORANGE THEME
+   ========================================================= */
+
+:root {
+    --orange: #ff6b00;
+    --orange-dark: #e85d00;
+    --orange-light: #fff1e7;
+
+    --dark: #07111c;
+    --dark-light: #0d1a27;
+
+    --text-dark: #222222;
+    --text: #555555;
+    --text-light: #777777;
+
+    --border: #e5e5e5;
+    --white: #ffffff;
+
+    --shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+}
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background: #ffffff;
+    color: var(--text-dark);
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.container {
+    max-width: 1100px;
+}
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.foodie-navbar {
+    background: var(--dark);
+    border-bottom: 1px solid #263746;
+    padding: 13px 0;
+}
+
+.navbar-brand {
+    color: #ffffff !important;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.navbar-brand i {
+    color: var(--orange);
+    margin-right: 6px;
+}
+
+.navbar-brand span {
+    color: var(--orange);
+}
+
+.foodie-navbar .navbar-nav {
+    gap: 8px;
+}
+
+.foodie-navbar .nav-link {
+    color: #dce2e7 !important;
+    font-size: 13px;
+    padding: 8px 12px !important;
+    transition: 0.3s;
+}
+
+.foodie-navbar .nav-link:hover,
+.foodie-navbar .nav-link.active {
+    color: var(--orange) !important;
+}
+
+
+/* Search */
+
+.nav-search {
+    width: 180px;
+    height: 35px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid #344452;
+    border-radius: 5px;
+
+    margin-left: 10px;
+}
+
+.nav-search i {
+    color: #8996a2;
+    margin-left: 9px;
+}
+
+.nav-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+
+    color: #ffffff;
+    font-size: 11px;
+
+    padding: 7px;
+}
+
+.nav-search input::placeholder {
+    color: #8996a2;
+}
+
+
+/* Cart */
+
+.nav-cart {
+    color: #ffffff;
+    font-size: 18px;
+    margin-left: 12px;
+    position: relative;
+}
+
+.nav-cart:hover {
+    color: var(--orange);
+}
+
+
+/* Login */
+
+.nav-login {
+    background: var(--orange);
+    color: #ffffff;
+
+    border: none;
+    border-radius: 5px;
+
+    padding: 9px 18px;
+    margin-left: 12px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    transition: 0.3s;
+}
+
+.nav-login:hover {
+    background: var(--orange-dark);
+    color: #ffffff;
+}
+
+/* Headings */
+h1,
+h2,
+h3,
+h4,
+h5{
+    color: var(--text);
+    font-weight: 600;
+}
+
+/* Cards */
+.card{
+    background-color: #ffffff;
+    transition:0.3s;
+    border:none;
+    border-radius:15px;
+    box-shadow: 0 5px 15px rgba(6,21,34,0.12);
+}
+.card:hover{
+    transform:translateY(-8px);
+    box-shadow:0 10px 25px rgba(6,21,34,0.20);
+}
+
+/* Card Images */
+.card img{
+    height: 220px;
+    object-fit: cover;
+    border-radius: 15px 15px 0 0;
+}.card-title{
+    font-weight: 700;
+}
+.card h4{
+    font-weight: 600;
+}
+.card p{
+    color:#666;
+}
+.card .btn-outline-dark{
+    width: 40px;
+}
+.card input{
+    max-width: 100%;
+}
+.card.shadow{
+    border-radius: 15px;
+}
+
+/* Orange Button */
+.btn-warning{
+    background-color: var(--orange) !important;
+    border-color: var(--orange) !important;
+    color: #ffffff !important;
+    padding:10px 25px;
+    font-weight:600;
+    transition: 0.3s;
+}
+.btn-warning:hover{
+    background-color: var(--orange-hover) !important;
+    border-color:var(--orange-hover) !important;
+    transform: translateY(-2px);
+}
+
+/* Secondary Button */
+.btn-secondary{
+    background-color: #6c757d;
+    border-color: #6c757d;
+    transition: 0.3s;
+}
+.btn-secondary:hover{
+    transform: translateY(-2px);
+}
+
+/*Outline Button */
+.btn-outline-dark{
+    border-color: var(--navy);
+    color: var(--navy);
+    transition: 0.3s;
+}
+.btn-outline-dark:hover{
+    background-color: var(--navy);
+    border-color: var(--navy);
+    color: #ffffff;
+}
+
+/* Price */
+.text-success{
+    color: #333333 !important;
+    font-weight: 600;
+}
+
+/* Stars */
+.text-warning{
+    color: #ffc107 !important;
+}
+
+/*Food Details */
+.food-image{
+    height: 400px;
+    width: 100%;
+    object-fit: cover;
+    border-radius: 15px;
+    transition: 0.3s;
+}
+.food-image:hover{
+    transform:scale(1.03);
+}
+.food-details{
+    padding-top: 40px;
+    padding-bottom: 40px;
+    padding-left: 40px;
+}
+.food-details h1{
+    font-size: 42px;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+.biryani-icon{
+    color: #d35400 !important;
+}
+/* Quantity */
+.quantity-box{
+    display: flex;
+    align-items: center;
+    gap:8px;
+}
+.quantity-box .btn-outline-dark{
+    padding:8px 18px;
+}
+.quantity-box input{
+    width: 70px !important;
+    max-width: 70px !important;
+    text-align: center;
+}
+.quantity-input{
+    width: 70px;
+}
+
+/* Food buttons */
+.food-buttons{
+    margin-top: 25px;
+}
+.food-buttons button,
+.food-buttons a{
+    margin-right:10px;
+} 
+
+/* Remove Button */
+.btn-danger{
+    background-color: #dc3545;
+    border-color: #dc3545;
+    transition:0.3s;
+}
+.btn-danger:hover{
+    transform: translateY(-2px);
+}
+
+/* Footer */
+footer{
+    background-color: var(--dark-navy) !important;
+    border-top: 2px solid var(--orange);
+}
+footer h4{
+    color: #ffffff;
+}
+footer i{
+    cursor: pointer;
+    transition: 0.3s;
+}
+footer i:hover{
+    color:var(--orange);
+}
+
+/* Special Offers */
+.special-offer{
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 5px 15px rgba(6,21,34,0.15);
+    transition: 0.3s;
+}
+.special-offer:hover{
+    transform: translateY(-5px);
+}
+.special-offer h3{
+    color: var(--navy) !important;
+    font-weight: 700;
+}
+.special-offer p{
+    color: var(--navy) !important;
+    font-weight: 500;
+}
+.special-offer h3,
+.special-offer p{
+    color: #061522 !important;
+}
+
+/* Responsive */
+@media(max-width:768px){
+    .food-image{
+        height: 300px;
+    }
+    .food-details{
+        padding-left: 0;
+    }
+    .btn-warning,
+    .btn-secondary{ 
+        width:100%;
+        margin-bottom: 10px;
+    }
+    .food-buttons button,
+    .food-buttons a{
+        width: 100%;
+        margin-right: 0;
+    }
+    .view-order-btn{
+        width: auto;
+        max-width: 100%;
+        padding: 8px 12px;
+        font-size: 14px;
+        width: 110px;
+        height: 44px;
+    }
+    .order-action{
+        align-items: flex-start;
+    }
+
+}
+
+.hero-title{
+    font-weight:700;
+}
+
+img{
+    border-radius:15px;
+}
+
+.section-title{
+    color: var(--navy);
+    font-weight: 700;
+    position: relative;
+}
+
+section{
+    margin-top: 30px;
+}
+
+.order-success-icon{
+    color: #198754 !important;
+    font-size: 80px;
+}
+.view-order-btn{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+    padding: 10px 15px;
+    box-sizing: border-box;
+    height: 46px;
+    width: auto !important;
+    min-width: 100px;
+}
+.view-order-btn i{
+    margin:0;
+    flex-shrink: 0;
+}
+.order-action{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+.category-btn{
+    min-width: 120px;
+    border-radius: 25px;
+    font-weight:600;
+    transition: 0.3s;
+}
+.category-btn:hover{
+    transform: translateY(-3px);
+}

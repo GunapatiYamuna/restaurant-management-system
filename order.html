@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Food Fusion - Order Now</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+    <style>
+        /* =========================================================
+   FOODIEHUB
+   COMMON LAYOUT & NAVIGATION
+   WHITE + ORANGE THEME
+   ========================================================= */
+
+:root {
+    --orange: #ff6b00;
+    --orange-dark: #e85d00;
+    --orange-light: #fff1e7;
+
+    --dark: #07111c;
+    --dark-light: #0d1a27;
+
+    --text-dark: #222222;
+    --text: #555555;
+    --text-light: #777777;
+
+    --border: #e5e5e5;
+    --white: #ffffff;
+
+    --shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+}
+
+
+/* =========================================================
+   GLOBAL
+   ========================================================= */
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background: #ffffff;
+    color: var(--text-dark);
+}
+
+a {
+    text-decoration: none;
+}
+
+img {
+    max-width: 100%;
+    display: block;
+}
+
+.container {
+    max-width: 1100px;
+}
+
+/* =========================================================
+   NAVBAR
+   ========================================================= */
+
+.foodie-navbar {
+    background: var(--dark);
+    border-bottom: 1px solid #263746;
+    padding: 13px 0;
+}
+
+.navbar-brand {
+    color: #ffffff !important;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.navbar-brand i {
+    color: var(--orange);
+    margin-right: 6px;
+}
+
+.navbar-brand span {
+    color: var(--orange);
+}
+
+.foodie-navbar .navbar-nav {
+    gap: 8px;
+}
+
+.foodie-navbar .nav-link {
+    color: #dce2e7 !important;
+    font-size: 13px;
+    padding: 8px 12px !important;
+    transition: 0.3s;
+}
+
+.foodie-navbar .nav-link:hover,
+.foodie-navbar .nav-link.active {
+    color: var(--orange) !important;
+}
+
+
+/* Search */
+
+.nav-search {
+    width: 180px;
+    height: 35px;
+
+    display: flex;
+    align-items: center;
+
+    border: 1px solid #344452;
+    border-radius: 5px;
+
+    margin-left: 10px;
+}
+
+.nav-search i {
+    color: #8996a2;
+    margin-left: 9px;
+}
+
+.nav-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+
+    color: #ffffff;
+    font-size: 11px;
+
+    padding: 7px;
+}
+
+.nav-search input::placeholder {
+    color: #8996a2;
+}
+
+
+/* Cart */
+
+.nav-cart {
+    color: #ffffff;
+    font-size: 18px;
+    margin-left: 12px;
+    position: relative;
+}
+
+.nav-cart:hover {
+    color: var(--orange);
+}
+
+
+/* Login */
+
+.nav-login {
+    background: var(--orange);
+    color: #ffffff;
+
+    border: none;
+    border-radius: 5px;
+
+    padding: 9px 18px;
+    margin-left: 12px;
+
+    font-size: 12px;
+    font-weight: 600;
+
+    transition: 0.3s;
+}
+
+.nav-login:hover {
+    background: var(--orange-dark);
+    color: #ffffff;
+}
+
+
+        /* Header */
+        .order-header {
+            background: linear-gradient(
+                rgba(0, 0, 0, 0.55),
+                rgba(0, 0, 0, 0.55)
+            ),
+            url("images/order-bg.jpg");
+
+            background-size: cover;
+            background-position: center;
+
+            height: 280px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            text-align: center;
+            color: white;
+        }
+
+        .order-header h1 {
+            font-size: 45px;
+            font-weight: bold;
+        }
+
+        .order-header p {
+            font-size: 18px;
+        }
+
+        /* Main section */
+        .order-section {
+            padding: 50px 0;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .section-title h2 {
+            font-weight: bold;
+            color: #333;
+        }
+
+        .section-title p {
+            color: #777;
+        }
+
+        /* Food Card */
+        .food-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: 0.3s;
+            height: 100%;
+        }
+
+        .food-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .food-card img {
+            width: 100%;
+            height: 190px;
+            object-fit: cover;
+        }
+
+        .food-content {
+            padding: 18px;
+        }
+
+        .food-content h5 {
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .food-content p {
+            color: #777;
+            font-size: 14px;
+        }
+
+        .price {
+            color: #ff5722;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .add-btn {
+            background-color: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 8px 15px;
+            cursor: pointer;
+        }
+
+        .add-btn:hover {
+            background-color: #e64a19;
+        }
+
+        /* Cart */
+        .cart-box {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            position: sticky;
+            top: 90px;
+        }
+
+        .cart-box h4 {
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #eee;
+            padding: 10px 0;
+        }
+
+        .cart-item-name {
+            font-weight: 500;
+        }
+
+        .remove-btn {
+            border: none;
+            background: none;
+            color: red;
+            cursor: pointer;
+        }
+
+        .total {
+            display: flex;
+            justify-content: space-between;
+            font-size: 20px;
+            font-weight: bold;
+            margin-top: 20px;
+        }
+
+        .checkout-btn {
+            width: 100%;
+            margin-top: 20px;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background-color: #ff5722;
+            color: white;
+            font-size: 17px;
+            font-weight: bold;
+        }
+
+        .checkout-btn:hover {
+            background-color: #e64a19;
+        }
+
+        /* Footer */
+        footer {
+            background-color: #222;
+            color: white;
+            text-align: center;
+            padding: 25px;
+            margin-top: 30px;
+        }
+
+        @media (max-width: 768px) {
+            .order-header h1 {
+                font-size: 32px;
+            }
+
+            .cart-box {
+                margin-top: 30px;
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- =====================================================
+                         NAVBAR
+    ===================================================== -->
+
+    <nav class="navbar navbar-expand-lg foodie-navbar">
+
+        <div class="container">
+
+
+            <!-- LOGO -->
+
+            <a class="navbar-brand" href="index.html">
+
+                <i class="bi bi-egg-fried"></i>
+
+                Foodie<span>Hub</span>
+
+            </a>
+
+
+            <!-- MOBILE MENU BUTTON -->
+
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+
+            <!-- NAVIGATION -->
+
+            <div
+                class="collapse navbar-collapse"
+                id="mainNavbar">
+
+
+                <ul class="navbar-nav mx-auto">
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link active"
+                            href="index.html">
+
+                            Home
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="restaurant.html">
+
+                            Restaurants
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="menu.html">
+
+                            Menu
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="about.html">
+
+                            About
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="contact.html">
+
+                            Contact
+
+                        </a>
+
+                    </li>
+
+
+                </ul>
+
+
+                <!-- SEARCH -->
+
+                <div class="nav-search">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search for food...">
+
+                </div>
+
+
+                <!-- CART -->
+
+                <a
+                    href="cart.html"
+                    class="nav-cart">
+
+                    <i class="bi bi-cart3"></i>
+
+                </a>
+
+
+                <!-- LOGIN -->
+
+                <a
+                    href="login/login_register.html"
+                    class="nav-login">
+
+                    Login
+
+                </a>
+
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+<!-- HEADER -->
+
+<section class="order-header">
+
+<img src="order.png" height="300" width="1400">
+</section>
+
+
+<!-- ORDER SECTION -->
+
+<section class="order-section">
+
+    <div class="container">
+
+        <div class="section-title">
+
+            <h2>Our Menu</h2>
+
+            <p>
+                Choose your favourite dishes and add them to your order.
+            </p>
+
+        </div>
+
+
+        <div class="row">
+
+            <!-- FOOD ITEMS -->
+
+            <div class="col-lg-8">
+
+                <div class="row g-4">
+
+
+                    <!-- Pizza -->
+
+                    <div class="col-md-6">
+
+                        <div class="food-card">
+
+                            <img
+                                src="pizzza.png"
+                                alt="Pizza"
+                            >
+
+                            <div class="food-content">
+
+                                <h5>Cheese Pizza</h5>
+
+                                <p>
+                                    Delicious cheesy pizza with fresh toppings.
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span class="price">
+                                        ₹249
+                                    </span>
+
+                                    <button
+                                        class="add-btn"
+                                        onclick="addToCart('Cheese Pizza',249)"
+                                    >
+                                        Add
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Burger -->
+
+                    <div class="col-md-6">
+
+                        <div class="food-card">
+
+                            <img
+                                src="burger.png"
+                                alt="Burger"
+                            >
+
+                            <div class="food-content">
+
+                                <h5>Classic Burger</h5>
+
+                                <p>
+                                    Crispy burger with fresh vegetables and sauce.
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span class="price">
+                                        ₹149
+                                    </span>
+
+                                    <button
+                                        class="add-btn"
+                                        onclick="addToCart('Classic Burger',149)"
+                                    >
+                                        Add
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Biryani -->
+
+                    <div class="col-md-6">
+
+                        <div class="food-card">
+
+                            <img
+                                src="biriyani.png"
+                                alt="Biryani"
+                            >
+
+                            <div class="food-content">
+
+                                <h5>Chicken Biryani</h5>
+
+                                <p>
+                                    Aromatic basmati rice with delicious spices.
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span class="price">
+                                        ₹220
+                                    </span>
+
+                                    <button
+                                        class="add-btn"
+                                        onclick="addToCart('Chicken Biryani',220)"
+                                    >
+                                        Add
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- South Indian -->
+
+                    <div class="col-md-6">
+
+                        <div class="food-card">
+
+                            <img
+                                src="south indian.png"
+                                alt="South Indian Food"
+                            >
+
+                            <div class="food-content">
+
+                                <h5>Masala Dosa</h5>
+
+                                <p>
+                                    Crispy dosa served with chutney and sambar.
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span class="price">
+                                        ₹99
+                                    </span>
+
+                                    <button
+                                        class="add-btn"
+                                        onclick="addToCart('Masala Dosa',99)"
+                                    >
+                                        Add
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Chinese -->
+
+                    <div class="col-md-6">
+
+                        <div class="food-card">
+
+                            <img
+                                src="chinese.png"
+                                alt="Chinese Food"
+                            >
+
+                            <div class="food-content">
+
+                                <h5>Veg Noodles</h5>
+
+                                <p>
+                                    Delicious noodles with fresh vegetables.
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span class="price">
+                                        ₹139
+                                    </span>
+
+                                    <button
+                                        class="add-btn"
+                                        onclick="addToCart('Veg Noodles',139)"
+                                    >
+                                        Add
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <!-- Dessert -->
+
+                    <div class="col-md-6">
+
+                        <div class="food-card">
+
+                            <img
+                                src="chocolate cake.png"
+                                alt="Dessert"
+                            >
+
+                            <div class="food-content">
+
+                                <h5>Chocolate Cake</h5>
+
+                                <p>
+                                    Soft and delicious chocolate cake.
+                                </p>
+
+                                <div class="d-flex justify-content-between align-items-center">
+
+                                    <span class="price">
+                                        ₹129
+                                    </span>
+
+                                    <button
+                                        class="add-btn"
+                                        onclick="addToCart('Chocolate Cake',129)"
+                                    >
+                                        Add
+                                    </button>
+
+                                </div>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- CART -->
+
+            <div class="col-lg-4">
+
+                <div class="cart-box">
+
+                    <h4>
+                        <i class="fa-solid fa-cart-shopping"></i>
+                        Your Order
+                    </h4>
+
+                    <div id="cartItems">
+
+                        <p class="text-muted">
+                            No items added yet.
+                        </p>
+
+                    </div>
+
+                    <div class="total">
+
+                        <span>Total</span>
+
+                        <span>
+                            ₹<span id="totalAmount">0</span>
+                        </span>
+
+                    </div>
+
+                    <button
+                        class="checkout-btn"
+                        onclick="placeOrder()"
+                    >
+                        Place Order
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <p>
+        © 2026 Food Fusion. All Rights Reserved.
+    </p>
+
+</footer>
+
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+    let cart = [];
+
+    function addToCart(name, price) {
+
+        cart.push({
+            name: name,
+            price: price
+        });
+
+        displayCart();
+
+    }
+
+
+    function displayCart() {
+
+        const cartItems =
+            document.getElementById("cartItems");
+
+        const totalAmount =
+            document.getElementById("totalAmount");
+
+
+        if (cart.length === 0) {
+
+            cartItems.innerHTML =
+                '<p class="text-muted">No items added yet.</p>';
+
+            totalAmount.innerText = "0";
+
+            return;
+
+        }
+
+
+        cartItems.innerHTML = "";
+
+        let total = 0;
+
+
+        cart.forEach((item, index) => {
+
+            total += item.price;
+
+
+            const div =
+                document.createElement("div");
+
+            div.className = "cart-item";
+
+
+            div.innerHTML = `
+
+                <div>
+
+                    <div class="cart-item-name">
+                        ${item.name}
+                    </div>
+
+                    <small>
+                        ₹${item.price}
+                    </small>
+
+                </div>
+
+                <button
+                    class="remove-btn"
+                    onclick="removeItem(${index})"
+                >
+                    <i class="fa-solid fa-trash"></i>
+                </button>
+
+            `;
+
+
+            cartItems.appendChild(div);
+
+        });
+
+
+        totalAmount.innerText = total;
+
+    }
+
+
+    function removeItem(index) {
+
+        cart.splice(index, 1);
+
+        displayCart();
+
+    }
+
+
+    function placeOrder() {
+
+        if (cart.length === 0) {
+
+            alert("Please add at least one item to your order.");
+
+            return;
+
+        }
+
+
+        alert(
+            "Order placed successfully! Total amount: ₹" +
+            document.getElementById("totalAmount").innerText
+        );
+
+    }
+
+</script>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+</body>
+</html>

@@ -1,0 +1,226 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        {% if restaurant %}
+            {{ restaurant.name }}
+        {% else %}
+            Restaurant Not Found
+        {% endif %}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'restaurant/css/style.css' %}"
+    >
+
+</head>
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="logo">
+        🍴 Foodie<span>Hub</span>
+    </div>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/" class="active">Restaurants</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+
+    <div class="nav-actions">
+        <button class="icon-btn">🔍</button>
+        <button class="login-btn">Login</button>
+    </div>
+
+</header>
+
+
+{% if restaurant %}
+
+<main class="details-page">
+
+    <div class="breadcrumb">
+
+        <a href="/">
+            Restaurants
+        </a>
+
+        <span> / </span>
+
+        {{ restaurant.name }}
+
+    </div>
+
+
+    <section class="details-card">
+
+        <div class="details-image">
+
+            <img
+                src="{{ restaurant.image }}"
+                alt="{{ restaurant.name }}"
+            >
+
+        </div>
+
+
+        <div class="details-info">
+
+            <p class="section-label">
+                RESTAURANT
+            </p>
+
+            <h1>
+                {{ restaurant.name }}
+            </h1>
+
+            <div class="details-rating">
+
+                ⭐ {{ restaurant.rating }}
+
+                <span>
+                    ({{ restaurant.reviews }} reviews)
+                </span>
+
+            </div>
+
+
+            <p class="details-location">
+                📍 {{ restaurant.location }}
+            </p>
+
+
+            <p class="details-cuisine">
+                🍽️ {{ restaurant.cuisine }}
+                &nbsp; · &nbsp;
+                {{ restaurant.price }}
+            </p>
+
+
+            <p class="details-description">
+                {{ restaurant.description }}
+            </p>
+
+
+            <div class="restaurant-features">
+
+                <div>
+                    <strong>✓</strong>
+                    <span>Family Friendly</span>
+                </div>
+
+                <div>
+                    <strong>✓</strong>
+                    <span>Table Reservation</span>
+                </div>
+
+                <div>
+                    <strong>✓</strong>
+                    <span>Fresh Food</span>
+                </div>
+
+            </div>
+
+
+            <a
+                href="{% url 'reservation' restaurant.id %}"
+                class="main-reserve-btn"
+            >
+                Reserve a Table
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <section class="about-restaurant">
+
+        <h2>
+            About {{ restaurant.name }}
+        </h2>
+
+        <p>
+            Welcome to {{ restaurant.name }}.
+            Enjoy a wonderful dining experience with
+            delicious food, comfortable seating and
+            excellent service.
+        </p>
+
+    </section>
+
+
+    <section class="opening-hours">
+
+        <h2>
+            Restaurant Information
+        </h2>
+
+        <div class="info-grid">
+
+            <div>
+                <span>🕐</span>
+                <strong>Opening Hours</strong>
+                <p>11:00 AM - 11:00 PM</p>
+            </div>
+
+            <div>
+                <span>📍</span>
+                <strong>Location</strong>
+                <p>{{ restaurant.location }}</p>
+            </div>
+
+            <div>
+                <span>💰</span>
+                <strong>Price Range</strong>
+                <p>{{ restaurant.price }}</p>
+            </div>
+
+        </div>
+
+    </section>
+
+</main>
+
+{% else %}
+
+<main class="not-found">
+
+    <h1>Restaurant Not Found</h1>
+
+    <a href="/" class="details-btn">
+        Back to Restaurants
+    </a>
+
+</main>
+
+{% endif %}
+
+
+<footer class="footer">
+
+    <div class="copyright">
+        © 2026 FoodieHub. All rights reserved.
+    </div>
+
+</footer>
+
+
+</body>
+</html>

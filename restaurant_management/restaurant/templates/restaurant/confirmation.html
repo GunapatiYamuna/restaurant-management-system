@@ -1,0 +1,177 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Reservation Confirmed
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'restaurant/css/style.css' %}"
+    >
+
+</head>
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="logo">
+        🍴 Foodie<span>Hub</span>
+    </div>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/">Restaurants</a>
+    </nav>
+
+</header>
+
+
+<main class="confirmation-page">
+
+    <div class="confirmation-card">
+
+
+        <div class="success-icon">
+            ✓
+        </div>
+
+
+        <p class="section-label">
+            RESERVATION CONFIRMED
+        </p>
+
+
+        <h1>
+            Table Reserved Successfully!
+        </h1>
+
+
+        <p class="confirmation-message">
+
+            Thank you, {{ reservation.name }}.
+            Your table at
+            <strong>{{ reservation.restaurant.name }}</strong>
+            has been reserved.
+
+        </p>
+
+
+        <div class="booking-details">
+
+            <div class="booking-row">
+
+                <span>Restaurant</span>
+
+                <strong>
+                    {{ reservation.restaurant.name }}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-row">
+
+                <span>Name</span>
+
+                <strong>
+                    {{ reservation.name }}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-row">
+
+                <span>Date</span>
+
+                <strong>
+                    {{ reservation.date }}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-row">
+
+                <span>Time</span>
+
+                <strong>
+                    {{ reservation.time }}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-row">
+
+                <span>Guests</span>
+
+                <strong>
+                    {{ reservation.guests }}
+                </strong>
+
+            </div>
+
+
+            <div class="booking-row">
+
+                <span>Phone</span>
+
+                <strong>
+                    {{ reservation.phone }}
+                </strong>
+
+            </div>
+
+        </div>
+
+
+        <div class="confirmation-actions">
+
+            <a
+                href="/"
+                class="main-reserve-btn"
+            >
+                Back to Restaurants
+            </a>
+
+        </div>
+
+
+        <p class="confirmation-email">
+
+            A confirmation will be sent to
+            <strong>{{ reservation.email }}</strong>.
+
+        </p>
+
+    </div>
+
+</main>
+
+
+<footer class="footer">
+
+    <div class="copyright">
+        © 2026 FoodieHub. All rights reserved.
+    </div>
+
+</footer>
+
+
+</body>
+</html>

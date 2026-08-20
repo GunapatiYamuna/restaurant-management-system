@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Food Fusion - Book a Table</title>
+
+
+    <!-- Bootstrap -->
+
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+        rel="stylesheet"
+    >
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Font Awesome -->
+
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"
+    >
+
+
+    <style>
+
+                /* =========================================================
+        FOODIEHUB
+        COMMON LAYOUT & NAVIGATION
+        WHITE + ORANGE THEME
+        ========================================================= */
+
+        :root {
+            --orange: #ff6b00;
+            --orange-dark: #e85d00;
+            --orange-light: #fff1e7;
+
+            --dark: #07111c;
+            --dark-light: #0d1a27;
+
+            --text-dark: #222222;
+            --text: #555555;
+            --text-light: #777777;
+
+            --border: #e5e5e5;
+            --white: #ffffff;
+
+            --shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+        }
+
+
+        /* =========================================================
+        GLOBAL
+        ========================================================= */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: "Poppins", sans-serif;
+            background: #ffffff;
+            color: var(--text-dark);
+        }
+
+        a {
+            text-decoration: none;
+        }
+
+        img {
+            max-width: 100%;
+            display: block;
+        }
+
+        .container {
+            max-width: 1100px;
+        }
+
+
+            /* =========================================================
+        NAVBAR
+        ========================================================= */
+
+        .foodie-navbar {
+            background: var(--dark);
+            border-bottom: 1px solid #263746;
+            padding: 13px 0;
+        }
+
+        .navbar-brand {
+            color: #ffffff !important;
+            font-size: 21px;
+            font-weight: 700;
+        }
+
+        .navbar-brand i {
+            color: var(--orange);
+            margin-right: 6px;
+        }
+
+        .navbar-brand span {
+            color: var(--orange);
+        }
+
+        .foodie-navbar .navbar-nav {
+            gap: 8px;
+        }
+
+        .foodie-navbar .nav-link {
+            color: #dce2e7 !important;
+            font-size: 13px;
+            padding: 8px 12px !important;
+            transition: 0.3s;
+        }
+
+        .foodie-navbar .nav-link:hover,
+        .foodie-navbar .nav-link.active {
+            color: var(--orange) !important;
+        }
+
+
+        /* Search */
+
+        .nav-search {
+            width: 180px;
+            height: 35px;
+
+            display: flex;
+            align-items: center;
+
+            border: 1px solid #344452;
+            border-radius: 5px;
+
+            margin-left: 10px;
+        }
+
+        .nav-search i {
+            color: #8996a2;
+            margin-left: 9px;
+        }
+
+        .nav-search input {
+            width: 100%;
+            border: none;
+            outline: none;
+            background: transparent;
+
+            color: #ffffff;
+            font-size: 11px;
+
+            padding: 7px;
+        }
+
+        .nav-search input::placeholder {
+            color: #8996a2;
+        }
+
+
+        /* Cart */
+
+        .nav-cart {
+            color: #ffffff;
+            font-size: 18px;
+            margin-left: 12px;
+            position: relative;
+        }
+
+        .nav-cart:hover {
+            color: var(--orange);
+        }
+
+
+        /* Login */
+
+        .nav-login {
+            background: var(--orange);
+            color: #ffffff;
+
+            border: none;
+            border-radius: 5px;
+
+            padding: 9px 18px;
+            margin-left: 12px;
+
+            font-size: 12px;
+            font-weight: 600;
+
+            transition: 0.3s;
+        }
+
+        .nav-login:hover {
+            background: var(--orange-dark);
+            color: #ffffff;
+        }
+
+        /* HEADER */
+
+        .booking-header {
+
+            background:
+
+                linear-gradient(
+                    rgba(0,0,0,0.55),
+                    rgba(0,0,0,0.55)
+                ),
+
+                url("images/restaurant.jpg");
+
+
+            background-size: cover;
+
+            background-position: center;
+
+            height: 280px;
+
+
+            display: flex;
+
+            align-items: center;
+
+            justify-content: center;
+
+
+            text-align: center;
+
+            color: white;
+
+        }
+
+
+        .booking-header h1 {
+
+            font-size: 45px;
+
+            font-weight: bold;
+
+        }
+
+
+        .booking-header p {
+
+            font-size: 18px;
+
+        }
+
+
+        /* BOOKING */
+
+        .booking-section {
+
+            padding: 60px 0;
+
+        }
+
+
+        .booking-card {
+
+            background: white;
+
+            padding: 35px;
+
+            border-radius: 15px;
+
+            box-shadow: 0 5px 20px rgba(0,0,0,0.08);
+
+        }
+
+
+        .booking-card h2 {
+
+            font-weight: bold;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .booking-card .subtitle {
+
+            color: #777;
+
+            margin-bottom: 30px;
+
+        }
+
+
+        .form-label {
+
+            font-weight: 600;
+
+        }
+
+
+        .form-control,
+
+        .form-select {
+
+            padding: 12px;
+
+            border-radius: 8px;
+
+        }
+
+
+        .book-btn {
+
+            width: 100%;
+
+            padding: 13px;
+
+            border: none;
+
+            border-radius: 8px;
+
+            background-color: #ff5722;
+
+            color: white;
+
+            font-size: 17px;
+
+            font-weight: bold;
+
+            margin-top: 15px;
+
+        }
+
+
+        .book-btn:hover {
+
+            background-color: #e64a19;
+
+        }
+
+
+        /* INFO */
+
+        .info-card {
+             background-color: #ffffff;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+
+    height: auto;
+    min-height: 150px;
+
+    margin-bottom: 15px;
+
+        }
+
+
+        .info-card i {
+
+            font-size: 25px;
+
+            color: #ff5722;
+
+            margin-bottom: 10px;
+
+        }
+
+
+        .info-card h5 {
+            font-weight: bold;
+    font-size: 18px;
+    margin-bottom: 8px;
+          
+
+        }
+
+
+        .info-card p {
+
+          color: #777;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 0;
+
+        }
+
+
+        /* FOOTER */
+
+        footer {
+
+            background-color: #222;
+
+            color: white;
+
+            text-align: center;
+
+            padding: 25px;
+
+            margin-top: 20px;
+
+        }
+
+
+        @media(max-width:768px) {
+
+            .booking-header h1 {
+
+                font-size: 32px;
+
+            }
+
+        }
+
+    </style>
+
+</head>
+
+
+<body>
+
+
+
+    <!-- =====================================================
+                         NAVBAR
+    ===================================================== -->
+
+    <nav class="navbar navbar-expand-lg foodie-navbar">
+
+        <div class="container">
+
+
+            <!-- LOGO -->
+
+            <a class="navbar-brand" href="index.html">
+
+                <i class="bi bi-egg-fried"></i>
+
+                Foodie<span>Hub</span>
+
+            </a>
+
+
+            <!-- MOBILE MENU BUTTON -->
+
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+
+            <!-- NAVIGATION -->
+
+            <div
+                class="collapse navbar-collapse"
+                id="mainNavbar">
+
+
+                <ul class="navbar-nav mx-auto">
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link active"
+                            href="index.html">
+
+                            Home
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="restaurant.html">
+
+                            Restaurants
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="menu.html">
+
+                            Menu
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="about.html">
+
+                            About
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="contact.html">
+
+                            Contact
+
+                        </a>
+
+                    </li>
+
+
+                </ul>
+
+
+                <!-- SEARCH -->
+
+                <div class="nav-search">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search for food...">
+
+                </div>
+
+
+                <!-- CART -->
+
+                <a
+                    href="cart.html"
+                    class="nav-cart">
+
+                    <i class="bi bi-cart3"></i>
+
+                </a>
+
+
+                <!-- LOGIN -->
+
+                <a
+                    href="login/login_register.html"
+                    class="nav-login">
+
+                    Login
+
+                </a>
+
+
+            </div>
+
+        </div>
+
+    </nav>
+
+
+<!-- HEADER -->
+
+<section class="booking-header">
+<img src="images/restaurant 3.png" height="250" width="600">
+</section>
+
+
+<!-- BOOKING SECTION -->
+
+<section class="booking-section">
+
+    <div class="container">
+
+        <div class="row g-4">
+
+
+            <!-- FORM -->
+
+            <div class="col-lg-8">
+
+                <div class="booking-card">
+
+                    <h2>
+                        Reserve a Table
+                    </h2>
+
+                    <p class="subtitle">
+
+                        Fill in the details below to reserve your table.
+
+                    </p>
+
+
+                    <form id="bookingForm">
+
+
+                        <!-- NAME -->
+
+                        <div class="mb-3">
+
+                            <label
+                                class="form-label"
+                                for="name"
+                            >
+                                Full Name
+                            </label>
+
+                            <input
+                                type="text"
+                                class="form-control"
+                                id="name"
+                                placeholder="Enter your name"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- PHONE -->
+
+                        <div class="mb-3">
+
+                            <label
+                                class="form-label"
+                                for="phone"
+                            >
+                                Phone Number
+                            </label>
+
+                            <input
+                                type="tel"
+                                class="form-control"
+                                id="phone"
+                                placeholder="Enter your phone number"
+                                pattern="[0-9]{10}"
+                                required
+                            >
+
+                        </div>
+
+
+                        <!-- EMAIL -->
+
+                        <div class="mb-3">
+
+                            <label
+                                class="form-label"
+                                for="email"
+                            >
+                                Email Address
+                            </label>
+
+                            <input
+                                type="email"
+                                class="form-control"
+                                id="email"
+                                placeholder="Enter your email"
+                                required
+                            >
+
+                        </div>
+
+
+                        <div class="row">
+
+
+                            <!-- DATE -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label
+                                    class="form-label"
+                                    for="date"
+                                >
+                                    Date
+                                </label>
+
+                                <input
+                                    type="date"
+                                    class="form-control"
+                                    id="date"
+                                    required
+                                >
+
+                            </div>
+
+
+                            <!-- TIME -->
+
+                            <div class="col-md-6 mb-3">
+
+                                <label
+                                    class="form-label"
+                                    for="time"
+                                >
+                                    Time
+                                </label>
+
+                                <input
+                                    type="time"
+                                    class="form-control"
+                                    id="time"
+                                    required
+                                >
+
+                            </div>
+
+                        </div>
+
+
+                        <!-- GUESTS -->
+
+                        <div class="mb-3">
+
+                            <label
+                                class="form-label"
+                                for="guests"
+                            >
+                                Number of Guests
+                            </label>
+
+                            <select
+                                class="form-select"
+                                id="guests"
+                                required
+                            >
+
+                                <option value="">
+                                    Select guests
+                                </option>
+
+                                <option value="1">
+                                    1 Guest
+                                </option>
+
+                                <option value="2">
+                                    2 Guests
+                                </option>
+
+                                <option value="3">
+                                    3 Guests
+                                </option>
+
+                                <option value="4">
+                                    4 Guests
+                                </option>
+
+                                <option value="5">
+                                    5 Guests
+                                </option>
+
+                                <option value="6">
+                                    6 Guests
+                                </option>
+
+                                <option value="7">
+                                    7 Guests
+                                </option>
+
+                                <option value="8">
+                                    8 Guests
+                                </option>
+
+                                <option value="9+">
+                                    9+ Guests
+                                </option>
+
+                            </select>
+
+                        </div>
+
+
+                        <!-- SPECIAL REQUEST -->
+
+                        <div class="mb-3">
+
+                            <label
+                                class="form-label"
+                                for="message"
+                            >
+
+                                Special Request
+
+                            </label>
+
+                            <textarea
+                                class="form-control"
+                                id="message"
+                                rows="4"
+                                placeholder="Any special request?"
+                            ></textarea>
+
+                        </div>
+
+
+                        <button
+                            type="submit"
+                            class="book-btn"
+                        >
+
+                            <i class="fa-solid fa-calendar-check"></i>
+
+                            Confirm Booking
+
+                        </button>
+
+
+                    </form>
+
+                </div>
+
+            </div>
+
+
+            <!-- INFORMATION -->
+
+            <div class="col-lg-4">
+
+
+                <div class="info-card mb-4">
+
+                    <i class="fa-solid fa-clock"></i>
+
+                    <h5>
+                        Opening Hours
+                    </h5>
+
+                    <p>
+                        Monday - Sunday
+                        <br>
+                        10:00 AM - 11:00 PM
+                    </p>
+
+                </div>
+
+
+                <div class="info-card mb-4">
+
+                    <i class="fa-solid fa-users"></i>
+
+                    <h5>
+                        Group Reservations
+                    </h5>
+
+                    <p>
+                        Planning a family dinner or a special event?
+                        Contact us for larger group bookings.
+                    </p>
+
+                </div>
+
+
+                <div class="info-card">
+
+                    <i class="fa-solid fa-utensils"></i>
+
+                    <h5>
+                        Food Fusion
+                    </h5>
+
+                    <p>
+                        Enjoy delicious food and a comfortable
+                        dining experience with your loved ones.
+                    </p>
+
+                </div>
+
+
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- FOOTER -->
+
+<footer>
+
+    <p>
+        © 2026 Food Fusion. All Rights Reserved.
+    </p>
+
+</footer>
+
+
+<!-- JAVASCRIPT -->
+
+<script>
+
+    document
+        .getElementById("bookingForm")
+        .addEventListener("submit", function(event) {
+
+            event.preventDefault();
+
+
+            const name =
+                document.getElementById("name").value;
+
+            const date =
+                document.getElementById("date").value;
+
+            const time =
+                document.getElementById("time").value;
+
+            const guests =
+                document.getElementById("guests").value;
+
+
+            alert(
+                "Table booked successfully!\n\n" +
+
+                "Name: " + name + "\n" +
+
+                "Date: " + date + "\n" +
+
+                "Time: " + time + "\n" +
+
+                "Guests: " + guests
+            );
+
+
+            this.reset();
+
+        });
+
+</script>
+
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+</body>
+
+</html>

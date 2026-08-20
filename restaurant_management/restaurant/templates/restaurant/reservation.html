@@ -1,0 +1,347 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>
+        Reserve Table - {{ restaurant.name }}
+    </title>
+
+    <link
+        rel="stylesheet"
+        href="{% static 'restaurant/css/style.css' %}"
+    >
+
+</head>
+
+<body>
+
+
+<header class="navbar">
+
+    <div class="logo">
+        🍴 Foodie<span>Hub</span>
+    </div>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/">Restaurants</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+
+</header>
+
+
+<main class="reservation-page">
+
+    <div class="reservation-container">
+
+
+        <!-- RESTAURANT SUMMARY -->
+
+        <section class="reservation-summary">
+
+            <img
+                src="{{ restaurant.image }}"
+                alt="{{ restaurant.name }}"
+            >
+
+            <div>
+
+                <p class="section-label">
+                    YOUR RESTAURANT
+                </p>
+
+                <h1>
+                    {{ restaurant.name }}
+                </h1>
+
+                <p>
+                    ⭐ {{ restaurant.rating }}
+                    · {{ restaurant.cuisine }}
+                </p>
+
+                <p>
+                    📍 {{ restaurant.location }}
+                </p>
+
+            </div>
+
+        </section>
+
+
+        <!-- RESERVATION FORM -->
+
+        <section class="reservation-form-card">
+
+            <div class="form-heading">
+
+                <p class="section-label">
+                    RESERVE YOUR TABLE
+                </p>
+
+                <h2>
+                    Make a Reservation
+                </h2>
+
+                <p>
+                    Fill in your details to reserve your table.
+                </p>
+
+            </div>
+
+
+            <form
+                method="POST"
+                action="{% url 'reservation' restaurant.id %}"
+                onsubmit="return validateReservationForm()"
+            >
+
+                {% csrf_token %}
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="name">
+                            Full Name
+                        </label>
+
+                        <input
+                            type="text"
+                            id="name"
+                            name="name"
+                            placeholder="Enter your name"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email
+                        </label>
+
+                        <input
+                            type="email"
+                            id="email"
+                            name="email"
+                            placeholder="Enter your email"
+                            required
+                        >
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="phone">
+                            Phone Number
+                        </label>
+
+                        <input
+                            type="tel"
+                            id="phone"
+                            name="phone"
+                            placeholder="Enter phone number"
+                            pattern="[0-9]{10}"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="guests">
+                            Number of Guests
+                        </label>
+
+                        <select
+                            id="guests"
+                            name="guests"
+                            required
+                        >
+
+                            <option value="">
+                                Select guests
+                            </option>
+
+                            <option value="1">
+                                1 Guest
+                            </option>
+
+                            <option value="2">
+                                2 Guests
+                            </option>
+
+                            <option value="3">
+                                3 Guests
+                            </option>
+
+                            <option value="4">
+                                4 Guests
+                            </option>
+
+                            <option value="5">
+                                5 Guests
+                            </option>
+
+                            <option value="6">
+                                6 Guests
+                            </option>
+
+                            <option value="7">
+                                7 Guests
+                            </option>
+
+                            <option value="8">
+                                8 Guests
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="form-row">
+
+                    <div class="form-group">
+
+                        <label for="date">
+                            Reservation Date
+                        </label>
+
+                        <input
+                            type="date"
+                            id="date"
+                            name="date"
+                            required
+                        >
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="time">
+                            Reservation Time
+                        </label>
+
+                        <select
+                            id="time"
+                            name="time"
+                            required
+                        >
+
+                            <option value="">
+                                Select time
+                            </option>
+
+                            <option value="11:00 AM">
+                                11:00 AM
+                            </option>
+
+                            <option value="12:00 PM">
+                                12:00 PM
+                            </option>
+
+                            <option value="01:00 PM">
+                                01:00 PM
+                            </option>
+
+                            <option value="02:00 PM">
+                                02:00 PM
+                            </option>
+
+                            <option value="07:00 PM">
+                                07:00 PM
+                            </option>
+
+                            <option value="08:00 PM">
+                                08:00 PM
+                            </option>
+
+                            <option value="09:00 PM">
+                                09:00 PM
+                            </option>
+
+                            <option value="10:00 PM">
+                                10:00 PM
+                            </option>
+
+                        </select>
+
+                    </div>
+
+                </div>
+
+
+                <div class="reservation-note">
+
+                    <span>ℹ️</span>
+
+                    <p>
+                        Please arrive 10 minutes before your
+                        reservation time.
+                    </p>
+
+                </div>
+
+
+                <button
+                    type="submit"
+                    class="confirm-reservation-btn"
+                >
+                    Confirm Reservation
+                </button>
+
+
+                <a
+                    href="{% url 'restaurant_details' restaurant.id %}"
+                    class="cancel-btn"
+                >
+                    Back to Restaurant
+                </a>
+
+            </form>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<footer class="footer">
+
+    <div class="copyright">
+        © 2026 FoodieHub. All rights reserved.
+    </div>
+
+</footer>
+
+
+<script src="{% static 'restaurant/js/app.js' %}"></script>
+
+</body>
+</html>

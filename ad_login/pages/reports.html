@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Sales System</title>
+  <link rel="stylesheet" href="css/das_style.css">
+</head>
+<body>
+
+<div class="content p-3">
+  <h2 class="header p-3">Sales Management</h2>
+
+  <!-- Form -->
+  <div class="card p-3 mt-3">
+    <h4>Add Sale</h4>
+    <input type="date" id="date" class="form-control mb-2">
+    <input type="number" id="orders" placeholder="Orders" class="form-control mb-2">
+    <input type="number" id="revenue" placeholder="Revenue" class="form-control mb-2">
+    <input type="number" id="cost" placeholder="Cost" class="form-control mb-2">
+    <button onclick="addSale()" class="btn btn-primary">Add Sale</button>
+  </div>
+
+  <!-- Search -->
+  <input type="text" id="search" placeholder="Search by date..." class="form-control mt-3" onkeyup="renderTable()">
+
+  <!-- Table -->
+  <div class="card p-3 mt-3">
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Orders</th>
+          <th>Revenue</th>
+          <th>Cost</th>
+          <th>Profit</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="salesTable"></tbody>
+    </table>
+  </div>
+</div>
+
+<script src="js/das_sales.js"></script>
+</body>
+</html>

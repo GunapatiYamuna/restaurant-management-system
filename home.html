@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodieHub - Restaurant Management System</title>
+
+    <!-- Google Font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+
+    <!-- CSS -->
+    <link rel="stylesheet" href="css/home_style.css">
+</head>
+
+<body>
+
+    <!-- ================= NAVBAR ================= -->
+
+    <header class="navbar">
+
+        <div class="logo">
+            <i class="fa-solid fa-utensils"></i>
+            <span>Food<span class="orange">Fusion</span></span>
+        </div>
+
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#categories">Categories</a>
+            <a href="restaurant.html">Restaurants</a>
+            <a href="#popular">Popular Foods</a>
+            <a href="#reviews">Reviews</a>
+        </nav>
+
+        <div class="nav-right">
+
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search food...">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </div>
+
+            <button href="cart.html" class="cart-btn">
+                <i class="fa-solid fa-cart-shopping"></i>
+                <span id="cartCount">0</span>
+            </button>
+
+            <button href="login/login_register.html" class="login-btn">
+                Login
+            </button>
+
+        </div>
+
+    </header>
+
+
+    <!-- ================= HERO SECTION ================= -->
+
+    <section class="hero" id="home">
+
+        <div class="hero-content">
+
+            <p class="hero-small">
+                WELCOME TO FoodieHub
+            </p>
+
+            <h1>
+                Delicious Food,
+                <br>
+                <span>Delivered With Love.</span>
+            </h1>
+
+            <p class="hero-description">
+                Discover delicious dishes from the best restaurants
+                around you. Fresh ingredients, amazing taste and
+                fast delivery at your doorstep.
+            </p>
+
+            <div class="hero-buttons">
+
+                <button class="primary-btn"onclick="window.location.href='order.html'" >
+                    Order Now
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+
+                <button class="secondary-btn" onclick="window.location.href='booking.html'">
+                    Book a Table
+                    <i class="fa-solid fa-calendar-check"></i>
+                </button>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= FOOD CATEGORIES ================= -->
+
+    <section class="section" id="categories">
+
+        <div class="section-heading">
+
+            <p class="orange-title">
+                EXPLORE OUR MENU
+            </p>
+
+            <h2>
+                Food Categories
+            </h2>
+
+            <p>
+                Explore a wide variety of delicious food categories
+                prepared by our talented chefs.
+            </p>
+
+        </div>
+
+
+        <div class="category-grid">
+
+            <!-- Pizza -->
+
+            <div class="category-card">
+
+                <img src="pizzza.png" alt="Pizza">
+
+                <div class="category-content">
+
+                    <h3>Pizza</h3>
+
+                    <p>
+                        Cheesy and freshly baked pizzas
+                        with delicious toppings.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Burger -->
+
+            <div class="category-card">
+
+                <img src="burger.png" alt="Burger">
+
+                <div class="category-content">
+
+                    <h3>Burger</h3>
+
+                    <p>
+                        Juicy burgers packed with fresh
+                        ingredients and amazing flavors.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Biryani -->
+
+            <div class="category-card">
+
+                <img src="biriyani.png" alt="Biryani">
+
+                <div class="category-content">
+
+                    <h3>Biryani</h3>
+
+                    <p>
+                        Aromatic rice and flavorful spices
+                        cooked to perfection.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Chinese -->
+
+            <div class="category-card">
+
+                <img src="chinese.png" alt="Chinese">
+
+                <div class="category-content">
+
+                    <h3>Chinese</h3>
+
+                    <p>
+                        Delicious noodles, fried rice and
+                        authentic Chinese flavors.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- South Indian -->
+
+            <div class="category-card">
+
+                <img src="south indian.png" alt="South Indian">
+
+                <div class="category-content">
+
+                    <h3>South Indian</h3>
+
+                    <p>
+                        Traditional South Indian dishes
+                        made with authentic flavors.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- North Indian -->
+
+            <div class="category-card">
+
+                <img src="northindian.png" alt="North Indian">
+
+                <div class="category-content">
+
+                    <h3>North Indian</h3>
+
+                    <p>
+                        Rich curries, naan and delicious
+                        North Indian specialties.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Desserts -->
+
+            <div class="category-card">
+
+                <img src="desserts.png" alt="Desserts">
+
+                <div class="category-content">
+
+                    <h3>Desserts</h3>
+
+                    <p>
+                        Sweet treats and delicious desserts
+                        for the perfect ending.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Beverages -->
+
+            <div class="category-card">
+
+                <img src="beverages.png" alt="Beverages">
+
+                <div class="category-content">
+
+                    <h3>Beverages</h3>
+
+                    <p>
+                        Refreshing drinks, juices and
+                        beverages for every mood.
+                    </p>
+
+                    <button class="explore-btn">
+                        Explore
+                        <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= FEATURED RESTAURANTS ================= -->
+
+    <section class="section dark-section" id="restaurants">
+
+        <div class="section-heading">
+
+            <p class="orange-title">
+                TOP RESTAURANTS
+            </p>
+
+            <h2>
+                Featured Restaurants
+            </h2>
+
+            <p>
+                Discover the best restaurants near you.
+            </p>
+
+        </div>
+
+
+        <div class="restaurant-grid">
+
+
+            <!-- Restaurant 1 -->
+
+            <div class="restaurant-card">
+
+                <div class="restaurant-image">
+
+                    <img src="restuarant 1.png"
+                        alt="Spice Garden">
+
+                    <span class="rating">
+                        <i class="fa-solid fa-star"></i>
+                        4.8
+                    </span>
+
+                </div>
+
+                <div class="restaurant-info">
+
+                    <h3>Spice Garden</h3>
+
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        Guntur, Andhra Pradesh
+                    </p>
+
+                    <button class="menu-btn">
+                        View Menu
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Restaurant 2 -->
+
+            <div class="restaurant-card">
+
+                <div class="restaurant-image">
+
+                    <img src="restuarant.png"
+                        alt="Urban Bites">
+
+                    <span class="rating">
+                        <i class="fa-solid fa-star"></i>
+                        4.6
+                    </span>
+
+                </div>
+
+                <div class="restaurant-info">
+
+                    <h3>Urban Bites</h3>
+
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        Vijayawada, Andhra Pradesh
+                    </p>
+
+                    <button class="menu-btn">
+                        View Menu
+                    </button>
+
+                </div>
+
+            </div>
+
+
+            <!-- Restaurant 3 -->
+
+            <div class="restaurant-card">
+
+                <div class="restaurant-image">
+
+                    <img src="restaurant 3.png"
+                        alt="Royal Kitchen">
+
+                    <span class="rating">
+                        <i class="fa-solid fa-star"></i>
+                        4.9
+                    </span>
+
+                </div>
+
+                <div class="restaurant-info">
+
+                    <h3>Royal Kitchen</h3>
+
+                    <p>
+                        <i class="fa-solid fa-location-dot"></i>
+                        Hyderabad, Telangana
+                    </p>
+
+                    <button class="menu-btn">
+                        View Menu
+                    </button>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= POPULAR FOODS ================= -->
+
+    <section class="section" id="popular">
+
+        <div class="section-heading">
+
+            <p class="orange-title">
+                CUSTOMER FAVORITES
+            </p>
+
+            <h2>
+                Popular Foods
+            </h2>
+
+            <p>
+                Our most loved dishes chosen by thousands of customers.
+            </p>
+
+        </div>
+
+
+        <div class="food-grid">
+
+
+            <!-- Food 1 -->
+
+            <div class="food-card">
+
+                <div class="food-image">
+
+                    <img src="biriyani.png"
+                        alt="Chicken Biryani">
+
+                    <span class="food-rating">
+                        <i class="fa-solid fa-star"></i>
+                        4.9
+                    </span>
+
+                </div>
+
+                <div class="food-info">
+
+                    <h3>Chicken Biryani</h3>
+
+                    <p class="food-description">
+                        Aromatic basmati rice with tender chicken
+                        and special spices.
+                    </p>
+
+                    <div class="food-bottom">
+
+                        <span class="price">
+                            ₹249
+                        </span>
+
+                        <button class="add-cart"
+                            data-name="Chicken Biryani"
+                            data-price="249">
+
+                            <i class="fa-solid fa-cart-plus"></i>
+                            Add
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Food 2 -->
+
+            <div class="food-card">
+
+                <div class="food-image">
+
+                    <img src="cheese pizza.png"
+                        alt="Cheese Burger">
+
+                    <span class="food-rating">
+                        <i class="fa-solid fa-star"></i>
+                        4.7
+                    </span>
+
+                </div>
+
+                <div class="food-info">
+
+                    <h3>Cheese Burger</h3>
+
+                    <p class="food-description">
+                        Juicy chicken patty with cheese,
+                        vegetables and special sauce.
+                    </p>
+
+                    <div class="food-bottom">
+
+                        <span class="price">
+                            ₹179
+                        </span>
+
+                        <button class="add-cart"
+                            data-name="Cheese Burger"
+                            data-price="179">
+
+                            <i class="fa-solid fa-cart-plus"></i>
+                            Add
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Food 3 -->
+
+            <div class="food-card">
+
+                <div class="food-image">
+
+                    <img src="magherita pizza.png"
+                        alt="Margherita Pizza">
+
+                    <span class="food-rating">
+                        <i class="fa-solid fa-star"></i>
+                        4.8
+                    </span>
+
+                </div>
+
+                <div class="food-info">
+
+                    <h3>Margherita Pizza</h3>
+
+                    <p class="food-description">
+                        Freshly baked pizza topped with
+                        mozzarella and basil.
+                    </p>
+
+                    <div class="food-bottom">
+
+                        <span class="price">
+                            ₹299
+                        </span>
+
+                        <button class="add-cart"
+                            data-name="Margherita Pizza"
+                            data-price="299">
+
+                            <i class="fa-solid fa-cart-plus"></i>
+                            Add
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <!-- Food 4 -->
+
+            <div class="food-card">
+
+                <div class="food-image">
+
+                    <img src="gulabjamun.png"
+                        alt="Gulab Jamun">
+
+                    <span class="food-rating">
+                        <i class="fa-solid fa-star"></i>
+                        4.6
+                    </span>
+
+                </div>
+
+                <div class="food-info">
+
+                    <h3>Gulab Jamun</h3>
+
+                    <p class="food-description">
+                        Soft and delicious Indian sweet
+                        served with sugar syrup.
+                    </p>
+
+                    <div class="food-bottom">
+
+                        <span class="price">
+                            ₹99
+                        </span>
+
+                        <button class="add-cart"
+                            data-name="Gulab Jamun"
+                            data-price="99">
+
+                            <i class="fa-solid fa-cart-plus"></i>
+                            Add
+
+                        </button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= WHY CHOOSE US ================= -->
+
+    <section class="why-section">
+
+        <div class="section-heading">
+
+            <p class="orange-title">
+                WHY FoodieHub?
+            </p>
+
+            <h2>
+                Why Choose Us
+            </h2>
+
+        </div>
+
+
+        <div class="why-grid">
+
+            <div class="why-card">
+
+                <div class="why-icon">
+                    <i class="fa-solid fa-leaf"></i>
+                </div>
+
+                <h3>Fresh Food</h3>
+
+                <p>
+                    We use fresh and high-quality ingredients
+                    for every dish.
+                </p>
+
+            </div>
+
+
+            <div class="why-card">
+
+                <div class="why-icon">
+                    <i class="fa-solid fa-motorcycle"></i>
+                </div>
+
+                <h3>Fast Delivery</h3>
+
+                <p>
+                    Get your favorite food delivered quickly
+                    and safely.
+                </p>
+
+            </div>
+
+
+            <div class="why-card">
+
+                <div class="why-icon">
+                    <i class="fa-solid fa-award"></i>
+                </div>
+
+                <h3>Best Quality</h3>
+
+                <p>
+                    Enjoy delicious food prepared by
+                    experienced chefs.
+                </p>
+
+            </div>
+
+
+            <div class="why-card">
+
+                <div class="why-icon">
+                    <i class="fa-solid fa-lock"></i>
+                </div>
+
+                <h3>Secure Payment</h3>
+
+                <p>
+                    Your payments and personal information
+                    are always protected.
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= CUSTOMER REVIEWS ================= -->
+
+    <section class="section reviews-section" id="reviews">
+
+        <div class="section-heading">
+
+            <p class="orange-title">
+                CUSTOMER FEEDBACK
+            </p>
+
+            <h2>
+                What Our Customers Say
+            </h2>
+
+        </div>
+
+
+        <div class="review-grid">
+
+
+            <!-- Review 1 -->
+
+            <div class="review-card">
+
+                <div class="review-top">
+                         <div class="customer-avatar">
+                            P
+                        </div>
+
+                    <div>
+
+                        <h3>Priya</h3>
+
+                        <div class="stars">
+                            ★★★★★
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <p>
+                    "The food was absolutely delicious!
+                    The biryani was fresh, spicy and
+                    perfectly cooked. Highly recommended."
+                </p>
+
+            </div>
+
+
+            <!-- Review 2 -->
+
+            <div class="review-card">
+
+                <div class="review-top">
+                         <div class="customer-avatar">
+                            R
+                        </div>
+                    
+
+                    <div>
+
+                        <h3>Rahul</h3>
+
+                        <div class="stars">
+                            ★★★★★
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <p>
+                    "Amazing service and fast delivery.
+                    The food arrived hot and tasted
+                    really good. I will definitely order again."
+                </p>
+
+            </div>
+
+
+            <!-- Review 3 -->
+
+            <div class="review-card">
+
+                <div class="review-top">
+
+                    <div class="review-avatar">
+                        A
+                    </div>
+
+                    <div>
+
+                        <h3>Ananya</h3>
+
+                        <div class="stars">
+                            ★★★★☆
+                        </div>
+
+                    </div>
+
+                </div>
+
+                <p>
+                    "Great variety of food and reasonable
+                    prices. The website is easy to use
+                    and ordering was very convenient."
+                </p>
+
+            </div>
+
+        </div>
+
+    </section>
+
+
+    <!-- ================= FOOTER ================= -->
+
+    <footer>
+
+        <div class="footer-container">
+
+            <div class="footer-about">
+
+                <div class="logo footer-logo">
+                    <i class="fa-solid fa-utensils"></i>
+                    Food<span class="orange">Fusion</span>
+                </div>
+
+                <p>
+                    Delicious food, great restaurants
+                    and unforgettable dining experiences.
+                </p>
+
+            </div>
+
+
+            <div class="footer-links">
+
+                <h3>Quick Links</h3>
+
+                <a href="#home">Home</a>
+                <a href="#categories">Categories</a>
+                <a href="#restaurants">Restaurants</a>
+                <a href="#popular">Popular Foods</a>
+
+            </div>
+
+
+            <div class="footer-contact">
+
+                <h3>Contact Us</h3>
+
+                <p>
+                    <i class="fa-solid fa-phone"></i>
+                    +91 98765 43210
+                </p>
+
+                <p>
+                    <i class="fa-solid fa-envelope"></i>
+                    support@FoodieHub.com
+                </p>
+
+            </div>
+
+
+            <div class="social">
+
+                <h3>Follow Us</h3>
+
+                <div>
+
+                    <a href="#">
+                        <i class="fa-brands fa-facebook"></i>
+                    </a>
+
+                    <a href="#">
+                        <i class="fa-brands fa-instagram"></i>
+                    </a>
+
+                    <a href="#">
+                        <i class="fa-brands fa-twitter"></i>
+                    </a>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+        <div class="copyright">
+
+            © 2026 FoodieHub. All Rights Reserved.
+
+        </div>
+
+    </footer>
+
+
+    <!-- JavaScript -->
+    <script src="js/home_script.js"></script>
+
+</body>
+
+</html>

@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Restaurant Menu</title>
+
+        <!--Bootstrap CSS-->
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+        
+        <!--Bootsrap Icons-->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+        
+        <!--Font Awesome-->
+        <link rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" >
+        
+        <!--Google Font-->
+        <link  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+       
+        <!--CSS-->
+        <link rel="stylesheet" href="css/cart_style.css">
+    </head>
+    <body>
+            <!-- =====================================================
+     NAVBAR
+     ===================================================== -->
+
+        <nav class="navbar navbar-expand-lg foodie-navbar">
+
+            <div class="container">
+
+                <a class="navbar-brand" href="index.html">
+
+                    <i class="bi bi-egg-fried"></i>
+
+                    Foodie<span>Hub</span>
+
+                </a>
+
+
+                <button
+                    class="navbar-toggler"
+                    type="button"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#mainNavbar">
+
+                    <span class="navbar-toggler-icon"></span>
+
+                </button>
+
+
+                <div
+                    class="collapse navbar-collapse"
+                    id="mainNavbar">
+
+                    <ul class="navbar-nav mx-auto">
+
+                        <li class="nav-item">
+                            <a class="nav-link active"
+                            href="index.html">
+                                Home
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="restaurant.html">
+                                Restaurants
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="menu.html">
+                                Menu
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="about.html">
+                                About
+                            </a>
+                        </li>
+
+                        <li class="nav-item">
+                            <a class="nav-link"
+                            href="contact.html">
+                                Contact
+                            </a>
+                        </li>
+
+                    </ul>
+
+
+                    <div class="nav-search">
+
+                        <i class="bi bi-search"></i>
+
+                        <input
+                            type="text"
+                            placeholder="Search for food...">
+
+                    </div>
+
+
+                    <a href="cart.html" class="nav-cart">
+
+                        <i class="bi bi-cart3"></i>
+
+                    </a>
+
+
+                    <a href="login/login_register.html" class="nav-login">
+                        Login
+                    </a>
+
+                </div>
+
+            </div>
+
+        </nav>
+            <!--Menu Header-->
+            <section class="container py-5">
+            <h1 class="text-center fw-bold">
+            Our Menu
+            </h1>
+            <p class="text-center text-muted mb-4">
+            Delicious food made specially for you
+            </p>
+            <!--Food Categories-->
+            <div class="d-flex flex-wrap justify-content-center gap-3 mb-5">
+
+            <a href="#pizza"
+                class="btn btn-outline-dark category-btn">
+                🍕 Pizza
+            </a>
+
+            <a href="#burgers"
+                class="btn btn-outline-dark category-btn">
+                🍔 Burgers
+            </a>
+
+            <a href="#biryani"
+                class="btn btn-outline-dark category-btn">
+                🍛 Biryani
+            </a>
+
+            <a href="#pasta"
+                class="btn btn-outline-dark category-btn">
+                🍝 Pasta
+            </a>
+
+            <a href="#starters"
+                class="btn btn-outline-dark category-btn">
+                🍟 Starters
+            </a>
+
+            <a href="#beverages"
+                class="btn btn-outline-dark category-btn">
+                🥤 Beverages
+            </a>
+
+            <a href="#desserts"
+                class="btn btn-outline-dark category-btn">
+                🍰 Desserts
+            </a>
+            </div>
+            </section>
+
+            <!--Pizza-->
+            <section class="container py-4" id="pizza">
+                <h2 class="text-center fw-bold mb-5">
+                    🍕 Pizza
+                </h2>
+            <div class="row g-4">
+
+            <!-- Cheese Pizza -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Cheese Pizza">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Cheese Pizza
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.8
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;299
+                        </h4>
+                        <p>
+                            Fresh mozzarella cheese with delicious toppings.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Cheese Pizza"
+                            data-price="299"
+                            data-image="https://images.unsplash.com/photo-1513104890138-7c749659a591?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Veg Pizza -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Veg Pizza">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Veg Pizza
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★☆ 4.5
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;249
+                        </h4>
+                        <p>
+                            Loaded with fresh vegetables and cheese.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Veg Pizza"
+                            data-price="249"
+                            data-image="https://images.unsplash.com/photo-1574071318508-1cdbab80d002?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Paneer Pizza -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Paneer Pizza">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Paneer Pizza
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.7
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;329
+                        </h4>
+                        <p>
+                            Spicy paneer with cheese and fresh vegetables.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Paneer Pizza"
+                            data-price="329"
+                            data-image="https://images.unsplash.com/photo-1594007654729-407eedc4be65?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <!--Burger-->
+            <section class="container py-4" id="burgers">
+            <h2 class="text-center fw-bold mb-5">
+            🍔 Burgers
+            </h2>
+            <div class="row g-4">
+
+            <!-- Chicken Burger -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Chicken Burger">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Chicken Burger
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.8
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;199
+                        </h4>
+                        <p>
+                            Juicy chicken burger with cheese and fresh vegetables.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Chicken Burger"
+                            data-price="199"
+                            data-image="https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                            </button>
+                            </div>
+                        </div>
+                    </div>
+
+            <!-- Veg Burger -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Veg Burger">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Veg Burger
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★☆ 4.4
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;149
+                        </h4>
+                        <p>
+                            Crispy vegetable patty with fresh salad and sauce.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Veg Burger"
+                            data-price="149"
+                            data-image="https://images.unsplash.com/photo-1550547660-d9450f859349?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                            </button>
+                            </div>
+                        </div>
+                    </div>
+
+            <!-- Cheese Burger -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Cheese Burger">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Cheese Burger
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.6
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;229
+                        </h4>
+                        <p>
+                            Delicious burger loaded with melted cheese.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Cheese Burger"
+                            data-price="229"
+                            data-image="https://images.unsplash.com/photo-1572802419224-296b0aeee0d9?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <!--Biryani-->
+            <section class="container py-4" id="biryani">
+            <h2 class="text-center fw-bold mb-5">
+            <i class="fa-solid fa-bowl-rice"></i>
+            Biryani
+            </h2>
+            <div class="row g-4">
+
+            <!-- Chicken Biryani -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1701579231305-d84d8af9a3fd?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Chicken Biryani">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Chicken Biryani
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.9
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;349
+                        </h4>
+                        <p>
+                            Aromatic basmati rice with spicy chicken.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Chicken Biryani"
+                            data-price="349"
+                            data-image="https://images.unsplash.com/photo-1701579231305-d84d8af9a3fd?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                            </button>
+                            </div>
+                        </div>
+                    </div>
+
+            <!-- Veg Biryani -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1599043513900-ed6fe01d3833?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Veg Biryani">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Veg Biryani
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★☆ 4.5
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;249
+                        </h4>
+                        <p>
+                            Flavorful basmati rice with fresh vegetables.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Veg Biryani"
+                            data-price="249"
+                            data-image="https://images.unsplash.com/photo-1599043513900-ed6fe01d3833?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                 </div>
+
+            <!-- Paneer Biryani -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1589302168068-964664d93dc0?auto=format&fit=crop&w=500&q=80"
+                        class="card-img-top"
+                        alt="Paneer Biryani">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Paneer Biryani
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★☆ 4.6
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;299
+                        </h4>
+                        <p>
+                            Fragrant rice cooked with spicy paneer.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Paneer Biryani"
+                            data-price="299"
+                            data-image="https://images.unsplash.com/photo-1633945274309-2c16c9682a8c?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                         </div>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <!--Pasta-->
+            <section class="container py-4" id="pasta">
+            <h2 class="text-center fw-bold mb-5">
+                🍝 Pasta
+            </h2>
+            <div class="row g-4">
+
+            <!-- Alfredo Pasta -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Alfredo Pasta">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Alfredo Pasta
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.7
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;249
+                        </h4>
+                        <p>
+                            Creamy pasta with fresh vegetables and cheese.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Alfredo Pasta"
+                            data-price="249"
+                            data-image="https://images.unsplash.com/photo-1473093295043-cdd812d0e601?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                </div>
+
+            <!-- Arrabbiata Pasta -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Arrabbiata Pasta">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Arrabbiata Pasta
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★☆ 4.5
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;229
+                        </h4>
+                        <p>
+                            Spicy tomato pasta with herbs and vegetables.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Arrabbiata Pasta"
+                            data-price="229"
+                            data-image="https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </section>
+
+            <!--Starters-->
+            <section class="container py-4" id="starters">
+
+            <h2 class="text-center fw-bold mb-5">
+            🍟 Starters
+            </h2>
+            <div class="row g-4">
+
+            <!-- French Fries -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="French Fries">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            French Fries
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.6
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;149
+                        </h4>
+                        <p>
+                            Crispy golden fries served with delicious dip.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="French Fries"
+                            data-price="149"
+                            data-image="https://images.unsplash.com/photo-1573080496219-bb080dd4f877?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Paneer Tikka -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Paneer Tikka">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Paneer Tikka
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★☆ 4.4
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;249
+                        </h4>
+                        <p>
+                            Grilled paneer with spices and fresh vegetables.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Paneer Tikka"
+                            data-price="249"
+                            data-image="https://images.unsplash.com/photo-1567188040759-fb8a883dc6d8?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+            <!--Bevarages-->
+            <section class="container py-4" id="beverages">
+            <h2 class="text-center fw-bold mb-5">
+                🥤 Beverages
+            </h2>
+            <div class="row g-4">
+
+            <!-- Fresh Juice -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Fresh Juice">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Fresh Juice
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.7
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;99
+                        </h4>
+                        <p>
+                            Fresh and refreshing seasonal fruit juice.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Fresh Juice"
+                            data-price="99"
+                            data-image="https://images.unsplash.com/photo-1600271886742-f049cd451bba?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Milkshake -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Milkshake">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Chocolate Milkshake
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.8
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;149
+                        </h4>
+                        <p>
+                            Rich chocolate milkshake topped with cream.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Chocolate Milkshake"
+                            data-price="149"
+                            data-image="https://images.unsplash.com/photo-1572490122747-3968b75cc699?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- Soft Drink -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1629203849820-fdd70d49c38e?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Soft Drink">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Soft Drink
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★☆ 4.3
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;79
+                        </h4>
+                        <p>
+                            Chilled and refreshing soft drink.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Soft Drink"
+                            data-price="79"
+                            data-image="https://images.unsplash.com/photo-1629203849820-fdd70d49c38e?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            </section>
+
+                    <!--Desserts-->
+                    <section class="container py-4" id="desserts">
+                    <h2 class="text-center fw-bold mb-5">
+                             🍰 Desserts
+                     </h2>
+                    <div class="row g-4">
+
+                    <!-- Ice Cream -->
+                    <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Ice Cream">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Ice Cream
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.8
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;129
+                        </h4>
+                        <p>
+                            Creamy vanilla ice cream with delicious toppings.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Ice Cream"
+                            data-price="129"
+                            data-image="https://images.unsplash.com/photo-1563805042-7684c019e1cb?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Brownie -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 shadow">
+                    <img src="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=700&q=80"
+                        class="card-img-top"
+                        alt="Chocolate Brownie">
+                    <div class="card-body text-center">
+                        <h5 class="card-title">
+                            Chocolate Brownie
+                        </h5>
+                        <p class="text-warning">
+                            ★★★★★ 4.9
+                        </p>
+                        <h4 class="text-dark">
+                            &#8377;179
+                        </h4>
+                        <p>
+                            Soft and rich chocolate brownie with chocolate sauce.
+                        </p>
+                        <button class="btn btn-warning add-to-cart"
+                            data-name="Chocolate Brownie"
+                            data-price="179"
+                            data-image="https://images.unsplash.com/photo-1606313564200-e75d5e30476c?auto=format&fit=crop&w=700&q=80">
+                            <i class="bi bi-cart-fill"></i>
+                            Add to Cart
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        </section>
+
+                        <!--Special Offers-->
+                        <section class="container py-5">
+                        <div class="special-offer text-center">
+
+                            <h3 class="fw-bold">
+                                 🎉 Special Offers
+                            </h3>
+
+                            <p class="mb-2">
+                                🍕 Get 20% OFF on selected Pizza orders!
+                            </p>
+
+                            <p class="mb-2">
+                                🍔 Buy 2 Burgers and get ₹50 OFF!
+                            </p>
+
+                            <p class="mb-0">
+                                🍰 Get a free dessert on orders above ₹999!
+                            </p>
+                        </div>
+                        </section>
+
+                    <!--Footer-->
+                    <footer class="bg-dark text-white py-4">
+                    <div class="container text-center">
+                    <h4>Foodie's Restaurant</h4>
+                    <p>
+                        <i class="bi bi-geo-alt-fill"></i>
+                        Ongole,Andhra Pradesh
+                    </p>
+                    <p>
+                        <i class="bi bi-envelope-fill"></i>
+                        foodies@gmail.com
+                    </p>
+                    <p>
+                        <i class="bi bi-telephone-fill"></i>
+                        +91 9329154612
+                    </p>
+                    <div class="mb-3">
+                        <i class="bi bi-facebook fs-3 me-3"></i>
+                        <i class="bi bi-instagram fs-3 me-3"></i>
+                        <i class="bi bi-twitter-x fs-3 me-3"></i>
+                        <i class="bi bi-whatsapp fs-3 "></i>
+                    </div>
+                    <p>
+                        &copy; 2026 Foodie's Restaurant.All Rights Reserved.
+                    </p>
+                </div>
+               </footer>
+        <!--Bootstrap JS-->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+
+        <!--JS-->
+        <script src="js/cart_script.js"></script>
+    </body> 
+</html>

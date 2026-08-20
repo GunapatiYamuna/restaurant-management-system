@@ -1,0 +1,429 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>FoodieHub - Restaurants</title>
+
+    <link rel="stylesheet" href="{% static 'restaurant/css/style.css' %}">
+</head>
+
+<body>
+
+<!-- ================= HEADER ================= -->
+
+<header class="navbar">
+
+    <div class="logo">
+        <span>🍴</span>
+        Foodie<span>Hub</span>
+    </div>
+
+    <nav>
+        <a href="/">Home</a>
+        <a href="/" class="active">Restaurants</a>
+        <a href="#">About</a>
+        <a href="#">Contact</a>
+    </nav>
+
+    <div class="nav-actions">
+        <button class="icon-btn">🔍</button>
+        <button class="login-btn">Login</button>
+    </div>
+
+</header>
+
+
+<!-- ================= HERO ================= -->
+
+<section class="restaurant-hero">
+
+    <div class="hero-content">
+
+        <p class="small-title">DISCOVER GREAT FOOD</p>
+
+        <h1>
+            Find Your Perfect
+            <span>Restaurant</span>
+        </h1>
+
+        <p>
+            Discover the best restaurants around you and
+            reserve your table in just a few clicks.
+        </p>
+
+        <div class="search-box">
+
+            <span>🔍</span>
+
+            <input
+                type="text"
+                id="searchInput"
+                placeholder="Search restaurant, cuisine..."
+            >
+
+            <button onclick="searchRestaurants()">
+                Search
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+<!-- ================= MAIN ================= -->
+
+<main class="restaurant-container">
+
+    <div class="page-heading">
+
+        <div>
+            <p class="section-label">EXPLORE</p>
+            <h2>Featured Restaurants</h2>
+        </div>
+
+        <span id="restaurantCount">
+            {{ restaurants|length }} Restaurants
+        </span>
+
+    </div>
+
+
+    <div class="restaurant-layout">
+
+        <!-- ================= FILTERS ================= -->
+
+        <aside class="filter-panel">
+
+            <div class="filter-header">
+                <h3>Filters</h3>
+                <button onclick="clearFilters()">Clear</button>
+            </div>
+
+
+            <div class="filter-section">
+
+                <h4>Cuisine</h4>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        class="cuisine-filter"
+                        value="Indian"
+                    >
+                    Indian
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        class="cuisine-filter"
+                        value="Multi-Cuisine"
+                    >
+                    Multi-Cuisine
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        class="cuisine-filter"
+                        value="North Indian"
+                    >
+                    North Indian
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        class="cuisine-filter"
+                        value="Chinese"
+                    >
+                    Chinese
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        class="cuisine-filter"
+                        value="Cafe"
+                    >
+                    Cafe
+                </label>
+
+                <label>
+                    <input
+                        type="checkbox"
+                        class="cuisine-filter"
+                        value="Vegetarian"
+                    >
+                    Vegetarian
+                </label>
+
+            </div>
+
+
+            <div class="filter-section">
+
+                <h4>Rating</h4>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="rating"
+                        value="4"
+                    >
+                    ⭐ 4.0+
+                </label>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="rating"
+                        value="4.5"
+                    >
+                    ⭐ 4.5+
+                </label>
+
+                <label>
+                    <input
+                        type="radio"
+                        name="rating"
+                        value="4.7"
+                    >
+                    ⭐ 4.7+
+                </label>
+
+            </div>
+
+
+            <div class="filter-section">
+
+                <h4>Price</h4>
+
+                <label>
+                    <input type="checkbox" value="₹">
+                    ₹ Budget
+                </label>
+
+                <label>
+                    <input type="checkbox" value="₹₹">
+                    ₹₹ Moderate
+                </label>
+
+                <label>
+                    <input type="checkbox" value="₹₹₹">
+                    ₹₹₹ Premium
+                </label>
+
+            </div>
+
+        </aside>
+
+
+        <!-- ================= RESTAURANTS ================= -->
+
+        <section class="restaurant-results">
+
+            <div class="results-top">
+
+                <p>
+                    Showing
+                    <strong>{{ restaurants|length }}</strong>
+                    restaurants
+                </p>
+
+                <select id="sortSelect" onchange="sortRestaurants()">
+
+                    <option value="default">
+                        Sort By
+                    </option>
+
+                    <option value="rating">
+                        Rating
+                    </option>
+
+                    <option value="name">
+                        Name
+                    </option>
+
+                </select>
+
+            </div>
+
+
+            <div class="restaurant-grid" id="restaurantGrid">
+
+                {% for restaurant in restaurants %}
+
+                <article
+                    class="restaurant-card"
+                    data-name="{{ restaurant.name }}"
+                    data-cuisine="{{ restaurant.cuisine }}"
+                    data-rating="{{ restaurant.rating }}"
+                >
+
+                    <div class="card-image">
+
+                        <img
+                            src="{{ restaurant.image }}"
+                            alt="{{ restaurant.name }}"
+                        >
+
+                        <span class="rating-badge">
+                            ⭐ {{ restaurant.rating }}
+                        </span>
+
+                        <span class="favorite">
+                            ♡
+                        </span>
+
+                    </div>
+
+
+                    <div class="card-content">
+
+                        <div class="card-title-row">
+
+                            <h3>
+                                {{ restaurant.name }}
+                            </h3>
+
+                            <span class="price">
+                                {{ restaurant.price }}
+                            </span>
+
+                        </div>
+
+
+                        <p class="cuisine">
+                            {{ restaurant.cuisine }}
+                        </p>
+
+
+                        <p class="location">
+                            📍 {{ restaurant.location }}
+                        </p>
+
+
+                        <p class="reviews">
+                            ⭐ {{ restaurant.rating }}
+                            <span>
+                                ({{ restaurant.reviews }} reviews)
+                            </span>
+                        </p>
+
+
+                        <div class="card-footer">
+
+                            <a
+                                href="{% url 'restaurant_details' restaurant.id %}"
+                                class="details-btn"
+                            >
+                                View Details
+                            </a>
+
+                            <a
+                                href="{% url 'reservation' restaurant.id %}"
+                                class="reserve-btn"
+                            >
+                                Reserve
+                            </a>
+
+                        </div>
+
+                    </div>
+
+                </article>
+
+                {% endfor %}
+
+            </div>
+
+
+            <div
+                id="noResults"
+                class="no-results"
+                style="display: none;"
+            >
+
+                <div>🍽️</div>
+
+                <h3>
+                    No restaurants found
+                </h3>
+
+                <p>
+                    Try changing your search or filters.
+                </p>
+
+            </div>
+
+        </section>
+
+    </div>
+
+</main>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="footer">
+
+    <div class="footer-content">
+
+        <div class="footer-brand">
+
+            <h2>
+                🍴 Foodie<span>Hub</span>
+            </h2>
+
+            <p>
+                Discover delicious food and amazing restaurants
+                near you.
+            </p>
+
+        </div>
+
+
+        <div>
+            <h4>Quick Links</h4>
+            <a href="/">Home</a>
+            <a href="/">Restaurants</a>
+            <a href="#">About Us</a>
+        </div>
+
+
+        <div>
+            <h4>Support</h4>
+            <a href="#">Contact Us</a>
+            <a href="#">Help Center</a>
+            <a href="#">Privacy Policy</a>
+        </div>
+
+
+        <div>
+            <h4>Follow Us</h4>
+            <p>Facebook · Instagram · Twitter</p>
+        </div>
+
+    </div>
+
+
+    <div class="copyright">
+
+        © 2026 FoodieHub. All rights reserved.
+
+    </div>
+
+</footer>
+
+
+<script src="{% static 'restaurant/js/app.js' %}"></script>
+
+</body>
+</html>
