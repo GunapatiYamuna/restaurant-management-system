@@ -152,7 +152,7 @@ function updateCartSummary(){
     }
 
     //display delivery fee
-    const deliveryElement = document.getElementById("delivery-fee");
+    const deliveryElement = document.getElementById("deliveryFee");
 
     if (deliveryElement) {
         deliveryElement.textContent = "₹" + deliveryFee;
@@ -294,7 +294,7 @@ const checkoutForm =
                 paymentMethod="Cash on Delivery";
             }
             else if(payment.id==="upi"){
-                paymentMethod==="UPI Payment";
+                paymentMethod="UPI Payment";
             }
             else if(payment.id==="card"){
                 paymentMethod="Credit/Debit Card";
