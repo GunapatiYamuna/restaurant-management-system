@@ -136,7 +136,6 @@ img {
 
 
 /* Cart */
-
 .nav-cart {
     color: #ffffff;
     font-size: 18px;
@@ -183,6 +182,8 @@ h5{
 }
 
 /* Cards */
+
+
 .card{
     background-color: #ffffff;
     transition:0.3s;
@@ -219,19 +220,52 @@ h5{
     border-radius: 15px;
 }
 
-/* Orange Button */
-.btn-warning{
-    background-color: var(--orange) !important;
-    border-color: var(--orange) !important;
+/* =========================================================
+   CART / ORANGE BUTTON FIX
+   ========================================================= */
+
+.btn-warning {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+
+    background-color: #ff6b00 !important;
+    border: 2px solid #ff6b00 !important;
     color: #ffffff !important;
-    padding:10px 25px;
-    font-weight:600;
-    transition: 0.3s;
+
+    padding: 10px 25px !important;
+    font-weight: 600 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    text-decoration: none !important;
+    cursor: pointer !important;
+
+    transition: background-color 0.3s ease,
+                border-color 0.3s ease,
+                transform 0.3s ease !important;
 }
-.btn-warning:hover{
-    background-color: var(--orange-hover) !important;
-    border-color:var(--orange-hover) !important;
-    transform: translateY(-2px);
+
+.btn-warning:hover,
+.btn-warning:focus,
+.btn-warning:active {
+    background-color: #e85d00 !important;
+    border-color: #e85d00 !important;
+    color: #ffffff !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: translateY(-2px) !important;
+}
+
+.btn-warning i,
+.btn-warning:hover i {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Secondary Button */
@@ -244,16 +278,51 @@ h5{
     transform: translateY(-2px);
 }
 
-/*Outline Button */
-.btn-outline-dark{
-    border-color: var(--navy);
-    color: var(--navy);
-    transition: 0.3s;
+/* =========================================================
+   QUANTITY +/- BUTTON FIX
+   ========================================================= */
+
+.btn-outline-dark {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    width: 40px !important;
+    height: 42px !important;
+
+    padding: 0 !important;
+
+    background-color: #ffffff !important;
+    border: 1px solid #07111c !important;
+
+    color: #07111c !important;
+
+    font-size: 18px !important;
+    font-weight: 600 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    cursor: pointer !important;
 }
-.btn-outline-dark:hover{
-    background-color: var(--navy);
-    border-color: var(--navy);
-    color: #ffffff;
+
+.btn-outline-dark:hover,
+.btn-outline-dark:focus,
+.btn-outline-dark:active {
+    background-color: #07111c !important;
+    border-color: #07111c !important;
+    color: #ffffff !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Make the + and - characters/icons visible */
+.btn-outline-dark i,
+.btn-outline-dark span {
+    color: inherit !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 /* Price */
@@ -292,23 +361,25 @@ h5{
     color: #d35400 !important;
 }
 /* Quantity */
-.quantity-box{
+.quantity-box {
     display: flex;
     align-items: center;
-    gap:8px;
+    gap: 8px;
 }
-.quantity-box .btn-outline-dark{
-    padding:8px 18px;
+
+.quantity-box .btn-outline-dark {
+    width: 40px !important;
+    height: 42px !important;
+    min-width: 40px !important;
+    padding: 0 !important;
 }
-.quantity-box input{
+
+.quantity-box input {
     width: 70px !important;
+    height: 36px !important;
     max-width: 70px !important;
     text-align: center;
 }
-.quantity-input{
-    width: 70px;
-}
-
 /* Food buttons */
 .food-buttons{
     margin-top: 25px;
@@ -450,4 +521,164 @@ section{
 }
 .category-btn:hover{
     transform: translateY(-3px);
+}
+
+/* ===== FINAL MENU BUTTON FIX ===== */
+
+.card .add-to-cart {
+    display: inline-block !important;
+    width: auto !important;
+    min-width: 140px !important;
+    height: auto !important;
+
+    padding: 10px 20px !important;
+
+    background: #ff6b00 !important;
+    border: 2px solid #ff6b00 !important;
+    border-radius: 6px !important;
+
+    color: #ffffff !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    cursor: pointer !important;
+}
+
+.card .add-to-cart:hover {
+    display: inline-block !important;
+
+    background: #e85d00 !important;
+    border-color: #e85d00 !important;
+
+    color: #ffffff !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: translateY(-2px) !important;
+}
+
+.card .add-to-cart i,
+.card .add-to-cart span {
+    color: #ffffff !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* ===== KEEP FOOD CARD TEXT VISIBLE ===== */
+
+.card:hover .card-title,
+.card:hover h4,
+.card:hover h5,
+.card:hover p,
+.card:hover strong {
+    color: #222222 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* =========================================================
+   MENU CATEGORY BUTTON FIX
+   ========================================================= */
+
+.category-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    min-width: 120px !important;
+    min-height: 44px !important;
+
+    padding: 10px 20px !important;
+
+    background-color: #ffffff !important;
+    border: 1px solid #ff6b00 !important;
+    border-radius: 25px !important;
+
+    color: #222222 !important;
+
+    font-family: "Poppins", sans-serif !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    text-decoration: none !important;
+    cursor: pointer !important;
+
+    transition: all 0.3s ease !important;
+}
+
+/* Hover */
+.category-btn:hover {
+    background-color: #ff6b00 !important;
+    border-color: #ff6b00 !important;
+    color: #ffffff !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+
+    transform: translateY(-3px) !important;
+}
+
+/* Active category */
+.category-btn.active {
+    background-color: #ff6b00 !important;
+    border-color: #ff6b00 !important;
+    color: #ffffff !important;
+
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Keep text/icon visible */
+.category-btn *,
+.category-btn:hover *,
+.category-btn.active * {
+    color: inherit !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* =========================================================
+   SHOPPING CART BUTTONS
+   ========================================================= */
+
+#cart-items .btn-warning,
+.cart-container .btn-warning {
+    background: #ff6b00 !important;
+    color: #ffffff !important;
+    border-color: #ff6b00 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+#cart-items .btn-warning:hover,
+.cart-container .btn-warning:hover {
+    background: #e85d00 !important;
+    color: #ffffff !important;
+    border-color: #e85d00 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+/* Checkout button */
+a.btn-warning {
+    background-color: #ff6b00 !important;
+    color: #ffffff !important;
+    border-color: #ff6b00 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+a.btn-warning:hover {
+    background-color: #e85d00 !important;
+    color: #ffffff !important;
+    border-color: #e85d00 !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
