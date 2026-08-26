@@ -1,0 +1,93 @@
+# FoodieHub - Team File Ownership
+
+# =========================================================
+# MEMBER 1 - navyasreepalavari-cse
+# Authentication / Profile
+# =========================================================
+
+/login/pages/profile.html @navyasreepalavari-cse
+/login/pages/reset-password.html @navyasreepalavari-cse
+/login/pages/login.html @navyasreepalavari-cse
+/login/pages/forgot-password.html @navyasreepalavari-cse
+/login/pages/register.html @navyasreepalavari-cse
+/login/README.txt @navyasreepalavari-cse
+/login/login_register.html @navyasreepalavari-cse
+/login/css/auth.css @navyasreepalavari-cse
+/login/js/auth.js @navyasreepalavari-cse
+/index.html @navyasreepalavari-cse
+
+
+# =========================================================
+# MEMBER 2 - navyasree-8
+# Home / Booking / Order
+# =========================================================
+
+/order.html @navyasree-8
+/booking.html @navyasree-8
+/home.html @navyasree-8
+/css/home_style.css @navyasree-8
+/js/home_script.js @navyasree-8
+
+
+# =========================================================
+# MEMBER 3 - vamsit12
+# Restaurant / Reservation
+# =========================================================
+
+/restaurant.html @vamsit12
+/restaurant-details.html @vamsit12
+/reservation.html @vamsit12
+/confirmation.html @vamsit12
+/css/res_style.css @vamsit12
+/js/app.js @vamsit12
+
+# Restaurant folder
+/restaurant/** @vamsit12
+
+
+# =========================================================
+# MEMBER 4 - vaishanavivutla
+# Menu / Cart / Checkout / Orders
+# =========================================================
+
+/menu.html @vaishanavivutla
+/cart.html @vaishanavivutla
+/checkout.html @vaishanavivutla
+/order-confirmation.html @vaishanavivutla
+/order-history.html @vaishanavivutla
+/css/cart_style.css @vaishanavivutla
+/js/cart_script.js @vaishanavivutla
+
+
+# =========================================================
+# MEMBER 5 - bhanuyakkala2006
+# About / Contact
+# =========================================================
+
+/about.html @bhanuyakkala2006
+/contact.html @bhanuyakkala2006
+/css/style.css @bhanuyakkala2006
+/js/script.js @bhanuyakkala2006
+
+
+# =========================================================
+# MEMBER 6 - Gunapati_Yamuna
+# Admin / Dashboard
+# =========================================================
+
+/ad_login/login_register.html @Gunapati_Yamuna
+/ad_login/pages/dashboard.html @Gunapati_Yamuna
+/ad_login/pages/inventory.html @Gunapati_Yamuna
+/ad_login/pages/payment.html @Gunapati_Yamuna
+/ad_login/pages/reports.html @Gunapati_Yamuna
+/ad_login/pages/css/das_style.css @Gunapati_Yamuna
+/ad_login/pages/js/das_script.js @Gunapati_Yamuna
+/ad_login/pages/js/sales.js @Gunapati_Yamuna
+/ad_login/pages/login.html @Gunapati_Yamuna
+/ad_login/pages/profile.html @Gunapati_Yamuna
+/ad_login/pages/register.html @Gunapati_Yamuna
+/ad_login/pages/forgot-password.html @Gunapati_Yamuna
+/ad_login/pages/reset-password.html @Gunapati_Yamuna
+/ad_login/css/auth.css @Gunapati_Yamuna
+/ad_login/js/auth.js @Gunapati_Yamuna
+/ad_login/README.txt @Gunapati_Yamuna
