@@ -914,3 +914,117 @@ footer h3 {
     }
 
 }
+
+/* =========================================================
+   MOBILE HOME PAGE IMPROVEMENTS
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    /* Hero section */
+    .hero {
+        min-height: 520px !important;
+        padding: 40px 20px !important;
+        display: flex;
+        align-items: center;
+    }
+
+    .hero-content {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .hero-title {
+        font-size: 32px !important;
+        line-height: 1.15 !important;
+        margin-bottom: 15px !important;
+    }
+
+    .hero-text {
+        font-size: 13px !important;
+        line-height: 1.6 !important;
+        margin-bottom: 20px !important;
+    }
+
+    /* Hero buttons */
+    .hero-buttons {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        width: 100% !important;
+    }
+
+    .hero-buttons a,
+    .hero-buttons button {
+        width: 100% !important;
+        min-height: 44px !important;
+        font-size: 13px !important;
+        margin: 0 !important;
+    }
+
+    /* Section headings */
+    .section-title {
+        font-size: 27px !important;
+        line-height: 1.2 !important;
+    }
+
+    .section-subtitle {
+        font-size: 13px !important;
+        line-height: 1.5 !important;
+        padding: 0 15px !important;
+    }
+
+    /* Categories */
+    .category-card {
+        margin-bottom: 15px !important;
+    }
+
+    /* General images */
+    img {
+        max-width: 100% !important;
+    }
+}
+/* for small phones*/
+@media (max-width: 400px) {
+
+    .hero {
+        min-height: 500px !important;
+        padding: 30px 15px !important;
+    }
+
+    .hero-title {
+        font-size: 27px !important;
+    }
+
+    .hero-text {
+        font-size: 12px !important;
+    }
+
+    .section-title {
+        font-size: 24px !important;
+    }
+}
+
+@media (max-width: 400px) {
+
+    .hero {
+        min-height: 500px !important;
+        padding: 30px 12px !important;
+    }
+
+    .hero-title {
+        font-size: 26px !important;
+        line-height: 1.15 !important;
+    }
+
+    .hero-text {
+        font-size: 11px !important;
+        line-height: 1.5 !important;
+    }
+
+    .hero-buttons a,
+    .hero-buttons button {
+        min-height: 42px !important;
+        font-size: 12px !important;
+    }
+}
