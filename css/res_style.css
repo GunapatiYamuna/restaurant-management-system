@@ -9,8 +9,15 @@
     --orange-dark: #e85d00;
     --orange-light: #fff1e7;
 
+    --primary: #ff6b00;
+    --primary-dark: #e85d00;
+    --secondary: #ff6b00;
+
     --dark: #07111c;
     --dark-light: #0d1a27;
+
+    --light: #fafafa;
+    --muted: #777777;
 
     --text-dark: #222222;
     --text: #555555;
@@ -19,7 +26,14 @@
     --border: #e5e5e5;
     --white: #ffffff;
 
+    --radius: 12px;
+
     --shadow: 0 4px 18px rgba(0, 0, 0, 0.07);
+    --shadow-sm: 0 2px 10px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 6px 20px rgba(0, 0, 0, 0.08);
+    --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.12);
+
+    --success: #198754;
 }
 
 
@@ -1300,39 +1314,29 @@ img {
 }
 
 .booking-btn {
-
     width: 100%;
-
     height: 52px;
-
     display: flex;
-
     align-items: center;
-
     justify-content: center;
-
     gap: 10px;
-
     border-radius: 9px;
-
     background: var(--primary);
-
-    color: white;
-
+    color: #ffffff !important;
     font-weight: 800;
-
     font-size: 0.85rem;
-
-    transition: 0.25s ease;
-
+    text-decoration: none !important;
+    transition: all 0.25s ease;
 }
 
-.booking-btn:hover {
-
-    background: var(--secondary);
-
-    color: var(--dark);
-
+.booking-btn:hover,
+.booking-btn:focus,
+.booking-btn:active {
+    background: #ffb366 !important;
+    color: #17212b !important;
+    text-decoration: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
 }
 
 
@@ -1391,221 +1395,154 @@ img {
 
 /* =========================================================
    RESERVATION
-========================================================= */
-
-.reservation-section {
-
-    padding: 65px 0;
-
-}
-
-.reservation-card {
-
-    background: white;
-
-    border: 1px solid var(--border);
-
-    border-radius: var(--radius);
-
-    padding: 35px;
-
-    box-shadow: var(--shadow-sm);
-
-}
-
-.form-title {
-
-    margin-bottom: 30px;
-
-}
-
-.form-title span {
-
-    color: var(--primary);
-
-    font-size: 0.7rem;
-
-    font-weight: 800;
-
-    letter-spacing: 2px;
-
-}
-
-.form-title h2 {
-
-    font-size: 1.7rem;
-
-    font-weight: 800;
-
-    margin-top: 5px;
-
-}
-
-.reservation-card label {
-
-    display: block;
-
-    font-size: 0.78rem;
-
-    font-weight: 700;
-
-    margin-bottom: 8px;
-
-}
-
-.reservation-card label > span {
-
-    color: #aaa;
-
-    font-weight: 400;
-
-}
-
-.input-box,
-.textarea-box {
-
-    display: flex;
-
-    align-items: center;
-
-    gap: 10px;
-
-    border: 1px solid var(--border);
-
-    border-radius: 9px;
-
-    padding: 0 13px;
-
-    transition: 0.2s ease;
-
-}
-
-.input-box:focus-within,
-.textarea-box:focus-within {
-
-    border-color: var(--primary);
-
-    box-shadow:
-        0 0 0 3px rgba(232,93,4,0.08);
-
-}
-
-.input-box i,
-.textarea-box i {
-
-    color: #aaa;
-
-}
-
-.input-box input,
-.input-box select {
-
-    border: 0;
-
-    outline: 0;
-
-    width: 100%;
-
-    height: 48px;
-
-    background: transparent;
-
-    font-size: 0.82rem;
-
-}
-
-.textarea-box {
-
-    align-items: flex-start;
-
-    padding-top: 13px;
-
-}
-
-.textarea-box textarea {
-
-    width: 100%;
-
-    border: 0;
-
-    outline: 0;
-
-    resize: vertical;
-
-    font-size: 0.82rem;
-
-}
-
-.form-error {
-
-    display: block;
-
-    color: #dc3545;
-
-    font-size: 0.7rem;
-
-    margin-top: 5px;
-
-    min-height: 14px;
-
-}
-
-.agreement {
-
-    display: flex !important;
-
-    align-items: flex-start;
-
-    gap: 10px;
-
-    font-weight: 400 !important;
-
-    color: #777;
-
-    font-size: 0.75rem !important;
-
-    line-height: 1.5;
-
-}
-
-.agreement input {
-
-    margin-top: 3px;
-
-    accent-color: var(--primary);
-
-}
+=====================================================*/
 
 .reservation-submit {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 54px !important;
+    height: 54px !important;
 
-    width: 100%;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
 
-    border: 0;
+    margin-top: 10px !important;
+    padding: 0 20px !important;
 
-    height: 54px;
+    border: none !important;
+    border-radius: 9px !important;
 
-    border-radius: 9px;
+    background: #ff6b00 !important;
+    color: #ffffff !important;
 
-    background: var(--primary);
+    font-family: "Poppins", sans-serif !important;
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
 
-    color: white;
+    cursor: pointer !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 
-    font-size: 0.85rem;
+    position: relative !important;
+    z-index: 10 !important;
 
-    font-weight: 800;
-
-    cursor: pointer;
-
-    transition: 0.25s ease;
-
+    transition: 0.25s ease !important;
 }
 
 .reservation-submit:hover {
-
-    background: var(--primary-dark);
-
+    background: #e85d00 !important;
+    color: #ffffff !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
+.reservation-submit:focus {
+    outline: none !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.25) !important;
+}
+
+.reservation-submit i {
+    color: #ffffff !important;
+}
+
+/* =========================================================
+   RESERVATION FORM INPUT SIZE FIX
+   ========================================================= */
+
+.reservation-card input,
+.reservation-card select {
+    width: 100% !important;
+    min-height: 48px !important;
+    height: 48px !important;
+    padding: 10px 14px !important;
+
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 9px !important;
+
+    background: #ffffff !important;
+    color: #222222 !important;
+
+    font-family: "Poppins", sans-serif !important;
+    font-size: 14px !important;
+
+    outline: none !important;
+}
+
+.reservation-card textarea {
+    width: 100% !important;
+    min-height: 110px !important;
+    padding: 12px 14px !important;
+
+    border: 1px solid #e5e5e5 !important;
+    border-radius: 9px !important;
+
+    background: #ffffff !important;
+    color: #222222 !important;
+
+    font-family: "Poppins", sans-serif !important;
+    font-size: 14px !important;
+
+    outline: none !important;
+    resize: vertical !important;
+}
+
+.reservation-card input:focus,
+.reservation-card select:focus,
+.reservation-card textarea:focus {
+    border-color: #ff6b00 !important;
+    box-shadow: 0 0 0 3px rgba(255, 107, 0, 0.10) !important;
+}
+
+/* Make the form columns properly sized */
+.reservation-card .row {
+    row-gap: 20px;
+}
+
+/* Labels */
+.reservation-card label {
+    display: block;
+    margin-bottom: 8px !important;
+    font-size: 14px !important;
+    font-weight: 600 !important;
+    color: #222222 !important;
+}
+
+/* Input wrapper */
+.reservation-card .input-box,
+.reservation-card .textarea-box {
+    width: 100% !important;
+}
+
+/* Icons */
+.reservation-card .input-box i,
+.reservation-card .textarea-box i {
+    font-size: 16px;
+    color: #999999;
+}
+
+/* Fix agreement checkbox */
+.agreement input[type="checkbox"] {
+    width: 16px !important;
+    height: 16px !important;
+    min-width: 16px !important;
+    min-height: 16px !important;
+    padding: 0 !important;
+    margin: 0 8px 0 0 !important;
+    cursor: pointer;
+    accent-color: #ff6b00;
+}
+
+.agreement {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+}
+
+.agreement span {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+}
 
 /* =========================================================
    RESERVATION SUMMARY
