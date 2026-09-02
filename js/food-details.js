@@ -4,15 +4,13 @@ const foodData = {
         items: [
             {
                 name: "Chicken Pizza",
-                restaurant: "Pizza Hut",
                 price: 299,
-                image: "images/pizzza.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Chicken_Pizza_1.jpg"
             },
             {
                 name: "Veg Pizza",
-                restaurant: "Food Stories",
                 price: 249,
-                image: "images/pizzza.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vegetable_pizza_anyone%3F.jpg"
             }
         ]
     },
@@ -22,15 +20,13 @@ const foodData = {
         items: [
             {
                 name: "Chicken Burger",
-                restaurant: "KFC",
                 price: 199,
-                image: "images/burger.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fried_chicken_burger_.jpg"
             },
             {
                 name: "Veg Burger",
-                restaurant: "Food Stories",
                 price: 149,
-                image: "images/burger.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Veg._Burger.JPG"
             }
         ]
     },
@@ -40,15 +36,13 @@ const foodData = {
         items: [
             {
                 name: "Chicken Biryani",
-                restaurant: "V Grand Family Restaurant",
                 price: 280,
-                image: "images/biriyani.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Chicken_biryani_%288528798038%29.jpg"
             },
             {
                 name: "Mutton Biryani",
-                restaurant: "Ismail Restaurant",
                 price: 350,
-                image: "images/biriyani.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Mutton_biryani.JPG"
             }
         ]
     },
@@ -58,15 +52,13 @@ const foodData = {
         items: [
             {
                 name: "Chicken Noodles",
-                restaurant: "V Grand Family Restaurant",
                 price: 220,
-                image: "images/chinese.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Chicken_noodles.jpg"
             },
             {
                 name: "Veg Manchurian",
-                restaurant: "Prakriti Multicuisine Restaurant",
                 price: 180,
-                image: "images/chinese.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Manchurian.jpg"
             }
         ]
     },
@@ -76,15 +68,13 @@ const foodData = {
         items: [
             {
                 name: "Masala Dosa",
-                restaurant: "Subhadra Tiffin Center",
                 price: 80,
                 image: "images/south indian.png"
             },
             {
                 name: "Idli",
-                restaurant: "Gandhi Tiffin Center",
                 price: 60,
-                image: "images/south indian.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Idli_%28South_Indian_dish%29.jpg"
             }
         ]
     },
@@ -94,15 +84,13 @@ const foodData = {
         items: [
             {
                 name: "Butter Chicken",
-                restaurant: "Prakriti Multicuisine Restaurant",
                 price: 280,
                 image: "images/northindian.png"
             },
             {
                 name: "Paneer Butter Masala",
-                restaurant: "V Grand Family Restaurant",
                 price: 240,
-                image: "images/northindian.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Paneer_Butter_Masala_%289243456289%29.jpg"
             }
         ]
     },
@@ -112,15 +100,13 @@ const foodData = {
         items: [
             {
                 name: "Chocolate Ice Cream",
-                restaurant: "NIC Ice Creams",
                 price: 120,
-                image: "images/desserts.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Chocolate_Ice_Cream.jpg"
             },
             {
                 name: "Vanilla Ice Cream",
-                restaurant: "NIC Ice Creams",
                 price: 100,
-                image: "images/desserts.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vanilla_Ice_Cream.jpg"
             }
         ]
     },
@@ -130,15 +116,13 @@ const foodData = {
         items: [
             {
                 name: "Cold Coffee",
-                restaurant: "Swara Cafe",
                 price: 140,
-                image: "images/beverages.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Cold_coffee_%2820042%29.jpg"
             },
             {
                 name: "Fresh Lime Soda",
-                restaurant: "Swara Cafe",
                 price: 90,
-                image: "images/beverages.png"
+                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Fresh_Lime.JPG"
             }
         ]
     }
