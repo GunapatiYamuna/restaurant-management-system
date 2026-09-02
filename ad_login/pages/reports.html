@@ -3,10 +3,158 @@
 <head>
   <meta charset="UTF-8">
   <title>Sales System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
   <link rel="stylesheet" href="css/das_style.css">
 </head>
 <body>
+<!-- =====================================================
+                         NAVBAR
+    ===================================================== -->
 
+    <nav class="navbar navbar-expand-lg foodie-navbar">
+
+        <div class="container">
+
+
+            <!-- LOGO -->
+
+            <a class="navbar-brand" href="index.html">
+
+                <i class="bi bi-egg-fried"></i>
+
+                Foodie<span>Hub</span>
+
+            </a>
+
+
+            <!-- MOBILE MENU BUTTON -->
+
+            <button
+                class="navbar-toggler"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#mainNavbar"
+                aria-controls="mainNavbar"
+                aria-expanded="false"
+                aria-label="Toggle navigation">
+
+                <span class="navbar-toggler-icon"></span>
+
+            </button>
+
+
+            <!-- NAVIGATION -->
+
+            <div
+                class="collapse navbar-collapse"
+                id="mainNavbar">
+
+
+                <ul class="navbar-nav mx-auto">
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link "
+                            href="../../index.html">
+
+                            Home
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="../../restaurant.html">
+
+                            Restaurants
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="../../menu.html">
+
+                            Menu
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="../../about.html">
+
+                            About
+
+                        </a>
+
+                    </li>
+
+
+                    <li class="nav-item">
+
+                        <a
+                            class="nav-link"
+                            href="../../contact.html">
+
+                            Contact
+
+                        </a>
+
+                    </li>
+
+
+                </ul>
+
+
+                <!-- SEARCH -->
+
+                <div class="nav-search">
+
+                    <i class="bi bi-search"></i>
+
+                    <input
+                        type="text"
+                        id="searchInput"
+                        placeholder="Search for food...">
+
+                </div>
+
+
+            
+
+		<a href="../login_register.html" class="nav-login active ">Admin</a>
+            </div>
+
+        </div>
+
+    </nav>
+    <div class="d-flex">
+
+  <!-- Sidebar -->
+ <div class="sidebar p-3">
+  <h4 class="mb-4">🍽 Restaurant</h4>
+
+  <a href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
+  <a href="payment.html"><i class="bi bi-credit-card"></i> Payments</a>
+  <a href="inventory.html"><i class="bi bi-box-seam"></i> Inventory</a>
+  <a href="reports.html"><i class="bi bi-bar-chart"></i> Reports</a>
+</div>
 <div class="content p-3">
   <h2 class="header p-3">Sales Management</h2>
 
