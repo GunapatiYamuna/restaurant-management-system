@@ -1,0 +1,226 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Poppins", sans-serif;
+    background: #ffffff;
+    color: #222;
+}
+
+
+/* NAVBAR */
+
+.foodie-navbar {
+    background: #07111c;
+    padding: 13px 0;
+}
+
+.navbar-brand {
+    color: #ffffff !important;
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.navbar-brand i {
+    color: #ff6b00;
+}
+
+.navbar-brand span {
+    color: #ff6b00;
+}
+
+.nav-link {
+    color: #ffffff !important;
+    margin: 0 8px;
+}
+
+.nav-link:hover {
+    color: #ff6b00 !important;
+}
+
+.nav-cart {
+    color: #ffffff;
+    font-size: 20px;
+    margin-right: 15px;
+}
+
+.nav-cart:hover {
+    color: #ff6b00;
+}
+
+.nav-login {
+    background: #ff6b00;
+    color: #ffffff;
+    padding: 9px 18px;
+    border-radius: 6px;
+    font-weight: 600;
+}
+
+
+/* MAIN */
+
+.food-details-section {
+    padding: 50px 0 70px;
+    min-height: 700px;
+}
+
+.back-link {
+    margin-bottom: 25px;
+}
+
+.back-link a {
+    color: #ff6b00;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.back-link a:hover {
+    color: #e85d00;
+}
+
+
+/* HEADING */
+
+.food-heading {
+    text-align: center;
+    margin-bottom: 45px;
+}
+
+.food-heading span {
+    font-size: 45px;
+}
+
+.food-heading h1 {
+    display: inline-block;
+    font-size: 42px;
+    font-weight: 700;
+    margin-left: 10px;
+    color: #07111c;
+}
+
+.food-heading p {
+    color: #666;
+    margin-top: 8px;
+}
+
+
+/* FOOD CARD */
+
+.food-card {
+    background: #ffffff;
+    border-radius: 15px;
+    overflow: hidden;
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 5px 18px rgba(0,0,0,0.08);
+    height: 100%;
+    transition: 0.3s;
+}
+
+.food-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+}
+
+.food-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+}
+
+.food-content {
+    padding: 22px;
+}
+
+.food-content h3 {
+    font-size: 21px;
+    font-weight: 700;
+    color: #07111c;
+}
+
+.restaurant-name {
+    color: #ff6b00;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.food-description {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.food-price {
+    color: #222;
+    font-size: 20px;
+    font-weight: 700;
+    margin-top: 15px;
+}
+
+.rating {
+    color: #ff9800;
+    font-size: 14px;
+}
+
+.order-btn {
+    display: inline-block;
+    background: #ff6b00;
+    color: #ffffff;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-weight: 600;
+    margin-top: 12px;
+}
+
+.order-btn:hover {
+    background: #e85d00;
+    color: #ffffff;
+}
+
+
+/* FOOTER */
+
+footer {
+    background: #07111c;
+    color: #ffffff;
+    padding: 35px 0;
+}
+
+footer h4 {
+    font-weight: 700;
+}
+
+footer h4 span {
+    color: #ff6b00;
+}
+
+footer p {
+    color: #bfc6cc;
+}
+
+
+/* MOBILE */
+
+@media (max-width: 768px) {
+
+    .food-heading h1 {
+        font-size: 30px;
+    }
+
+    .food-heading span {
+        font-size: 32px;
+    }
+
+    .food-details-section {
+        padding: 30px 15px;
+    }
+
+    .food-card img {
+        height: 200px;
+    }
+
+}
