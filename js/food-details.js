@@ -1,282 +1,201 @@
 const foodData = {
-
     pizza: {
         title: "Pizza",
-        icon: "🍕",
-        description: "Freshly baked pizzas available from restaurants in Ongole.",
         items: [
             {
-                name: "Margherita Pizza",
-                restaurant: "Food Stories",
-                image: "images/pizzza.png",
-                description: "Classic pizza with tomato sauce, cheese and herbs.",
-                price: 249,
-                rating: 4.2
+                name: "Chicken Pizza",
+                restaurant: "Pizza Hut",
+                price: 299,
+                image: "images/pizzza.png"
             },
             {
-                name: "Farmhouse Pizza",
-                restaurant: "Pizza Hut",
-                image: "images/pizzza.png",
-                description: "Loaded with fresh vegetables and delicious toppings.",
-                price: 329,
-                rating: 4.3
+                name: "Veg Pizza",
+                restaurant: "Food Stories",
+                price: 249,
+                image: "images/pizzza.png"
             }
         ]
     },
 
-
     burger: {
-        title: "Burgers",
-        icon: "🍔",
-        description: "Juicy burgers available in Ongole.",
+        title: "Burger",
         items: [
             {
-                name: "Classic Chicken Burger",
+                name: "Chicken Burger",
                 restaurant: "KFC",
-                image: "images/burger.png",
-                description: "Juicy chicken patty with fresh vegetables and sauce.",
                 price: 199,
-                rating: 4.1
+                image: "images/burger.png"
             },
             {
                 name: "Veg Burger",
                 restaurant: "Food Stories",
-                image: "images/burger.png",
-                description: "Crispy vegetable patty with fresh lettuce and sauces.",
                 price: 149,
-                rating: 4.0
+                image: "images/burger.png"
             }
         ]
     },
 
-
     biryani: {
         title: "Biryani",
-        icon: "🍛",
-        description: "Aromatic biryani and rice dishes from Ongole restaurants.",
         items: [
             {
                 name: "Chicken Biryani",
                 restaurant: "V Grand Family Restaurant",
-                image: "images/biriyani.png",
-                description: "Fragrant basmati rice cooked with tender chicken and spices.",
-                price: 299,
-                rating: 4.3
+                price: 280,
+                image: "images/biriyani.png"
             },
             {
                 name: "Mutton Biryani",
                 restaurant: "Ismail Restaurant",
-                image: "images/biriyani.png",
-                description: "Rich and flavorful mutton biryani prepared with traditional spices.",
-                price: 399,
-                rating: 4.2
+                price: 350,
+                image: "images/biriyani.png"
             }
         ]
     },
-
 
     chinese: {
         title: "Chinese",
-        icon: "🥢",
-        description: "Popular Chinese dishes available in Ongole.",
         items: [
             {
-                name: "Chicken Fried Rice",
+                name: "Chicken Noodles",
                 restaurant: "V Grand Family Restaurant",
-                image: "images/chinese.png",
-                description: "Flavorful fried rice with chicken and fresh vegetables.",
-                price: 229,
-                rating: 4.1
+                price: 220,
+                image: "images/chinese.png"
             },
             {
-                name: "Veg Noodles",
+                name: "Veg Manchurian",
                 restaurant: "Prakriti Multicuisine Restaurant",
-                image: "images/chinese.png",
-                description: "Stir-fried noodles with fresh vegetables and sauces.",
-                price: 179,
-                rating: 4.0
+                price: 180,
+                image: "images/chinese.png"
             }
         ]
     },
 
-
     "south-indian": {
         title: "South Indian",
-        icon: "🥘",
-        description: "Traditional South Indian dishes available in Ongole.",
         items: [
             {
                 name: "Masala Dosa",
                 restaurant: "Subhadra Tiffin Center",
-                image: "images/south indian.png",
-                description: "Crispy dosa served with potato masala, chutney and sambar.",
-                price: 99,
-                rating: 4.4
+                price: 80,
+                image: "images/south indian.png"
             },
             {
-                name: "Idli Vada",
+                name: "Idli",
                 restaurant: "Gandhi Tiffin Center",
-                image: "images/south indian.png",
-                description: "Soft idlis and crispy vada served with chutney and sambar.",
-                price: 89,
-                rating: 4.3
+                price: 60,
+                image: "images/south indian.png"
             }
         ]
     },
-
 
     "north-indian": {
         title: "North Indian",
-        icon: "🫓",
-        description: "North Indian curries, naan and special dishes.",
         items: [
             {
-                name: "Paneer Butter Masala",
+                name: "Butter Chicken",
                 restaurant: "Prakriti Multicuisine Restaurant",
-                image: "images/northindian.png",
-                description: "Creamy tomato-based curry with soft paneer.",
-                price: 249,
-                rating: 4.2
+                price: 280,
+                image: "images/northindian.png"
             },
             {
-                name: "Butter Naan",
+                name: "Paneer Butter Masala",
                 restaurant: "V Grand Family Restaurant",
-                image: "images/northindian.png",
-                description: "Soft naan topped with butter and served hot.",
-                price: 79,
-                rating: 4.1
+                price: 240,
+                image: "images/northindian.png"
             }
         ]
     },
-
 
     desserts: {
         title: "Desserts",
-        icon: "🍰",
-        description: "Sweet treats and desserts available in Ongole.",
         items: [
             {
-                name: "Chocolate Cake",
+                name: "Chocolate Ice Cream",
                 restaurant: "NIC Ice Creams",
-                image: "images/desserts.png",
-                description: "Rich chocolate dessert perfect after a meal.",
-                price: 149,
-                rating: 4.4
+                price: 120,
+                image: "images/desserts.png"
             },
             {
-                name: "Ice Cream Sundae",
+                name: "Vanilla Ice Cream",
                 restaurant: "NIC Ice Creams",
-                image: "images/desserts.png",
-                description: "Creamy ice cream served with delicious toppings.",
-                price: 129,
-                rating: 4.5
+                price: 100,
+                image: "images/desserts.png"
             }
         ]
     },
 
-
     beverages: {
         title: "Beverages",
-        icon: "🥤",
-        description: "Refreshing drinks, juices and shakes in Ongole.",
         items: [
             {
-                name: "Mango Shake",
+                name: "Cold Coffee",
                 restaurant: "Swara Cafe",
-                image: "images/beverages.png",
-                description: "Refreshing mango shake made with fresh mangoes.",
-                price: 129,
-                rating: 4.2
+                price: 140,
+                image: "images/beverages.png"
             },
             {
-                name: "Fresh Lime Juice",
+                name: "Fresh Lime Soda",
                 restaurant: "Swara Cafe",
-                image: "images/beverages.png",
-                description: "Fresh and refreshing lime juice.",
-                price: 79,
-                rating: 4.1
+                price: 90,
+                image: "images/beverages.png"
             }
         ]
     }
-
 };
 
 
-// GET CATEGORY FROM URL
-
 const params = new URLSearchParams(window.location.search);
+const category = params.get("category");
 
-const category = params.get("category") || "pizza";
+const categoryData = foodData[category];
 
-const data = foodData[category];
+const title = document.getElementById("categoryTitle");
+const container = document.getElementById("foodItems");
 
+if (categoryData) {
 
-// UPDATE PAGE
+    title.textContent = categoryData.title;
 
-if (data) {
-
-    document.getElementById("categoryTitle").textContent =
-        data.title;
-
-    document.getElementById("categoryIcon").textContent =
-        data.icon;
-
-    document.getElementById("categoryDescription").textContent =
-        data.description;
-
-
-    const container =
-        document.getElementById("foodItems");
-
-
-    data.items.forEach(item => {
+    categoryData.items.forEach(item => {
 
         container.innerHTML += `
+            <div class="food-card">
 
-            <div class="col-md-6 col-lg-4">
+                <img src="${item.image}" alt="${item.name}">
 
-                <div class="food-card">
+                <div class="food-content">
 
-                    <img src="${item.image}"
-                         alt="${item.name}">
+                    <h2>${item.name}</h2>
 
-                    <div class="food-content">
+                    <p class="restaurant">
+                        ${item.restaurant}, Ongole
+                    </p>
 
-                        <h3>
-                            ${item.name}
-                        </h3>
+                    <p class="price">
+                        ₹${item.price}
+                    </p>
 
-                        <div class="restaurant-name">
-                            <i class="bi bi-shop"></i>
-                            ${item.restaurant}
-                        </div>
-
-                        <p class="food-description">
-                            ${item.description}
-                        </p>
-
-                        <div class="rating">
-                            ⭐ ${item.rating}
-                        </div>
-
-                        <div class="food-price">
-                            ₹${item.price}
-                        </div>
-
-                        <a href="menu.html"
-                           class="order-btn">
-                            View Menu
-                            <i class="bi bi-arrow-right"></i>
-                        </a>
-
-                    </div>
+                    <button onclick="addToCart('${item.name}', ${item.price})">
+                        Add to Cart
+                    </button>
 
                 </div>
 
             </div>
-
         `;
-
     });
 
+} else {
+
+    title.textContent = "Category Not Found";
+
+    container.innerHTML = `
+        <p>Sorry, this food category could not be found.</p>
+    `;
+}
+
+
+function addToCart(name, price) {
+    alert(`${name} added to cart!`);
 }
