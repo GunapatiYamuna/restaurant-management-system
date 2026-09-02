@@ -355,6 +355,11 @@ img {
     color: #ff6b00;
 
     font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+
 }
 
 .explore-btn i {
