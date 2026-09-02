@@ -106,7 +106,7 @@ const foodData = {
             {
                 name: "Vanilla Ice Cream",
                 price: 100,
-                image: "https://commons.wikimedia.org/wiki/Special:Redirect/file/Vanilla_Ice_Cream.jpg"
+                image: "https://singingdogvanilla.com/wp-content/uploads/2017/03/2-3-1024x695.jpg"
             }
         ]
     },
