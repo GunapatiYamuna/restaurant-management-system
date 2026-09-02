@@ -1,0 +1,90 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #fff8f3;
+    color: #222;
+}
+
+nav {
+    background: #07111c;
+    color: white;
+    padding: 18px 40px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+nav h2 {
+    margin: 0;
+    color: #ff6b00;
+}
+
+nav a {
+    color: white;
+    text-decoration: none;
+}
+
+main {
+    padding: 40px 6%;
+}
+
+h1 {
+    text-align: center;
+    color: #07111c;
+    margin-bottom: 35px;
+}
+
+.food-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 25px;
+}
+
+.food-card {
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 18px rgba(0,0,0,0.1);
+}
+
+.food-card img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+}
+
+.food-content {
+    padding: 20px;
+}
+
+.food-content h2 {
+    margin-top: 0;
+}
+
+.restaurant {
+    color: #666;
+}
+
+.price {
+    color: #ff6b00;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.food-card button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #ff6b00;
+    color: white;
+    cursor: pointer;
+}
+
+.food-card button:hover {
+    background: #e85d00;
+}
