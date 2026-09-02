@@ -152,9 +152,6 @@ if (categoryData) {
 
                     <h2>${item.name}</h2>
 
-                    <p class="restaurant">
-                        ${item.restaurant}, Ongole
-                    </p>
 
                     <p class="price">
                         ₹${item.price}
