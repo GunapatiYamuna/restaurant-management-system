@@ -1083,65 +1083,34 @@ console.log("RENDER ORDER HISTORY CALLED")
 function renderOrderHistory() {
 
     const container =
-        document.getElementById(
-            "order-history-container"
-        );
-
+        document.getElementById("order-history-container");
 
     if (!container) {
-
         return;
-
     }
-
 
     let history = [];
 
-
     try {
-
         history =
             JSON.parse(
-                localStorage.getItem(
-                    "foodieOrderHistory"
-                )
+                localStorage.getItem("foodieOrderHistory")
             ) || [];
-
     } catch (error) {
-
-        console.error(
-            "Could not read order history:",
-            error
-        );
-
+        console.error("Order history error:", error);
         history = [];
-
     }
-
-
-    /* ==============================================
-       IMPORTANT:
-       REMOVE EVERYTHING FROM THE CONTAINER FIRST
-    ============================================== */
 
     container.innerHTML = "";
 
-
-    if (
-        !Array.isArray(history) ||
-        history.length === 0
-    ) {
+    if (!Array.isArray(history) || history.length === 0) {
 
         container.innerHTML = `
-
-            <div
-                class="text-center py-5">
+            <div class="text-center py-5">
 
                 <i
                     class="bi bi-receipt"
-                    style="
-                        font-size:60px;
-                    ">
+                    style="font-size:60px;">
                 </i>
 
                 <h3 class="mt-3">
@@ -1149,15 +1118,325 @@ function renderOrderHistory() {
                 </h3>
 
                 <p class="text-muted">
-                    Your completed orders
-                    will appear here.
+                    Your completed orders will appear here.
                 </p>
 
                 <a
                     href="menu.html"
                     class="btn btn-warning">
-
                     Browse Menu
+                </a>
+
+            </div>
+        `;
+
+        return;
+    }
+
+
+    /* Show ALL orders - newest first */
+
+    const ordersToDisplay =
+        history.slice().reverse();
+
+
+    ordersToDisplay.forEach(function (order) {
+
+        const cart =
+            order.cart || [];
+
+        let subtotal =
+            Number(order.subtotal || 0);
+
+        let delivery =
+            Number(order.delivery || 50);
+
+        let discount =
+            Number(order.discount || 0);
+
+        let gst =
+            Number(order.gst || 0);
+
+        let total =
+            Number(order.total || 0);
+
+
+        /* If old order doesn't have totals,
+           calculate them */
+
+        if (subtotal === 0 && cart.length > 0) {
+
+            subtotal = cart.reduce(
+                function (sum, item) {
+
+                    return sum +
+                        Number(item.price || 0) *
+                        Number(item.quantity || 1);
+
+                },
+                0
+            );
+
+            delivery = 50;
+            discount = 0;
+            gst = Math.round(subtotal * 0.05);
+            total =
+                subtotal +
+                delivery +
+                gst -
+                discount;
+        }
+
+
+        let itemsHTML = "";
+
+
+        cart.forEach(function (item) {
+
+            const image =
+                item.image ||
+                "images/default-food.png";
+
+            const price =
+                Number(item.price || 0);
+
+            const quantity =
+                Number(item.quantity || 1);
+
+            const itemTotal =
+                price * quantity;
+
+
+            itemsHTML += `
+
+                <div
+                    class="d-flex align-items-center
+                           justify-content-between mb-3">
+
+                    <div class="d-flex align-items-center">
+
+                        <img
+                            src="${image}"
+                            alt="${item.name}"
+                            style="
+                                width:60px;
+                                height:60px;
+                                object-fit:cover;
+                                border-radius:8px;
+                                margin-right:12px;
+                            "
+                            onerror="
+                                this.style.display='none';
+                            "
+                        >
+
+                        <div>
+
+                            <strong>
+                                ${item.name}
+                            </strong>
+
+                            <br>
+
+                            <span class="text-muted">
+                                ₹${price} × ${quantity}
+                            </span>
+
+                        </div>
+
+                    </div>
+
+                    <strong>
+                        ₹${itemTotal}
+                    </strong>
+
+                </div>
+
+            `;
+
+        });
+
+
+        /* Create ONE card for this order */
+
+        const orderCard =
+            document.createElement("div");
+
+        orderCard.className =
+            "card shadow p-4 mb-4";
+
+
+        orderCard.innerHTML = `
+
+            <div
+                class="d-flex justify-content-between
+                       align-items-center mb-3">
+
+                <h3 class="fw-bold mb-0">
+
+                    <i
+                        class="bi bi-receipt text-warning">
+                    </i>
+
+                    Order #${order.orderId || "N/A"}
+
+                </h3>
+
+                <span class="badge bg-success">
+                    Order Placed
+                </span>
+
+            </div>
+
+
+            <p class="text-muted">
+                ${order.date || ""}
+            </p>
+
+
+            <hr>
+
+
+            <p>
+
+                <strong>
+                    Payment Method:
+                </strong>
+
+                ${order.payment || "Cash on Delivery"}
+
+            </p>
+
+
+            <h4 class="fw-bold mt-4 mb-3">
+
+                <i
+                    class="bi bi-bag-check text-warning">
+                </i>
+
+                Ordered Items
+
+            </h4>
+
+
+            ${itemsHTML}
+
+
+            <hr>
+
+
+            <div class="d-flex justify-content-between mb-2">
+
+                <span>
+                    Subtotal
+                </span>
+
+                <strong>
+                    ₹${subtotal}
+                </strong>
+
+            </div>
+
+
+            <div class="d-flex justify-content-between mb-2">
+
+                <span>
+                    Delivery Fee
+                </span>
+
+                <strong>
+                    ₹${delivery}
+                </strong>
+
+            </div>
+
+
+            <div class="d-flex justify-content-between mb-2">
+
+                <span>
+                    Discount
+                </span>
+
+                <strong>
+                    -₹${discount}
+                </strong>
+
+            </div>
+
+
+            <div class="d-flex justify-content-between mb-3">
+
+                <span>
+                    GST
+                </span>
+
+                <strong>
+                    ₹${gst}
+                </strong>
+
+            </div>
+
+
+            <hr>
+
+
+            <div
+                class="d-flex justify-content-between
+                       align-items-center">
+
+                <strong class="fs-5">
+                    Total
+                </strong>
+
+                <strong class="fs-5">
+                    ₹${total}
+                </strong>
+
+            </div>
+
+
+            <div
+                class="d-flex gap-3 mt-4 flex-wrap">
+
+                <button
+                    type="button"
+                    class="btn btn-warning order-again-button"
+                    style="
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        gap:8px;
+                        min-width:175px;
+                        height:50px;
+                    ">
+
+                    <i class="bi bi-shop"></i>
+
+                    <span>
+                        Order Again
+                    </span>
+
+                </button>
+
+
+                <a
+                    href="index.html"
+                    class="btn btn-outline-dark"
+                    style="
+                        display:flex;
+                        align-items:center;
+                        justify-content:center;
+                        gap:8px;
+                        min-width:120px;
+                        height:50px;
+                        text-decoration:none;
+                    ">
+
+                    <i class="bi bi-house-fill"></i>
+
+                    <span>
+                        Home
+                    </span>
 
                 </a>
 
@@ -1165,372 +1444,19 @@ function renderOrderHistory() {
 
         `;
 
-        return;
 
-    }
+        /* Add this order to the page */
 
+        container.appendChild(orderCard);
 
-    /* ==============================================
-       GET ONLY THE LAST ORDER
-    ============================================== */
 
-    const latestOrder =
-        history[history.length - 1];
+        /* Order Again */
 
+        const orderAgainButton =
+            orderCard.querySelector(
+                ".order-again-button"
+            );
 
-    if (!latestOrder) {
-
-        return;
-
-    }
-
-
-    const totals =
-        calculateTotals(
-            latestOrder.cart || []
-        );
-
-
-    const orderCard =
-        document.createElement("div");
-
-
-    orderCard.className =
-        "card shadow p-4 mb-4";
-
-
-    let itemsHTML = "";
-
-
-    if (
-        latestOrder.cart &&
-        latestOrder.cart.length > 0
-    ) {
-
-        latestOrder.cart.forEach(
-            function (item) {
-
-                const image =
-                    item.image ||
-                    "images/default-food.png";
-
-
-                const price =
-                    Number(item.price) || 0;
-
-
-                const quantity =
-                    Number(item.quantity) || 1;
-
-
-                const itemTotal =
-                    price * quantity;
-
-
-                itemsHTML += `
-
-                    <div
-                        class="
-                            d-flex
-                            align-items-center
-                            justify-content-between
-                            mb-3
-                        ">
-
-                        <div
-                            class="d-flex align-items-center">
-
-                            <img
-                                src="${image}"
-                                alt="${item.name}"
-                                style="
-                                    width:60px;
-                                    height:60px;
-                                    object-fit:cover;
-                                    border-radius:8px;
-                                    margin-right:12px;
-                                "
-                                onerror="
-                                    this.src='images/default-food.png';
-                                "
-                            >
-
-                            <div>
-
-                                <strong>
-                                    ${item.name}
-                                </strong>
-
-                                <br>
-
-                                <span
-                                    class="text-muted">
-
-                                    ₹${price}
-                                    ×
-                                    ${quantity}
-
-                                </span>
-
-                            </div>
-
-                        </div>
-
-
-                        <strong>
-
-                            ₹${itemTotal}
-
-                        </strong>
-
-                    </div>
-
-                `;
-
-            }
-        );
-
-    }
-
-
-    orderCard.innerHTML = `
-
-        <div
-            class="
-                d-flex
-                justify-content-between
-                align-items-center
-                mb-3
-            ">
-
-            <h3 class="fw-bold mb-0">
-
-                <i
-                    class="
-                        bi
-                        bi-receipt
-                        text-warning
-                    ">
-                </i>
-
-                Order #${latestOrder.orderId}
-
-            </h3>
-
-
-            <span
-                class="badge bg-success">
-
-                Order Placed
-
-            </span>
-
-        </div>
-
-
-        <p class="text-muted">
-
-            ${latestOrder.date || ""}
-
-        </p>
-
-
-        <hr>
-
-
-        <p>
-
-            <strong>
-                Payment Method:
-            </strong>
-
-            ${latestOrder.payment || "Cash on Delivery"}
-
-        </p>
-
-
-        <h4 class="fw-bold mt-4 mb-3">
-
-            <i
-                class="
-                    bi
-                    bi-bag-check
-                    text-warning
-                ">
-            </i>
-
-            Ordered Items
-
-        </h4>
-
-
-        ${itemsHTML}
-
-
-        <hr>
-
-
-        <div
-            class="
-                d-flex
-                justify-content-between
-                mb-2
-            ">
-
-            <span>
-                Subtotal
-            </span>
-
-            <strong>
-                ₹${latestOrder.subtotal ?? totals.subtotal}
-            </strong>
-
-        </div>
-
-
-        <div
-            class="
-                d-flex
-                justify-content-between
-                mb-2
-            ">
-
-            <span>
-                Delivery Fee
-            </span>
-
-            <strong>
-                ₹${latestOrder.delivery ?? totals.delivery}
-            </strong>
-
-        </div>
-
-
-        <div
-            class="
-                d-flex
-                justify-content-between
-                mb-2
-            ">
-
-            <span>
-                Discount
-            </span>
-
-            <strong>
-                -₹${latestOrder.discount ?? 0}
-            </strong>
-
-        </div>
-
-
-        <div
-            class="
-                d-flex
-                justify-content-between
-                mb-3
-            ">
-
-            <span>
-                GST
-            </span>
-
-            <strong>
-                ₹${latestOrder.gst ?? totals.gst}
-            </strong>
-
-        </div>
-
-
-        <hr>
-
-
-        <div
-            class="
-                d-flex
-                justify-content-between
-                align-items-center
-            ">
-
-            <strong class="fs-5">
-                Total
-            </strong>
-
-            <strong
-                class="fs-5">
-
-                ₹${latestOrder.total ?? totals.total}
-
-            </strong>
-
-        </div>
-
-
-        <!-- ONLY ONE SET OF BUTTONS -->
-
-        <div class="mt-4 d-flex gap-3 align-items-center flex-wrap">
-
-    <button
-        type="button"
-        id="order-again-button"
-        class="btn btn-warning"
-        style="
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:8px;
-            min-width:175px;
-            height:50px;
-        ">
-
-        <i class="bi bi-shop"></i>
-        <span>Order Again</span>
-
-    </button>
-
-
-    <a
-        href="index.html"
-        id="home-button"
-        class="btn btn-outline-dark"
-        style="
-            display:flex;
-            align-items:center;
-            justify-content:center;
-            gap:8px;
-            min-width:120px;
-            height:50px;
-            text-decoration:none;
-        ">
-
-        <i class="bi bi-house-fill"></i>
-        <span>Home</span>
-
-    </a>
-
-</div>
-
-    `;
-
-
-    /* ==============================================
-       ADD ONLY ONE ORDER CARD
-    ============================================== */
-
-    container.appendChild(orderCard);
-
-
-    /* ==============================================
-       ORDER AGAIN
-    ============================================== */
-
-    const orderAgainButton =
-        document.getElementById(
-            "order-again-button"
-        );
-
-
-    if (orderAgainButton) {
 
         orderAgainButton.addEventListener(
             "click",
@@ -1538,11 +1464,8 @@ function renderOrderHistory() {
 
                 localStorage.setItem(
                     "foodieCart",
-                    JSON.stringify(
-                        latestOrder.cart || []
-                    )
+                    JSON.stringify(cart)
                 );
-
 
                 window.location.href =
                     "cart.html";
@@ -1550,6 +1473,6 @@ function renderOrderHistory() {
             }
         );
 
-    }
+    });
 
 }
