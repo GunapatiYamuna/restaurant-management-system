@@ -716,3 +716,29 @@ a.btn-warning:hover {
 .continue-shopping-btn i {
     color: inherit !important;
 }
+
+.back-cart-btn {
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+
+    width: 100% !important;
+    min-height: 50px;
+
+    padding: 12px 20px !important;
+
+    white-space: nowrap !important;
+    overflow: hidden;
+
+    text-decoration: none;
+    box-sizing: border-box;
+}
+
+.back-cart-btn i {
+    flex-shrink: 0;
+}
+
+.back-cart-btn span {
+    white-space: nowrap;
+}

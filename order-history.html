@@ -1,102 +1,198 @@
 <!DOCTYPE html>
-
 <html lang="en">
-    <head>
+
+<head>
+
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
     <title>Order History - FoodieHub</title>
-    <!--Bootstrap CSS-->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-        
-    <!--Bootsrap Icons-->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        
-    <!--Font Awesome-->
-    <link rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" >
-        
-    <!--Google Font-->
-    <link  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-    rel="stylesheet">
-       
-    <!--CSS-->
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
+
+    <!-- CSS -->
     <link rel="stylesheet" href="css/cart_style.css">
 
-    </head>
-    <body>
-        <!--Menu Items-->
-                <nav class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav ms-auto">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="#">
-                                <i class="bi bi-house-door-fill"></i> Home
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="menu.html">
-                                <i class="bi bi-grid-fill"></i> Menu                            
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="cart.html">
-                                <i class="bi bi-cart-fill"></i> Cart
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="order-history.html">
-                                <i class="bi bi-bag-check-fill"></i> Orders
-                            </a>
-                        </li> 
-                        <li class="nav-item">
-                            <a class="nav-link" href="#">
-                                <i class="bi bi-people-circle"></i> Profile                           
-                             </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-    
-        <!--Order History-->
-        <section class="container py-5">
-            <h1 class="text-center fw-bold mb-5">
-               📋 Order History 
-            </h1>
-            <!--orders will be dispalyed by javascript-->
-            <div id="order-history-container">
-                
-            </div>
-        </section>
-        <!--Footer-->
-               <footer class="bg-dark text-white py-4">
-                <div class="container text-center">
-                    <h4>FoodieHub</h4>
-                    <p>
-                        <i class="bi bi-geo-alt-fill"></i>
-                        Ongole,Andhra Pradesh
-                    </p>
-                    <p>
-                        <i class="bi bi-envelope-fill"></i>
-                        foodieHub@gmail.com
-                    </p>
-                    <p>
-                        <i class="bi bi-telephone-fill"></i>
-                        +91 9329154612
-                    </p>
-                    <div class="mb-3">
-                        <i class="bi bi-facebook fs-3 me-3"></i>
-                        <i class="bi bi-instagram fs-3 me-3"></i>
-                        <i class="bi bi-twitter-x fs-3 me-3"></i>
-                        <i class="bi bi-whatsapp fs-3 "></i>
-                    </div>
-                    <p>
-                        &copy; 2026 FoodieHub. All Rights Reserved.
-                    </p>
-                </div>
-               </footer>
-        <!--Bootstrap JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
+</head>
 
-        <!--JS-->
-        <script src="js/cart_script.js"></script>
-    </body>
+
+<body>
+
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="navbar navbar-expand-lg foodie-navbar">
+
+    <div class="container">
+
+        <a class="navbar-brand" href="index.html">
+
+            <i class="bi bi-egg-fried"></i>
+
+            Foodie<span>Hub</span>
+
+        </a>
+
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+
+        <div
+            class="collapse navbar-collapse"
+            id="mainNavbar">
+
+            <ul class="navbar-nav mx-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">
+                        Home
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="restaurant.html">
+                        Restaurants
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="menu.html">
+                        Menu
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="about.html">
+                        About
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="contact.html">
+                        Contact
+                    </a>
+                </li>
+
+            </ul>
+
+
+            <a href="cart.html" class="nav-cart">
+
+                <i class="bi bi-cart3"></i>
+
+            </a>
+
+
+            <a
+                href="login/login_register.html"
+                class="nav-login">
+
+                Login
+
+            </a>
+
+        </div>
+
+    </div>
+
+</nav>
+
+
+<!-- ================= ORDER HISTORY ================= -->
+
+<section class="container py-5">
+
+    <h1 class="text-center fw-bold mb-5">
+
+        📋 Order History
+
+    </h1>
+
+
+    <div id="order-history-container">
+
+    </div>
+
+</section>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="bg-dark text-white py-4">
+
+    <div class="container text-center">
+
+        <h4>FoodieHub</h4>
+
+        <p>
+            <i class="bi bi-geo-alt-fill"></i>
+            Ongole, Andhra Pradesh
+        </p>
+
+        <p>
+            <i class="bi bi-envelope-fill"></i>
+            foodieHub@gmail.com
+        </p>
+
+        <p>
+            <i class="bi bi-telephone-fill"></i>
+            +91 9329154612
+        </p>
+
+        <div class="mb-3">
+
+            <i class="bi bi-facebook fs-3 me-3"></i>
+            <i class="bi bi-instagram fs-3 me-3"></i>
+            <i class="bi bi-twitter-x fs-3 me-3"></i>
+            <i class="bi bi-whatsapp fs-3"></i>
+
+        </div>
+
+        <p>
+            &copy; 2026 FoodieHub. All Rights Reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+
+<!-- Bootstrap -->
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js">
+</script>
+
+<!-- ONE JS FILE -->
+<script src="js/cart_script.js"></script>
+
+</body>
 </html>
