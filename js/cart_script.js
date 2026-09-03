@@ -1,42 +1,42 @@
 document.addEventListener("DOMContentLoaded", function () {
 
-    console.log("FoodieHub JS loaded");
-
     updateCartCount();
-
-    setupAddToCart();
-
-    renderCart();
-
-    setupCheckout();
-
+    setupAddToCartButtons();
+    renderCartPage();
+    renderCheckoutPage();
     setupPaymentMethods();
-
-    renderCheckout();
-
-    renderOrderConfirmation();
-
+    setupPlaceOrder();
     renderOrderHistory();
 
 });
 
 
-// ======================================================
-// GET CART
-// ======================================================
+/* =========================================================
+   GET CART
+========================================================= */
 
 function getCart() {
 
-    return JSON.parse(
-        localStorage.getItem("foodieCart")
-    ) || [];
+    try {
+
+        return JSON.parse(
+            localStorage.getItem("foodieCart")
+        ) || [];
+
+    } catch (error) {
+
+        console.error("Error reading cart:", error);
+
+        return [];
+
+    }
 
 }
 
 
-// ======================================================
-// SAVE CART
-// ======================================================
+/* =========================================================
+   SAVE CART
+========================================================= */
 
 function saveCart(cart) {
 
@@ -45,18 +45,20 @@ function saveCart(cart) {
         JSON.stringify(cart)
     );
 
+    updateCartCount();
+
 }
 
 
-// ======================================================
-// ADD TO CART
-// ======================================================
+/* =========================================================
+   ADD TO CART
+========================================================= */
 
-function setupAddToCart() {
+function setupAddToCartButtons() {
 
     const buttons =
         document.querySelectorAll(
-            ".add-cart, .add-to-cart"
+            ".add-to-cart, .add-cart"
         );
 
     buttons.forEach(function (button) {
@@ -77,19 +79,16 @@ function setupAddToCart() {
             if (!name || !price) {
 
                 console.error(
-                    "Missing data-name or data-price",
-                    button
+                    "Missing data-name or data-price"
                 );
 
                 return;
 
             }
 
-
             let cart = getCart();
 
-
-            const existing =
+            const existingItem =
                 cart.find(function (item) {
 
                     return item.name === name;
@@ -97,20 +96,17 @@ function setupAddToCart() {
                 });
 
 
-            if (existing) {
+            if (existingItem) {
 
-                existing.quantity += 1;
+                existingItem.quantity += 1;
 
             } else {
 
                 cart.push({
 
                     name: name,
-
                     price: price,
-
                     image: image,
-
                     quantity: 1
 
                 });
@@ -120,13 +116,10 @@ function setupAddToCart() {
 
             saveCart(cart);
 
-            updateCartCount();
-
-
-            // Button feedback
 
             const oldHTML =
                 button.innerHTML;
+
 
             button.innerHTML =
                 "✓ Added";
@@ -139,10 +132,10 @@ function setupAddToCart() {
                 button.innerHTML =
                     oldHTML;
 
-                button.disabled =
-                    false;
+                button.disabled = false;
 
             }, 1000);
+
 
         });
 
@@ -151,38 +144,31 @@ function setupAddToCart() {
 }
 
 
-// ======================================================
-// CART COUNT
-// ======================================================
+/* =========================================================
+   CART COUNT
+========================================================= */
 
 function updateCartCount() {
 
     const cart = getCart();
 
     const totalItems =
-        cart.reduce(
-            function (total, item) {
+        cart.reduce(function (total, item) {
 
-                return total +
-                    Number(item.quantity || 0);
+            return total +
+                Number(item.quantity || 0);
 
-            },
-            0
-        );
+        }, 0);
 
 
-    const cartIcons =
-        document.querySelectorAll(
-            ".nav-cart"
-        );
+    const cartLinks =
+        document.querySelectorAll(".nav-cart");
 
 
-    cartIcons.forEach(function (cartIcon) {
+    cartLinks.forEach(function (cartIcon) {
 
         let badge =
-            cartIcon.querySelector(
-                ".cart-count"
-            );
+            cartIcon.querySelector(".cart-count");
 
 
         if (!badge) {
@@ -209,15 +195,411 @@ function updateCartCount() {
 }
 
 
-// ======================================================
-// RENDER CART
-// ======================================================
+/* =========================================================
+   RENDER CART PAGE
+========================================================= */
 
-function renderCart() {
+function renderCartPage() {
+
+    const container =
+        document.getElementById("cart-items");
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    const cart = getCart();
+
+
+    if (cart.length === 0) {
+
+        container.innerHTML = `
+
+            <div class="text-center py-5">
+
+                <i
+                    class="bi bi-cart-x"
+                    style="font-size:60px;"
+                ></i>
+
+                <h3 class="mt-3">
+                    Your cart is empty
+                </h3>
+
+                <a
+                    href="menu.html"
+                    class="btn btn-warning mt-3"
+                >
+                    Continue Shopping
+                </a>
+
+            </div>
+
+        `;
+
+        updateCartTotals();
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    cart.forEach(function (item, index) {
+
+        const image =
+            item.image || "images/default-food.png";
+
+
+        const quantity =
+            Number(item.quantity) || 1;
+
+
+        const price =
+            Number(item.price) || 0;
+
+
+        const itemTotal =
+            price * quantity;
+
+
+        const itemDiv =
+            document.createElement("div");
+
+
+        itemDiv.className =
+            "cart-item d-flex align-items-center justify-content-between mb-3 p-3";
+
+
+        itemDiv.innerHTML = `
+
+            <div class="d-flex align-items-center">
+
+                <img
+                    src="${image}"
+                    alt="${item.name}"
+                    style="
+                        width:90px;
+                        height:70px;
+                        object-fit:cover;
+                        border-radius:10px;
+                        margin-right:20px;
+                    "
+                    onerror="
+                        this.src='images/default-food.png';
+                    "
+                >
+
+                <div>
+
+                    <h5 class="fw-bold mb-1">
+                        ${item.name}
+                    </h5>
+
+                    <p class="mb-0">
+                        ₹${price}
+                    </p>
+
+                </div>
+
+            </div>
+
+
+            <div class="d-flex align-items-center">
+
+                <button
+                    class="btn btn-outline-dark quantity-minus"
+                    data-index="${index}">
+                    −
+                </button>
+
+
+                <span
+                    class="mx-3 fw-bold">
+                    ${quantity}
+                </span>
+
+
+                <button
+                    class="btn btn-outline-dark quantity-plus"
+                    data-index="${index}">
+                    +
+                </button>
+
+            </div>
+
+
+            <strong>
+                ₹${itemTotal}
+            </strong>
+
+
+            <button
+                class="btn btn-danger delete-cart-item"
+                data-index="${index}">
+                <i class="bi bi-trash"></i>
+            </button>
+
+        `;
+
+
+        container.appendChild(itemDiv);
+
+    });
+
+
+    setupCartButtons();
+
+    updateCartTotals();
+
+}
+
+
+/* =========================================================
+   CART BUTTONS
+========================================================= */
+
+function setupCartButtons() {
+
+    document
+        .querySelectorAll(".quantity-minus")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const index =
+                        Number(
+                            button.getAttribute(
+                                "data-index"
+                            )
+                        );
+
+                    let cart = getCart();
+
+
+                    if (
+                        cart[index] &&
+                        cart[index].quantity > 1
+                    ) {
+
+                        cart[index].quantity -= 1;
+
+                    }
+
+
+                    saveCart(cart);
+
+                    renderCartPage();
+
+                }
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(".quantity-plus")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const index =
+                        Number(
+                            button.getAttribute(
+                                "data-index"
+                            )
+                        );
+
+                    let cart = getCart();
+
+
+                    if (cart[index]) {
+
+                        cart[index].quantity += 1;
+
+                    }
+
+
+                    saveCart(cart);
+
+                    renderCartPage();
+
+                }
+            );
+
+        });
+
+
+    document
+        .querySelectorAll(".delete-cart-item")
+        .forEach(function (button) {
+
+            button.addEventListener(
+                "click",
+                function () {
+
+                    const index =
+                        Number(
+                            button.getAttribute(
+                                "data-index"
+                            )
+                        );
+
+                    let cart = getCart();
+
+
+                    cart.splice(index, 1);
+
+
+                    saveCart(cart);
+
+                    renderCartPage();
+
+                }
+            );
+
+        });
+
+}
+
+
+/* =========================================================
+   CART TOTALS
+========================================================= */
+
+function calculateTotals(cart) {
+
+    let subtotal = 0;
+
+
+    cart.forEach(function (item) {
+
+        subtotal +=
+            Number(item.price || 0) *
+            Number(item.quantity || 0);
+
+    });
+
+
+    const delivery =
+        cart.length > 0 ? 50 : 0;
+
+
+    const discount = 0;
+
+
+    const gst =
+        Math.round(subtotal * 0.05);
+
+
+    const total =
+        subtotal +
+        delivery -
+        discount +
+        gst;
+
+
+    return {
+
+        subtotal: subtotal,
+        delivery: delivery,
+        discount: discount,
+        gst: gst,
+        total: total
+
+    };
+
+}
+
+
+/* =========================================================
+   CART PAGE TOTALS
+========================================================= */
+
+function updateCartTotals() {
+
+    const cart = getCart();
+
+    const totals =
+        calculateTotals(cart);
+
+
+    const subtotal =
+        document.getElementById("subtotal");
+
+    const deliveryFee =
+        document.getElementById("deliveryFee");
+
+    const discount =
+        document.getElementById("discount");
+
+    const gst =
+        document.getElementById("gst");
+
+    const total =
+        document.getElementById("total");
+
+
+    if (subtotal) {
+
+        subtotal.textContent =
+            "₹" + totals.subtotal;
+
+    }
+
+
+    if (deliveryFee) {
+
+        deliveryFee.textContent =
+            "₹" + totals.delivery;
+
+    }
+
+
+    if (discount) {
+
+        discount.textContent =
+            "-₹" + totals.discount;
+
+    }
+
+
+    if (gst) {
+
+        gst.textContent =
+            "₹" + totals.gst;
+
+    }
+
+
+    if (total) {
+
+        total.textContent =
+            "₹" + totals.total;
+
+    }
+
+}
+
+
+/* =========================================================
+   CHECKOUT PAGE
+========================================================= */
+
+function renderCheckoutPage() {
 
     const container =
         document.getElementById(
-            "cart-items"
+            "checkout-items"
         );
 
 
@@ -235,365 +617,189 @@ function renderCart() {
 
         container.innerHTML = `
 
-            <div class="text-center p-5">
+            <div class="text-center py-3">
 
-                <i
-                    class="bi bi-cart-x"
-                    style="font-size:50px;">
-                </i>
-
-                <h4 class="mt-3">
-                    Your cart is empty
-                </h4>
-
-                <p class="text-muted">
-                    Add some delicious food to your cart.
+                <p>
+                    Your cart is empty.
                 </p>
 
                 <a
                     href="menu.html"
-                    class="btn btn-warning">
-
-                    Browse Menu
-
+                    class="btn btn-warning"
+                >
+                    Go to Menu
                 </a>
 
             </div>
 
         `;
 
-        updateBill(0);
+        updateCheckoutTotals([]);
 
         return;
 
     }
 
 
-    container.innerHTML =
-        cart.map(function (item, index) {
-
-            return `
-
-                <div class="card shadow-sm mb-3 p-3">
-
-                    <div class="row align-items-center">
-
-                        <!-- IMAGE -->
-
-                        <div class="col-md-2 text-center">
-
-                            ${
-                                item.image
-
-                                ?
-
-                                `
-                                <img
-                                    src="${item.image}"
-                                    alt="${item.name}"
-                                    style="
-                                        width:100px;
-                                        height:80px;
-                                        object-fit:cover;
-                                        border-radius:10px;
-                                    "
-                                    onerror="
-                                        this.style.display='none';
-                                    ">
-                                `
-
-                                :
-
-                                `
-                                <i
-                                    class="bi bi-egg-fried"
-                                    style="font-size:40px;">
-                                </i>
-                                `
-                            }
-
-                        </div>
+    container.innerHTML = "";
 
 
-                        <!-- NAME -->
+    cart.forEach(function (item) {
 
-                        <div class="col-md-4">
-
-                            <h5 class="fw-bold mb-1">
-                                ${item.name}
-                            </h5>
-
-                            <p class="mb-0 text-muted">
-                                ₹${Number(item.price).toFixed(0)}
-                            </p>
-
-                        </div>
+        const image =
+            item.image || "images/default-food.png";
 
 
-                        <!-- QUANTITY -->
-
-                        <div class="col-md-3">
-
-                            <div
-                                class="
-                                    d-flex
-                                    align-items-center
-                                    justify-content-center
-                                    gap-2
-                                ">
-
-                                <button
-                                    type="button"
-                                    class="
-                                        btn
-                                        btn-outline-dark
-                                        quantity-btn
-                                    "
-                                    onclick="
-                                        changeQuantity(
-                                            ${index},
-                                            -1
-                                        )
-                                    ">
-
-                                    −
-
-                                </button>
+        const quantity =
+            Number(item.quantity) || 1;
 
 
-                                <strong>
-                                    ${item.quantity}
-                                </strong>
+        const price =
+            Number(item.price) || 0;
 
 
-                                <button
-                                    type="button"
-                                    class="
-                                        btn
-                                        btn-outline-dark
-                                        quantity-btn
-                                    "
-                                    onclick="
-                                        changeQuantity(
-                                            ${index},
-                                            1
-                                        )
-                                    ">
-
-                                    +
-
-                                </button>
-
-                            </div>
-
-                        </div>
+        const div =
+            document.createElement("div");
 
 
-                        <!-- ITEM TOTAL -->
-
-                        <div class="col-md-2 text-center">
-
-                            <strong class="text-warning">
-
-                                ₹${(
-                                    Number(item.price) *
-                                    Number(item.quantity)
-                                ).toFixed(0)}
-
-                            </strong>
-
-                        </div>
+        div.className =
+            "d-flex justify-content-between align-items-center mb-3";
 
 
-                        <!-- DELETE -->
+        div.innerHTML = `
 
-                        <div class="col-md-1 text-center">
+            <div class="d-flex align-items-center">
 
-                            <button
-                                type="button"
-                                class="btn btn-danger"
-                                onclick="
-                                    removeItem(${index})
-                                ">
+                <img
+                    src="${image}"
+                    alt="${item.name}"
+                    style="
+                        width:55px;
+                        height:55px;
+                        object-fit:cover;
+                        border-radius:8px;
+                        margin-right:10px;
+                    "
+                    onerror="
+                        this.src='images/default-food.png';
+                    "
+                >
 
-                                <i class="bi bi-trash"></i>
+                <div>
 
-                            </button>
+                    <strong>
+                        ${item.name}
+                    </strong>
 
-                        </div>
+                    <br>
 
-                    </div>
+                    <small>
+                        ₹${price} × ${quantity}
+                    </small>
 
                 </div>
 
-            `;
+            </div>
 
-        }).join("");
+
+            <strong>
+                ₹${price * quantity}
+            </strong>
+
+        `;
+
+
+        container.appendChild(div);
+
+    });
+
+
+    updateCheckoutTotals(cart);
+
+}
+
+
+/* =========================================================
+   CHECKOUT TOTALS
+========================================================= */
+
+function updateCheckoutTotals(cart) {
+
+    const totals =
+        calculateTotals(cart);
 
 
     const subtotal =
-        cart.reduce(
-            function (total, item) {
+        document.getElementById(
+            "checkout-subtotal"
+        );
 
-                return total +
-                    Number(item.price) *
-                    Number(item.quantity);
+    const delivery =
+        document.getElementById(
+            "checkout-delivery"
+        );
 
-            },
-            0
+    const discount =
+        document.getElementById(
+            "checkout-discount"
+        );
+
+    const gst =
+        document.getElementById(
+            "checkout-gst"
+        );
+
+    const total =
+        document.getElementById(
+            "checkout-total"
         );
 
 
-    updateBill(subtotal);
+    if (subtotal) {
 
-}
-
-
-// ======================================================
-// CHANGE QUANTITY
-// ======================================================
-
-function changeQuantity(index, amount) {
-
-    let cart = getCart();
-
-
-    if (!cart[index]) {
-
-        return;
+        subtotal.textContent =
+            "₹" + totals.subtotal;
 
     }
 
 
-    cart[index].quantity += amount;
+    if (delivery) {
 
-
-    if (cart[index].quantity <= 0) {
-
-        cart.splice(index, 1);
+        delivery.textContent =
+            "₹" + totals.delivery;
 
     }
 
 
-    saveCart(cart);
+    if (discount) {
 
-    renderCart();
-
-    updateCartCount();
-
-}
-
-
-// ======================================================
-// REMOVE ITEM
-// ======================================================
-
-function removeItem(index) {
-
-    let cart = getCart();
-
-
-    if (!cart[index]) {
-
-        return;
+        discount.textContent =
+            "-₹" + totals.discount;
 
     }
 
 
-    cart.splice(index, 1);
+    if (gst) {
 
-
-    saveCart(cart);
-
-    renderCart();
-
-    updateCartCount();
-
-}
-
-
-// ======================================================
-// UPDATE CART BILL
-// ======================================================
-
-function updateBill(subtotal) {
-
-    const subtotalElement =
-        document.getElementById("subtotal");
-
-    const deliveryElement =
-        document.getElementById("deliveryFee");
-
-    const discountElement =
-        document.getElementById("discount");
-
-    const gstElement =
-        document.getElementById("gst");
-
-    const totalElement =
-        document.getElementById("total");
-
-
-    const delivery =
-        subtotal > 0 ? 50 : 0;
-
-    const discount = 0;
-
-    const gst =
-        Math.round(subtotal * 0.05);
-
-    const total =
-        subtotal +
-        delivery +
-        gst -
-        discount;
-
-
-    if (subtotalElement) {
-
-        subtotalElement.textContent =
-            "₹" + subtotal.toFixed(0);
+        gst.textContent =
+            "₹" + totals.gst;
 
     }
 
 
-    if (deliveryElement) {
+    if (total) {
 
-        deliveryElement.textContent =
-            "₹" + delivery;
-
-    }
-
-
-    if (discountElement) {
-
-        discountElement.textContent =
-            "-₹" + discount;
-
-    }
-
-
-    if (gstElement) {
-
-        gstElement.textContent =
-            "₹" + gst;
-
-    }
-
-
-    if (totalElement) {
-
-        totalElement.textContent =
-            "₹" + total;
+        total.textContent =
+            "₹" + totals.total;
 
     }
 
 }
 
 
-// ======================================================
-// PAYMENT METHOD
-// ======================================================
+/* =========================================================
+   PAYMENT METHODS
+========================================================= */
 
 function setupPaymentMethods() {
 
@@ -662,10 +868,12 @@ function setupPaymentMethods() {
         updatePaymentDetails
     );
 
+
     upi.addEventListener(
         "change",
         updatePaymentDetails
     );
+
 
     card.addEventListener(
         "change",
@@ -678,236 +886,11 @@ function setupPaymentMethods() {
 }
 
 
-// ======================================================
-// CHECKOUT SUMMARY
-// ======================================================
-
-function renderCheckout() {
-
-    const itemsContainer =
-        document.getElementById(
-            "checkout-items"
-        );
-
-
-    if (!itemsContainer) {
-
-        return;
-
-    }
-
-
-    const cart = getCart();
-
-
-    if (cart.length === 0) {
-
-        itemsContainer.innerHTML = `
-
-            <p class="text-muted text-center">
-                Your cart is empty.
-            </p>
-
-        `;
-
-        updateCheckoutBill(0);
-
-        return;
-
-    }
-
-
-    itemsContainer.innerHTML =
-        cart.map(function (item) {
-
-            return `
-
-                <div
-                    class="
-                        d-flex
-                        justify-content-between
-                        align-items-center
-                        mb-3
-                    ">
-
-                    <div
-                        class="
-                            d-flex
-                            align-items-center
-                        ">
-
-                        ${
-                            item.image
-
-                            ?
-
-                            `
-                            <img
-                                src="${item.image}"
-                                alt="${item.name}"
-                                style="
-                                    width:55px;
-                                    height:55px;
-                                    object-fit:cover;
-                                    border-radius:8px;
-                                    margin-right:10px;
-                                "
-                                onerror="
-                                    this.style.display='none';
-                                ">
-                            `
-
-                            :
-
-                            ""
-                        }
-
-
-                        <div>
-
-                            <strong>
-                                ${item.name}
-                            </strong>
-
-                            <div class="text-muted">
-                                ₹${item.price}
-                                ×
-                                ${item.quantity}
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <strong>
-
-                        ₹${(
-                            Number(item.price) *
-                            Number(item.quantity)
-                        ).toFixed(0)}
-
-                    </strong>
-
-                </div>
-
-            `;
-
-        }).join("");
-
-
-    const subtotal =
-        cart.reduce(
-            function (total, item) {
-
-                return total +
-                    Number(item.price) *
-                    Number(item.quantity);
-
-            },
-            0
-        );
-
-
-    updateCheckoutBill(subtotal);
-
-}
-
-
-// ======================================================
-// CHECKOUT BILL
-// ======================================================
-
-function updateCheckoutBill(subtotal) {
-
-    const delivery =
-        subtotal > 0 ? 50 : 0;
-
-    const discount = 0;
-
-    const gst =
-        Math.round(subtotal * 0.05);
-
-    const total =
-        subtotal +
-        delivery +
-        gst -
-        discount;
-
-
-    const subtotalElement =
-        document.getElementById(
-            "checkout-subtotal"
-        );
-
-    const deliveryElement =
-        document.getElementById(
-            "checkout-delivery"
-        );
-
-    const discountElement =
-        document.getElementById(
-            "checkout-discount"
-        );
-
-    const gstElement =
-        document.getElementById(
-            "checkout-gst"
-        );
-
-    const totalElement =
-        document.getElementById(
-            "checkout-total"
-        );
-
-
-    if (subtotalElement) {
-
-        subtotalElement.textContent =
-            "₹" + subtotal;
-
-    }
-
-
-    if (deliveryElement) {
-
-        deliveryElement.textContent =
-            "₹" + delivery;
-
-    }
-
-
-    if (discountElement) {
-
-        discountElement.textContent =
-            "-₹" + discount;
-
-    }
-
-
-    if (gstElement) {
-
-        gstElement.textContent =
-            "₹" + gst;
-
-    }
-
-
-    if (totalElement) {
-
-        totalElement.textContent =
-            "₹" + total;
-
-    }
-
-}
-
-
-// ======================================================
-// PLACE ORDER
-// ======================================================
-
-function setupCheckout() {
+/* =========================================================
+   PLACE ORDER
+========================================================= */
+
+function setupPlaceOrder() {
 
     const form =
         document.getElementById(
@@ -922,16 +905,26 @@ function setupCheckout() {
     }
 
 
+    /* Prevent duplicate event listeners */
+
+    if (
+        form.dataset.orderHandler === "true"
+    ) {
+
+        return;
+
+    }
+
+
+    form.dataset.orderHandler =
+        "true";
+
+
     form.addEventListener(
         "submit",
         function (event) {
 
             event.preventDefault();
-
-
-            console.log(
-                "PLACE ORDER CLICKED"
-            );
 
 
             const cart = getCart();
@@ -948,57 +941,16 @@ function setupCheckout() {
             }
 
 
-            // Delivery details
+            /* Check required fields */
 
-            const name =
-                document
-                    .getElementById("full-name")
-                    .value
-                    .trim();
+            if (!form.checkValidity()) {
 
-            const phone =
-                document
-                    .getElementById("phone")
-                    .value
-                    .trim();
-
-            const address =
-                document
-                    .getElementById("address")
-                    .value
-                    .trim();
-
-            const city =
-                document
-                    .getElementById("city")
-                    .value
-                    .trim();
-
-            const pincode =
-                document
-                    .getElementById("pincode")
-                    .value
-                    .trim();
-
-
-            if (
-                name === "" ||
-                phone === "" ||
-                address === "" ||
-                city === "" ||
-                pincode === ""
-            ) {
-
-                alert(
-                    "Please fill all delivery details."
-                );
+                form.reportValidity();
 
                 return;
 
             }
 
-
-            // Payment
 
             const selectedPayment =
                 document.querySelector(
@@ -1006,43 +958,15 @@ function setupCheckout() {
                 );
 
 
-            const payment =
+            const paymentMethod =
                 selectedPayment
                     ? selectedPayment.value
                     : "Cash on Delivery";
 
 
-            // Calculate bill
+            const totals =
+                calculateTotals(cart);
 
-            const subtotal =
-                cart.reduce(
-                    function (total, item) {
-
-                        return total +
-                            Number(item.price) *
-                            Number(item.quantity);
-
-                    },
-                    0
-                );
-
-
-            const deliveryFee =
-                subtotal > 0 ? 50 : 0;
-
-            const discount = 0;
-
-            const gst =
-                Math.round(subtotal * 0.05);
-
-            const total =
-                subtotal +
-                deliveryFee +
-                gst -
-                discount;
-
-
-            // Create order
 
             const order = {
 
@@ -1057,55 +981,30 @@ function setupCheckout() {
                     new Date().toLocaleString(),
 
                 payment:
-                    payment,
-
-                customer: {
-
-                    name:
-                        name,
-
-                    phone:
-                        phone,
-
-                    address:
-                        address,
-
-                    city:
-                        city,
-
-                    pincode:
-                        pincode
-
-                },
+                    paymentMethod,
 
                 cart:
                     cart,
 
                 subtotal:
-                    subtotal,
+                    totals.subtotal,
 
-                deliveryFee:
-                    deliveryFee,
+                delivery:
+                    totals.delivery,
 
                 discount:
-                    discount,
+                    totals.discount,
 
                 gst:
-                    gst,
+                    totals.gst,
 
                 total:
-                    total
+                    totals.total
 
             };
 
 
-            console.log(
-                "ORDER CREATED:",
-                order
-            );
-
-
-            // Save latest order
+            /* Save latest order */
 
             localStorage.setItem(
                 "foodieOrder",
@@ -1113,22 +1012,31 @@ function setupCheckout() {
             );
 
 
-            // Get existing history
+            /* Get existing history */
 
-            let history =
-                JSON.parse(
-                    localStorage.getItem(
-                        "foodieOrderHistory"
-                    )
-                ) || [];
+            let history = [];
 
 
-            // Add new order
+            try {
+
+                history =
+                    JSON.parse(
+                        localStorage.getItem(
+                            "foodieOrderHistory"
+                        )
+                    ) || [];
+
+            } catch (error) {
+
+                history = [];
+
+            }
+
+
+            /* Add new order */
 
             history.push(order);
 
-
-            // Save history
 
             localStorage.setItem(
                 "foodieOrderHistory",
@@ -1136,22 +1044,30 @@ function setupCheckout() {
             );
 
 
-            // CLEAR CART
+            /* CLEAR CART */
 
             localStorage.removeItem(
                 "foodieCart"
             );
 
 
+            /* Update cart count */
+
+            updateCartCount();
+
+
             console.log(
-                "CART CLEARED"
+                "Order successfully saved:",
+                order
             );
 
 
-            // Go to confirmation
+            /* IMPORTANT:
+               Go directly to confirmation */
 
-            window.location.href =
-                "order-confirmation.html";
+            window.location.assign(
+                "order-confirmation.html"
+            );
 
         }
     );
@@ -1159,275 +1075,11 @@ function setupCheckout() {
 }
 
 
-// ======================================================
-// ORDER CONFIRMATION
-// ======================================================
-
-function renderOrderConfirmation() {
-
-    const itemsContainer =
-        document.getElementById(
-            "confirmation-items"
-        );
-
-
-    if (!itemsContainer) {
-
-        return;
-
-    }
-
-
-    const order =
-        JSON.parse(
-            localStorage.getItem(
-                "foodieOrder"
-            )
-        );
-
-
-    if (!order) {
-
-        itemsContainer.innerHTML = `
-
-            <p class="text-danger">
-                No order information found.
-            </p>
-
-            <a
-                href="menu.html"
-                class="btn btn-warning">
-
-                Go to Menu
-
-            </a>
-
-        `;
-
-        return;
-
-    }
-
-
-    // Order information
-
-    const orderIdElement =
-        document.getElementById(
-            "confirmation-order-id"
-        );
-
-    const dateElement =
-        document.getElementById(
-            "confirmation-date"
-        );
-
-    const paymentElement =
-        document.getElementById(
-            "confirmation-payment"
-        );
-
-
-    if (orderIdElement) {
-
-        orderIdElement.textContent =
-            order.orderId;
-
-    }
-
-
-    if (dateElement) {
-
-        dateElement.textContent =
-            order.date;
-
-    }
-
-
-    if (paymentElement) {
-
-        paymentElement.textContent =
-            order.payment;
-
-    }
-
-
-    // Items
-
-    const cart =
-        order.cart || [];
-
-
-    itemsContainer.innerHTML =
-        cart.map(function (item) {
-
-            return `
-
-                <div
-                    class="
-                        d-flex
-                        justify-content-between
-                        align-items-center
-                        mb-3
-                    ">
-
-                    <div
-                        class="
-                            d-flex
-                            align-items-center
-                        ">
-
-                        ${
-                            item.image
-
-                            ?
-
-                            `
-                            <img
-                                src="${item.image}"
-                                alt="${item.name}"
-                                style="
-                                    width:60px;
-                                    height:60px;
-                                    object-fit:cover;
-                                    border-radius:8px;
-                                    margin-right:12px;
-                                "
-                                onerror="
-                                    this.style.display='none';
-                                ">
-                            `
-
-                            :
-
-                            ""
-                        }
-
-
-                        <div>
-
-                            <strong>
-                                ${item.name}
-                            </strong>
-
-                            <div class="text-muted">
-
-                                ₹${item.price}
-                                ×
-                                ${item.quantity}
-
-                            </div>
-
-                        </div>
-
-                    </div>
-
-
-                    <strong>
-
-                        ₹${(
-                            Number(item.price) *
-                            Number(item.quantity)
-                        ).toFixed(0)}
-
-                    </strong>
-
-                </div>
-
-            `;
-
-        }).join("");
-
-
-    // BILL
-
-    const subtotal =
-        Number(order.subtotal || 0);
-
-    const delivery =
-        Number(order.deliveryFee || 0);
-
-    const discount =
-        Number(order.discount || 0);
-
-    const gst =
-        Number(order.gst || 0);
-
-    const total =
-        Number(order.total || 0);
-
-
-    const subtotalElement =
-        document.getElementById(
-            "confirmation-subtotal"
-        );
-
-    const deliveryElement =
-        document.getElementById(
-            "confirmation-delivery"
-        );
-
-    const discountElement =
-        document.getElementById(
-            "confirmation-discount"
-        );
-
-    const gstElement =
-        document.getElementById(
-            "confirmation-gst"
-        );
-
-    const totalElement =
-        document.getElementById(
-            "confirmation-total"
-        );
-
-
-    if (subtotalElement) {
-
-        subtotalElement.textContent =
-            "₹" + subtotal;
-
-    }
-
-
-    if (deliveryElement) {
-
-        deliveryElement.textContent =
-            "₹" + delivery;
-
-    }
-
-
-    if (discountElement) {
-
-        discountElement.textContent =
-            "-₹" + discount;
-
-    }
-
-
-    if (gstElement) {
-
-        gstElement.textContent =
-            "₹" + gst;
-
-    }
-
-
-    if (totalElement) {
-
-        totalElement.textContent =
-            "₹" + total;
-
-    }
-
-}
-
-
-// ======================================================
-// ORDER HISTORY
-// ======================================================
-
+/* =========================================================
+   ORDER HISTORY
+   SHOW ONLY THE LATEST ORDER
+========================================================= */
+console.log("RENDER ORDER HISTORY CALLED")
 function renderOrderHistory() {
 
     const container =
@@ -1443,31 +1095,62 @@ function renderOrderHistory() {
     }
 
 
-    const history =
-        JSON.parse(
-            localStorage.getItem(
-                "foodieOrderHistory"
-            )
-        ) || [];
+    let history = [];
 
 
-    if (history.length === 0) {
+    try {
+
+        history =
+            JSON.parse(
+                localStorage.getItem(
+                    "foodieOrderHistory"
+                )
+            ) || [];
+
+    } catch (error) {
+
+        console.error(
+            "Could not read order history:",
+            error
+        );
+
+        history = [];
+
+    }
+
+
+    /* ==============================================
+       IMPORTANT:
+       REMOVE EVERYTHING FROM THE CONTAINER FIRST
+    ============================================== */
+
+    container.innerHTML = "";
+
+
+    if (
+        !Array.isArray(history) ||
+        history.length === 0
+    ) {
 
         container.innerHTML = `
 
-            <div class="text-center p-5">
+            <div
+                class="text-center py-5">
 
                 <i
                     class="bi bi-receipt"
-                    style="font-size:50px;">
+                    style="
+                        font-size:60px;
+                    ">
                 </i>
 
-                <h4 class="mt-3">
+                <h3 class="mt-3">
                     No orders yet
-                </h4>
+                </h3>
 
                 <p class="text-muted">
-                    Your completed orders will appear here.
+                    Your completed orders
+                    will appear here.
                 </p>
 
                 <a
@@ -1487,158 +1170,386 @@ function renderOrderHistory() {
     }
 
 
-    container.innerHTML =
-        history
-            .slice()
-            .reverse()
-            .map(function (order) {
+    /* ==============================================
+       GET ONLY THE LAST ORDER
+    ============================================== */
 
-                const cart =
-                    order.cart || [];
+    const latestOrder =
+        history[history.length - 1];
 
 
-                const total =
-                    Number(
-                        order.total || 0
-                    );
+    if (!latestOrder) {
+
+        return;
+
+    }
 
 
-                return `
+    const totals =
+        calculateTotals(
+            latestOrder.cart || []
+        );
+
+
+    const orderCard =
+        document.createElement("div");
+
+
+    orderCard.className =
+        "card shadow p-4 mb-4";
+
+
+    let itemsHTML = "";
+
+
+    if (
+        latestOrder.cart &&
+        latestOrder.cart.length > 0
+    ) {
+
+        latestOrder.cart.forEach(
+            function (item) {
+
+                const image =
+                    item.image ||
+                    "images/default-food.png";
+
+
+                const price =
+                    Number(item.price) || 0;
+
+
+                const quantity =
+                    Number(item.quantity) || 1;
+
+
+                const itemTotal =
+                    price * quantity;
+
+
+                itemsHTML += `
 
                     <div
                         class="
-                            card
-                            shadow-sm
-                            p-4
-                            mb-4
+                            d-flex
+                            align-items-center
+                            justify-content-between
+                            mb-3
                         ">
 
                         <div
-                            class="
-                                d-flex
-                                justify-content-between
-                                align-items-center
-                            ">
+                            class="d-flex align-items-center">
+
+                            <img
+                                src="${image}"
+                                alt="${item.name}"
+                                style="
+                                    width:60px;
+                                    height:60px;
+                                    object-fit:cover;
+                                    border-radius:8px;
+                                    margin-right:12px;
+                                "
+                                onerror="
+                                    this.src='images/default-food.png';
+                                "
+                            >
 
                             <div>
 
-                                <h4 class="fw-bold">
+                                <strong>
+                                    ${item.name}
+                                </strong>
 
-                                    Order #${order.orderId}
+                                <br>
 
-                                </h4>
+                                <span
+                                    class="text-muted">
 
+                                    ₹${price}
+                                    ×
+                                    ${quantity}
 
-                                <p class="text-muted mb-1">
-
-                                    ${order.date}
-
-                                </p>
-
-
-                                <p class="mb-0">
-
-                                    <strong>
-                                        Payment:
-                                    </strong>
-
-                                    ${order.payment}
-
-                                </p>
+                                </span>
 
                             </div>
 
-
-                            <span
-                                class="badge bg-success">
-
-                                Confirmed
-
-                            </span>
-
                         </div>
 
 
-                        <hr>
+                        <strong>
 
+                            ₹${itemTotal}
 
-                        ${
-
-                            cart.map(function (item) {
-
-                                return `
-
-                                    <div
-                                        class="
-                                            d-flex
-                                            justify-content-between
-                                            align-items-center
-                                            mb-3
-                                        ">
-
-                                        <div>
-
-                                            <strong>
-                                                ${item.name}
-                                            </strong>
-
-                                            <div
-                                                class="text-muted">
-
-                                                ₹${item.price}
-                                                ×
-                                                ${item.quantity}
-
-                                            </div>
-
-                                        </div>
-
-
-                                        <strong>
-
-                                            ₹${(
-                                                Number(item.price) *
-                                                Number(item.quantity)
-                                            ).toFixed(0)}
-
-                                        </strong>
-
-                                    </div>
-
-                                `;
-
-                            }).join("")
-
-                        }
-
-
-                        <hr>
-
-
-                        <div
-                            class="
-                                d-flex
-                                justify-content-between
-                            ">
-
-                            <strong>
-                                Total
-                            </strong>
-
-                            <strong
-                                class="text-warning">
-
-                                ₹${total}
-
-                            </strong>
-
-                        </div>
+                        </strong>
 
                     </div>
 
                 `;
 
-            })
-            .join("");
+            }
+        );
+
+    }
+
+
+    orderCard.innerHTML = `
+
+        <div
+            class="
+                d-flex
+                justify-content-between
+                align-items-center
+                mb-3
+            ">
+
+            <h3 class="fw-bold mb-0">
+
+                <i
+                    class="
+                        bi
+                        bi-receipt
+                        text-warning
+                    ">
+                </i>
+
+                Order #${latestOrder.orderId}
+
+            </h3>
+
+
+            <span
+                class="badge bg-success">
+
+                Order Placed
+
+            </span>
+
+        </div>
+
+
+        <p class="text-muted">
+
+            ${latestOrder.date || ""}
+
+        </p>
+
+
+        <hr>
+
+
+        <p>
+
+            <strong>
+                Payment Method:
+            </strong>
+
+            ${latestOrder.payment || "Cash on Delivery"}
+
+        </p>
+
+
+        <h4 class="fw-bold mt-4 mb-3">
+
+            <i
+                class="
+                    bi
+                    bi-bag-check
+                    text-warning
+                ">
+            </i>
+
+            Ordered Items
+
+        </h4>
+
+
+        ${itemsHTML}
+
+
+        <hr>
+
+
+        <div
+            class="
+                d-flex
+                justify-content-between
+                mb-2
+            ">
+
+            <span>
+                Subtotal
+            </span>
+
+            <strong>
+                ₹${latestOrder.subtotal ?? totals.subtotal}
+            </strong>
+
+        </div>
+
+
+        <div
+            class="
+                d-flex
+                justify-content-between
+                mb-2
+            ">
+
+            <span>
+                Delivery Fee
+            </span>
+
+            <strong>
+                ₹${latestOrder.delivery ?? totals.delivery}
+            </strong>
+
+        </div>
+
+
+        <div
+            class="
+                d-flex
+                justify-content-between
+                mb-2
+            ">
+
+            <span>
+                Discount
+            </span>
+
+            <strong>
+                -₹${latestOrder.discount ?? 0}
+            </strong>
+
+        </div>
+
+
+        <div
+            class="
+                d-flex
+                justify-content-between
+                mb-3
+            ">
+
+            <span>
+                GST
+            </span>
+
+            <strong>
+                ₹${latestOrder.gst ?? totals.gst}
+            </strong>
+
+        </div>
+
+
+        <hr>
+
+
+        <div
+            class="
+                d-flex
+                justify-content-between
+                align-items-center
+            ">
+
+            <strong class="fs-5">
+                Total
+            </strong>
+
+            <strong
+                class="fs-5">
+
+                ₹${latestOrder.total ?? totals.total}
+
+            </strong>
+
+        </div>
+
+
+        <!-- ONLY ONE SET OF BUTTONS -->
+
+        <div class="mt-4 d-flex gap-3 align-items-center flex-wrap">
+
+    <button
+        type="button"
+        id="order-again-button"
+        class="btn btn-warning"
+        style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            min-width:175px;
+            height:50px;
+        ">
+
+        <i class="bi bi-shop"></i>
+        <span>Order Again</span>
+
+    </button>
+
+
+    <a
+        href="index.html"
+        id="home-button"
+        class="btn btn-outline-dark"
+        style="
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            gap:8px;
+            min-width:120px;
+            height:50px;
+            text-decoration:none;
+        ">
+
+        <i class="bi bi-house-fill"></i>
+        <span>Home</span>
+
+    </a>
+
+</div>
+
+    `;
+
+
+    /* ==============================================
+       ADD ONLY ONE ORDER CARD
+    ============================================== */
+
+    container.appendChild(orderCard);
+
+
+    /* ==============================================
+       ORDER AGAIN
+    ============================================== */
+
+    const orderAgainButton =
+        document.getElementById(
+            "order-again-button"
+        );
+
+
+    if (orderAgainButton) {
+
+        orderAgainButton.addEventListener(
+            "click",
+            function () {
+
+                localStorage.setItem(
+                    "foodieCart",
+                    JSON.stringify(
+                        latestOrder.cart || []
+                    )
+                );
+
+
+                window.location.href =
+                    "cart.html";
+
+            }
+        );
+
+    }
 
 }

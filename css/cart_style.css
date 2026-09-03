@@ -742,3 +742,126 @@ a.btn-warning:hover {
 .back-cart-btn span {
     white-space: nowrap;
 }
+
+/* =====================================================
+   ORDER HISTORY BUTTON FIX
+   ===================================================== */
+
+.order-history-buttons {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    margin-top: 20px !important;
+    width: 100% !important;
+}
+
+/* Order Again */
+
+.order-again-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    box-sizing: border-box !important;
+
+    width: 175px !important;
+    height: 48px !important;
+
+    padding: 0 18px !important;
+
+    background-color: #ff6b00 !important;
+    color: #ffffff !important;
+
+    border: 2px solid #ff6b00 !important;
+    border-radius: 6px !important;
+
+    text-decoration: none !important;
+
+    font-weight: 600 !important;
+    font-size: 16px !important;
+
+    white-space: nowrap !important;
+}
+
+.order-again-button i {
+    display: inline-block !important;
+    margin-right: 8px !important;
+}
+
+.order-again-button span {
+    display: inline-block !important;
+}
+
+
+/* Home */
+
+.home-button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    box-sizing: border-box !important;
+
+    width: 140px !important;
+    height: 48px !important;
+
+    padding: 0 18px !important;
+
+    background-color: #ffffff !important;
+    color: #07111c !important;
+
+    border: 2px solid #07111c !important;
+    border-radius: 6px !important;
+
+    text-decoration: none !important;
+
+    font-weight: 600 !important;
+    font-size: 16px !important;
+
+    white-space: nowrap !important;
+
+    overflow: hidden !important;
+}
+
+.home-button i {
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+    margin-right: 8px !important;
+}
+
+.home-button span {
+    display: inline-block !important;
+    white-space: nowrap !important;
+}
+
+
+/* Hover */
+
+.order-again-button:hover {
+    background-color: #e85d00 !important;
+    border-color: #e85d00 !important;
+    color: #ffffff !important;
+}
+
+.home-button:hover {
+    background-color: #07111c !important;
+    border-color: #07111c !important;
+    color: #ffffff !important;
+}
+
+
+/* Mobile */
+
+@media (max-width: 576px) {
+
+    .order-history-buttons {
+        flex-direction: column !important;
+        width: 100% !important;
+    }
+
+    .order-again-button,
+    .home-button {
+        width: 100% !important;
+    }
+
+}
