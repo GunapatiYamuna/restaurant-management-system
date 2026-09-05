@@ -168,7 +168,92 @@ img {
     background: var(--orange-dark);
     color: #ffffff;
 }
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
 
+.navbar-greeting {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  color: white;
+}
+
+.navbar-greeting span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.navbar-greeting strong {
+  font-size: 15px;
+}
+
+.navbar-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #ff7a00;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 15px;
+  font-weight: bold;
+}
+
+#authButtons {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.navbar-user {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.navbar-greeting {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.1;
+  color: white;
+}
+
+.navbar-greeting span {
+  font-size: 12px;
+  opacity: 0.8;
+}
+
+.navbar-greeting strong {
+  font-size: 15px;
+}
+
+.navbar-avatar {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+
+  background: #ff7a00;
+  color: white;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.navbar-user {
+    cursor: pointer;
+}
 /* ===============================
    HERO
 ================================ */
