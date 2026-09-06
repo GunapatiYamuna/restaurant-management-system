@@ -148,52 +148,45 @@ function setupAddToCartButtons() {
    CART COUNT
 ========================================================= */
 
+function getCart() {
+    return JSON.parse(
+        localStorage.getItem("foodieCart")
+    ) || [];
+}
+
+
 function updateCartCount() {
 
     const cart = getCart();
 
-    const totalItems =
-        cart.reduce(function (total, item) {
-
-            return total +
-                Number(item.quantity || 0);
-
-        }, 0);
-
+    const totalItems = cart.reduce(
+        function (total, item) {
+            return total + Number(item.quantity || 0);
+        },
+        0
+    );
 
     const cartLinks =
         document.querySelectorAll(".nav-cart");
 
-
     cartLinks.forEach(function (cartIcon) {
 
-        let badge =
+        const badge =
             cartIcon.querySelector(".cart-count");
 
-
-        if (!badge) {
-
-            badge =
-                document.createElement("span");
-
-            badge.className =
-                "cart-count";
-
-            cartIcon.style.position =
-                "relative";
-
-            cartIcon.appendChild(badge);
-
+        if (badge) {
+            badge.textContent = totalItems;
         }
 
-
-        badge.textContent =
-            totalItems;
-
     });
-
 }
 
+
+/* Update count whenever a page loads */
+document.addEventListener(
+    "DOMContentLoaded",
+    updateCartCount
+);
 
 /* =========================================================
    RENDER CART PAGE
