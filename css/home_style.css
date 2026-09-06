@@ -212,6 +212,24 @@ img {
   gap: 10px;
 }
 
+#authButtons .login-btn,
+ #authButtons .admin-login-btn{
+  display: inline-block;
+     padding: 10px 20px;
+      background-color: #ff7a00;
+       color: #ffffff; 
+       text-decoration: none;
+        border: none; 
+        border-radius: 6px; 
+        font-size: 15px;
+         font-weight: 600; 
+         cursor: pointer; 
+         transition: background-color 0.3s ease, transform 0.2s ease; }
+ #authButtons .login-btn:hover,
+  #authButtons .admin-login-btn:hover { 
+    background-color: #e66a00;
+     color: #ffffff; 
+     transform: translateY(-2px); }
 .navbar-user {
   display: flex;
   align-items: center;
