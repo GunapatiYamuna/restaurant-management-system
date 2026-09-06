@@ -196,17 +196,25 @@
 
 
                 <!-- LOGIN -->
+               <div id="authButtons">
 
-                <a
-                    href="login/login_register.html"
-                    class="nav-login">
+                 <a href="login/login_register.html" class="login-btn"> Login</a>
 
-                    Login
+                <a href="ad_login/login_register.html" class="admin-login-btn">Admin Login</a>
 
-                </a>
-
-		<a href="ad_login/login_register.html" class="nav-login">Admin</a>
             </div>
+
+                <div id="userSection" class="navbar-user" style="display:none;">
+                 <div class="navbar-avatar" id="navbarAvatar"></div>
+
+                <div class="navbar-greeting">
+                <span>Hi,</span>
+                <strong id="navbarUserName"></strong>
+                </div>
+</div>
+                
+
+		
 
         </div>
 
@@ -1595,6 +1603,7 @@
 
     <script src="js/home_script.js"></script>
     <script src="js/cart_script.js"></script>
+    <script src="ad_login/js/auth.js"></script>
 
 
 </body>

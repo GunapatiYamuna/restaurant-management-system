@@ -1,274 +1,675 @@
 <!DOCTYPE html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width,initial-scale=1.0">
-        <title>Order Confirmation - FoodieHub</title>
-         <!--Bootstrap CSS-->
-        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
-        
-        <!--Bootsrap Icons-->
-        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-        
-        <!--Font Awesome-->
-        <link rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" >
-        
-        <!--Google Font-->
-        <link  href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0">
+
+    <title>Order Confirmation - FoodieHub</title>
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css"
         rel="stylesheet">
-       
-        <!--CSS-->
-        <link rel="stylesheet" href="css/style.css">
-        <link rel="stylesheet" href="css/footer.css">
-    </head>
-    <body>
-       <!-- =====================================================
-                         NAVBAR
-    ===================================================== -->
 
-    <nav class="navbar navbar-expand-lg foodie-navbar">
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-        <div class="container">
+    <!-- Font Awesome -->
+    <link
+        rel="stylesheet"
+        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
-            <a
-                class="navbar-brand"
-                href="restaurant.html">
+    <!-- Google Font -->
+    <link
+        href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+        rel="stylesheet">
 
-                <i class="bi bi-egg-fried"></i>
+    <!-- FoodieHub CSS -->
+    <link rel="stylesheet" href="css/cart_style.css">
 
-                Foodie<span>Hub</span>
+</head>
+
+<body>
+
+
+<!-- ================= NAVBAR ================= -->
+
+<nav class="navbar navbar-expand-lg foodie-navbar">
+
+    <div class="container">
+
+        <a class="navbar-brand" href="index.html">
+
+            <i class="bi bi-egg-fried"></i>
+
+            Foodie<span>Hub</span>
+
+        </a>
+
+
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar">
+
+            <span class="navbar-toggler-icon"></span>
+
+        </button>
+
+
+        <div
+            class="collapse navbar-collapse"
+            id="mainNavbar">
+
+            <ul class="navbar-nav mx-auto">
+
+                <li class="nav-item">
+                    <a class="nav-link" href="index.html">
+                        Home
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="restaurant.html">
+                        Restaurants
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="menu.html">
+                        Menu
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="about.html">
+                        About
+                    </a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" href="contact.html">
+                        Contact
+                    </a>
+                </li>
+
+            </ul>
+
+
+            <a href="cart.html" class="nav-cart">
+
+                <i class="bi bi-cart3"></i>
 
             </a>
 
 
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
+            <a
+                href="login/login_register.html"
+                class="nav-login">
 
-                <span class="navbar-toggler-icon"></span>
+                Login
 
-            </button>
+            </a>
 
+        </div>
 
-            <div
-                class="collapse navbar-collapse"
-                id="mainNavbar">
+    </div>
 
-                <ul class="navbar-nav mx-auto">
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="restaurant.html">
-
-                            Home
-
-                        </a>
-
-                    </li>
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="restaurant.html#restaurants">
-
-                            Restaurants
-
-                        </a>
-
-                    </li>
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="restaurant-details.html">
-
-                            Menu
-
-                        </a>
-
-                    </li>
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="about.html">
-
-                            About
-
-                        </a>
-
-                    </li>
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="contact.html">
-
-                            Contact
-
-                        </a>
-
-                    </li>
-
-                </ul>
+</nav>
 
 
-                <div class="nav-search">
+<!-- ================= CONFIRMATION ================= -->
 
-                    <i class="bi bi-search"></i>
+<section class="container py-5">
 
-                    <input
-                        type="text"
-                        placeholder="Search for food...">
+    <div class="row justify-content-center">
+
+        <div class="col-lg-8">
+
+            <div class="card shadow text-center p-5">
+
+
+                <!-- SUCCESS ICON -->
+
+                <div class="mb-4">
+
+                    <i
+                        class="bi bi-check-circle-fill"
+                        style="
+                            color:#198754;
+                            font-size:80px;
+                        ">
+                    </i>
 
                 </div>
 
 
-                <a
-                    href="cart.html"
-                    class="nav-cart">
-
-                    <i class="bi bi-cart3"></i>
-
-                </a>
+                <h1 class="fw-bold">
+                    Order Confirmed!
+                </h1>
 
 
-                <a
-                    href="login/login_register.html"
-                    class="nav-login">
+                <p class="lead mt-3">
+                    Thank you for ordering from FoodieHub.
+                </p>
 
-                    Login
 
-                </a>
+                <p class="text-muted">
+                    Your order has been successfully placed.
+                </p>
+
+
+                <!-- ================= ORDER DETAILS ================= -->
+
+                <div class="card mt-4 p-4 text-start">
+
+                    <h4 class="fw-bold mb-3">
+
+                        <i class="bi bi-receipt text-warning"></i>
+
+                        Order Details
+
+                    </h4>
+
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Order ID
+                        </span>
+
+                        <strong id="confirmation-order-id">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Order Date
+                        </span>
+
+                        <strong id="confirmation-date">
+                            --
+                        </strong>
+
+                    </div>
+
+
+                    <div class="d-flex justify-content-between">
+
+                        <span>
+                            Payment Method
+                        </span>
+
+                        <strong id="confirmation-payment">
+                            --
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= ORDERED ITEMS ================= -->
+
+                <div class="card mt-4 p-4 text-start">
+
+                    <h4 class="fw-bold mb-3">
+
+                        <i class="bi bi-bag-check text-warning"></i>
+
+                        Ordered Items
+
+                    </h4>
+
+
+                    <div id="confirmation-items">
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <!-- SUBTOTAL -->
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Subtotal
+                        </span>
+
+                        <strong id="confirmation-subtotal">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+
+                    <!-- DELIVERY -->
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Delivery Fee
+                        </span>
+
+                        <strong id="confirmation-delivery">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+
+                    <!-- DISCOUNT -->
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            Discount
+                        </span>
+
+                        <strong id="confirmation-discount">
+                            -₹0
+                        </strong>
+
+                    </div>
+
+
+                    <!-- GST -->
+
+                    <div class="d-flex justify-content-between mb-2">
+
+                        <span>
+                            GST
+                        </span>
+
+                        <strong id="confirmation-gst">
+                            ₹0
+                        </strong>
+
+                    </div>
+
+
+                    <hr>
+
+
+                    <!-- TOTAL -->
+
+                    <div class="d-flex justify-content-between">
+
+                        <strong class="fs-5">
+                            Total
+                        </strong>
+
+                        <strong
+                            class="fs-5 text-success"
+                            id="confirmation-total">
+
+                            ₹0
+
+                        </strong>
+
+                    </div>
+
+                </div>
+
+
+                <!-- ================= MESSAGE ================= -->
+
+                <div class="alert alert-success mt-4">
+
+                    <i class="bi bi-truck"></i>
+
+                    Your order will be delivered to your address soon.
+
+                </div>
+
+
+                <!-- ================= BUTTONS ================= -->
+
+                <div class="mt-4 d-flex flex-wrap justify-content-center gap-2">
+
+                    <a
+                        href="order-history.html"
+                        class="btn btn-warning btn-lg">
+
+                        <i class="bi bi-clock-history"></i>
+
+                        Order History
+
+                    </a>
+
+
+                    <a
+                        href="menu.html"
+                        class="btn btn-secondary btn-lg">
+
+                        <i class="bi bi-arrow-left"></i>
+
+                        Back to Menu
+
+                    </a>
+
+                </div>
+
 
             </div>
 
         </div>
 
-    </nav>
+    </div>
 
-        <!--Order Confirmation-->
-        <section class="container py-5">
-            <div class="row justify-content-center">
-                <div class="col-lg-8">
-                    <div class="card shadow text-center p-5">
-                        <!--Success Icon-->
-                        <div class="mb-4">
-                            <i class="bi bi-check-circle-fill order-success-icon"
-                            style="color: #198754 !important; font-size: 80px;">
-                        </i>
+</section>
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer class="bg-dark text-white py-4">
+
+    <div class="container text-center">
+
+        <h4>
+            FoodieHub
+        </h4>
+
+
+        <p>
+            <i class="bi bi-geo-alt-fill"></i>
+            Ongole, Andhra Pradesh
+        </p>
+
+
+        <p>
+            <i class="bi bi-envelope-fill"></i>
+            foodieHub@gmail.com
+        </p>
+
+
+        <p>
+            <i class="bi bi-telephone-fill"></i>
+            +91 9329154612
+        </p>
+
+
+        <div class="mb-3">
+
+            <i class="bi bi-facebook fs-3 me-3"></i>
+
+            <i class="bi bi-instagram fs-3 me-3"></i>
+
+            <i class="bi bi-twitter-x fs-3 me-3"></i>
+
+            <i class="bi bi-whatsapp fs-3"></i>
+
+        </div>
+
+
+        <p>
+            &copy; 2026 FoodieHub. All Rights Reserved.
+        </p>
+
+    </div>
+
+</footer>
+
+
+<!-- ================= BOOTSTRAP JS ================= -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<!-- ================= CONFIRMATION JAVASCRIPT ================= -->
+
+<script>
+
+document.addEventListener("DOMContentLoaded", function () {
+
+    console.log("Order confirmation page loaded");
+
+
+    /* Get saved order */
+
+    const order =
+        JSON.parse(
+            localStorage.getItem("foodieOrder")
+        );
+
+
+    console.log("Saved order:", order);
+
+
+    /* If no order exists */
+
+    if (!order) {
+
+        document.getElementById(
+            "confirmation-order-id"
+        ).textContent = "No order found";
+
+        document.getElementById(
+            "confirmation-items"
+        ).innerHTML =
+            "<p class='text-muted'>No order information found.</p>";
+
+        return;
+
+    }
+
+
+    /* ================= ORDER DETAILS ================= */
+
+    document.getElementById(
+        "confirmation-order-id"
+    ).textContent =
+        order.orderId || "--";
+
+
+    document.getElementById(
+        "confirmation-date"
+    ).textContent =
+        order.date || "--";
+
+
+    document.getElementById(
+        "confirmation-payment"
+    ).textContent =
+        order.payment || "Cash on Delivery";
+
+
+    /* ================= ITEMS ================= */
+
+    const itemsContainer =
+        document.getElementById(
+            "confirmation-items"
+        );
+
+
+    itemsContainer.innerHTML = "";
+
+
+    const items =
+        Array.isArray(order.cart)
+        ? order.cart
+        : [];
+
+
+    if (items.length === 0) {
+
+        itemsContainer.innerHTML =
+            "<p class='text-muted'>No items found.</p>";
+
+    } else {
+
+        items.forEach(function (item) {
+
+            const price =
+                Number(item.price) || 0;
+
+            const quantity =
+                Number(item.quantity) || 1;
+
+            const itemTotal =
+                price * quantity;
+
+
+            const itemDiv =
+                document.createElement("div");
+
+
+            itemDiv.className =
+                "d-flex align-items-center justify-content-between mb-3";
+
+
+            itemDiv.innerHTML = `
+
+                <div class="d-flex align-items-center">
+
+                    ${
+                        item.image
+                        ?
+                        `<img
+                            src="${item.image}"
+                            alt="${item.name}"
+                            style="
+                                width:60px;
+                                height:60px;
+                                object-fit:cover;
+                                border-radius:8px;
+                                margin-right:12px;
+                            "
+                        >`
+                        :
+                        ""
+                    }
+
+                    <div>
+
+                        <strong>
+                            ${item.name}
+                        </strong>
+
+                        <div class="text-muted">
+                            ₹${price} × ${quantity}
                         </div>
-                        <!--Heading-->
-                        <h1 class="fw-bold">
-                            Order Confirmed!
-                        </h1>
-                        <p class="lead mt-3">
-                            Thank you for ordering from FoodieHub.
-                        </p>
-                        <p class="text-muted">
-                            Your order has been successfully placed.
-                        </p>
-                        <!--Order Information-->
-                        <div class="card mt-4 p-4 text-start">
-                            <h4 class="fw-bold mb-3">
-                                <i class="bi bi-receipt text-warning"></i>
-                                Order Details
-                            </h4>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Order ID</span>
-                                <strong id="confirmation-order-id"></strong>
-                            </div>
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Order Date</span>
-                                <strong id="confirmation-date"></strong>
-                            </div>
-                            <div class="d-flex justify-content-between">
-                                <span>Payment Method</span>
-                                <strong id="confirmation-payment"></strong>
-                            </div>
-                        </div>
-                        <!--Ordered Items-->
-                        <div class="card mt-4 p-4 text-start">
-                            <h4 class="fw-bold mb-3">
-                                <i class="bi bi-bag-check text-warning"></i>
-                                Ordered Items
-                            </h4>
-                            <!--Items will be loaded by JavaScript-->
-                            <div id="confirmation-items"></div>
 
-                            <hr>
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Subtotal</span>
-                                <strong id="confirmation-subtotal">&#8377;0</strong>
-                            </div>
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Delivery Fee</span>
-                                <strong id="confirmation-delivery">&#8377;0</strong>
-                            </div>
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>Discount</span>
-                                <strong id="confirmation-discount" class="text-success">-&#8377;0</strong>
-                            </div>
-
-                            <div class="d-flex justify-content-between mb-2">
-                                <span>GST</span>
-                                <strong id="confirmation-gst">&#8377;0</strong>
-                            </div>
-
-                            <hr>
-
-                            <div class="d-flex justify-content-between">
-                                <strong class="fs-5">
-                                    Total
-                                </strong>
-                                <strong class="fs-5 text-success" 
-                                id="confirmation-total">&#8377;0
-                            </strong>
-                        </div>
-                        </div>
-                        <!--Delivery Message-->
-                        <div class="alert alert-success mt-4">
-                            <i class="bi bi-truck"></i>
-                            Your order will be delivered to your address soon.
-                        </div>
-                        <!--Buttons-->
-                        <div class="mt-4">
-                            <a href="order-history.html"
-                            class="btn btn-warning btn-lg me-2">
-                            <i class="bi bi-clock-history"></i>
-                            Track Order
-                            </a>
-                            <a href="menu.html"
-                            class="btn btn-secondary btn-lg">
-                            <i class="bi bi-arrow-left"></i>
-                            Back to Menu
-                            </a>
-                        </div>
                     </div>
-                </div>
-            </div>
-        </section>
-         <!--Bootstrap JS-->
-        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/js/bootstrap.bundle.min.js"></script>
 
-        <!--JS-->
-        <script src="js/cart_script.js"></script>
-        <div id="footer-placeholder"></div>
-        <script src="js/footer.js"></script>
-    </body>
+                </div>
+
+
+                <strong>
+                    ₹${itemTotal}
+                </strong>
+
+            `;
+
+
+            itemsContainer.appendChild(itemDiv);
+
+        });
+
+    }
+
+
+    /* ================= TOTALS ================= */
+
+    let subtotal;
+
+
+    if (order.subtotal !== undefined) {
+
+        subtotal =
+            Number(order.subtotal) || 0;
+
+    } else {
+
+        subtotal =
+            items.reduce(function (sum, item) {
+
+                return sum +
+                    (Number(item.price) || 0) *
+                    (Number(item.quantity) || 1);
+
+            }, 0);
+
+    }
+
+
+    const delivery =
+        order.delivery !== undefined
+        ? Number(order.delivery) || 0
+        : 50;
+
+
+    const discount =
+        order.discount !== undefined
+        ? Number(order.discount) || 0
+        : 0;
+
+
+    const gst =
+        order.gst !== undefined
+        ? Number(order.gst) || 0
+        : Math.round(subtotal * 0.05);
+
+
+    const total =
+        order.total !== undefined
+        ? Number(order.total) || 0
+        : subtotal + delivery - discount + gst;
+
+
+    /* Display money */
+
+    document.getElementById(
+        "confirmation-subtotal"
+    ).textContent =
+        "₹" + subtotal;
+
+
+    document.getElementById(
+        "confirmation-delivery"
+    ).textContent =
+        "₹" + delivery;
+
+
+    document.getElementById(
+        "confirmation-discount"
+    ).textContent =
+        "-₹" + discount;
+
+
+    document.getElementById(
+        "confirmation-gst"
+    ).textContent =
+        "₹" + gst;
+
+
+    document.getElementById(
+        "confirmation-total"
+    ).textContent =
+        "₹" + total;
+
+
+});
+
+</script>
+
+
+</body>
+
 </html>
