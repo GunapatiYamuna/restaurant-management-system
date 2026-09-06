@@ -1,213 +1,528 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
+
 <head>
-  <title>Admin Dashboard</title>
-  <link rel="stylesheet" href="css/das_style.css">
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Admin Dashboard</title>
+
+    <!-- Dashboard CSS -->
+    <link rel="stylesheet" href="css/das_style.css">
+
+    <!-- Bootstrap -->
+    <link
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+        rel="stylesheet">
+
+    <!-- Bootstrap Icons -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <!-- Footer CSS -->
+    <link rel="stylesheet" href="../../css/footer.css">
+
 </head>
 
+
 <body>
+
 <!-- =====================================================
                          NAVBAR
-    ===================================================== -->
+===================================================== -->
 
-    <nav class="navbar navbar-expand-lg foodie-navbar">
+<nav class="navbar navbar-expand-lg foodie-navbar">
 
-        <div class="container">
+    <div class="container">
+
+        <!-- LOGO -->
+
+        <a class="navbar-brand" href="../../index.html">
+
+            <i class="bi bi-egg-fried"></i>
+
+            Foodie<span>Hub</span>
+
+        </a>
 
 
-            <!-- LOGO -->
+        <!-- MOBILE MENU BUTTON -->
 
-            <a class="navbar-brand" href="index.html">
+        <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#mainNavbar"
+            aria-controls="mainNavbar"
+            aria-expanded="false"
+            aria-label="Toggle navigation">
 
-                <i class="bi bi-egg-fried"></i>
+            <span class="navbar-toggler-icon"></span>
 
-                Foodie<span>Hub</span>
+        </button>
+
+
+        <!-- NAVIGATION -->
+
+        <div
+            class="collapse navbar-collapse"
+            id="mainNavbar">
+
+            <ul class="navbar-nav mx-auto">
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="../../index.html">
+
+                        Home
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="../../restaurant.html">
+
+                        Restaurants
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="../../menu.html">
+
+                        Menu
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="../../about.html">
+
+                        About
+
+                    </a>
+
+                </li>
+
+
+                <li class="nav-item">
+
+                    <a
+                        class="nav-link"
+                        href="../../contact.html">
+
+                        Contact
+
+                    </a>
+
+                </li>
+
+            </ul>
+
+
+            <!-- SEARCH -->
+
+            <div class="nav-search">
+
+                <i class="bi bi-search"></i>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search for food...">
+
+            </div>
+
+
+            <!-- ADMIN BUTTON -->
+
+            <a
+                href="../login_register.html"
+                class="nav-login active">
+
+                Admin
 
             </a>
 
+        </div>
 
-            <!-- MOBILE MENU BUTTON -->
+    </div>
 
-            <button
-                class="navbar-toggler"
-                type="button"
-                data-bs-toggle="collapse"
-                data-bs-target="#mainNavbar"
-                aria-controls="mainNavbar"
-                aria-expanded="false"
-                aria-label="Toggle navigation">
-
-                <span class="navbar-toggler-icon"></span>
-
-            </button>
+</nav>
 
 
-            <!-- NAVIGATION -->
+<!-- =====================================================
+                    DASHBOARD LAYOUT
+===================================================== -->
 
-            <div
-                class="collapse navbar-collapse"
-                id="mainNavbar">
-
-
-                <ul class="navbar-nav mx-auto">
+<div class="dashboard-wrapper">
 
 
-                    <li class="nav-item">
+    <!-- =================================================
+                         SIDEBAR
+    ================================================== -->
 
-                        <a
-                            class="nav-link "
-                            href="../../index.html">
+    <aside class="sidebar">
 
-                            Home
+        <h4 class="sidebar-title">
 
-                        </a>
+            🍽 Restaurant
 
-                    </li>
-
-
-                    <li class="nav-item">
-
-                        <a
-                            class="nav-link"
-                            href="../../restaurant.html">
-
-                            Restaurants
-
-                        </a>
-
-                    </li>
+        </h4>
 
 
-                    <li class="nav-item">
+        <a
+            href="dashboard.html"
+            class="active">
 
-                        <a
-                            class="nav-link"
-                            href="../../menu.html">
+            <i class="bi bi-speedometer2"></i>
 
-                            Menu
+            <span>Dashboard</span>
 
-                        </a>
-
-                    </li>
+        </a>
 
 
-                    <li class="nav-item">
+        <a href="payment.html">
 
-                        <a
-                            class="nav-link"
-                            href="../../about.html">
+            <i class="bi bi-credit-card"></i>
 
-                            About
+            <span>Payments</span>
 
-                        </a>
-
-                    </li>
+        </a>
 
 
-                    <li class="nav-item">
+        <a href="inventory.html">
 
-                        <a
-                            class="nav-link"
-                            href="../../contact.html">
+            <i class="bi bi-box-seam"></i>
 
-                            Contact
+            <span>Inventory</span>
 
-                        </a>
-
-                    </li>
+        </a>
 
 
-                </ul>
+        <a href="reports.html">
+
+            <i class="bi bi-bar-chart"></i>
+
+            <span>Reports</span>
+
+        </a>
+
+    </aside>
 
 
-                <!-- SEARCH -->
+    <!-- =================================================
+                      MAIN CONTENT
+    ================================================== -->
 
-                <div class="nav-search">
+    <main class="dashboard-content">
 
-                    <i class="bi bi-search"></i>
+        <!-- Dashboard Heading -->
 
-                    <input
-                        type="text"
-                        id="searchInput"
-                        placeholder="Search for food...">
+        <div class="dashboard-header">
+
+            <h2>Dashboard</h2>
+
+            <p>
+                Welcome back! Here's what's happening with your restaurant.
+            </p>
+
+        </div>
+
+
+        <!-- =================================================
+                         STATISTICS
+        ================================================== -->
+
+        <div class="row stats-row">
+
+
+            <!-- TOTAL ORDERS -->
+
+            <div class="col-xl-3 col-md-6 mb-4">
+
+                <div class="card stat-card">
+
+                    <i class="bi bi-bag fs-2 text-primary"></i>
+
+                    <p>Total Orders</p>
+
+                    <h4>120</h4>
 
                 </div>
 
+            </div>
 
-            
 
-		<a href="../login_register.html" class="nav-login active ">Admin</a>
+            <!-- TOTAL REVENUE -->
+
+            <div class="col-xl-3 col-md-6 mb-4">
+
+                <div class="card stat-card">
+
+                    <i class="bi bi-cash-stack fs-2 text-success"></i>
+
+                    <p>Total Revenue</p>
+
+                    <h4>$5,000</h4>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOTAL CUSTOMERS -->
+
+            <div class="col-xl-3 col-md-6 mb-4">
+
+                <div class="card stat-card">
+
+                    <i class="bi bi-people fs-2 text-info"></i>
+
+                    <p>Total Customers</p>
+
+                    <h4>350</h4>
+
+                </div>
+
+            </div>
+
+
+            <!-- TOTAL ITEMS -->
+
+            <div class="col-xl-3 col-md-6 mb-4">
+
+                <div class="card stat-card">
+
+                    <i class="bi bi-box-seam fs-2 text-warning"></i>
+
+                    <p>Total Items</p>
+
+                    <h4>1200</h4>
+
+                </div>
+
             </div>
 
         </div>
 
-    </nav>
-<div class="d-flex">
 
-  <!-- Sidebar -->
- <div class="sidebar p-3">
-  <h4 class="mb-4">🍽 Restaurant</h4>
+        <!-- =================================================
+                         SALES OVERVIEW
+        ================================================== -->
 
-  <a href="dashboard.html"><i class="bi bi-speedometer2"></i> Dashboard</a>
-  <a href="payment.html"><i class="bi bi-credit-card"></i> Payments</a>
-  <a href="inventory.html"><i class="bi bi-box-seam"></i> Inventory</a>
-  <a href="reports.html"><i class="bi bi-bar-chart"></i> Reports</a>
-</div>
-  <!-- Main Content -->
-  <div class="content p-4 w-100">
+        <div class="sales-section">
 
-    <h2>Dashboard</h2>
+            <div class="section-heading">
 
-    <div class="row mt-4">
-      <div class="col-md-3"><div class="card p-3 text-center"> <i class="bi bi-bag fs-2 text-primary"></i>    <p>Total Orders</p>  <h4>120</h4>  </div> 
-      </div>
-      <div class="col-md-3">
-       <div class="card p-3 text-center"><i class="bi bi-cash-stack fs-2 text-success"></i><p>Total Revenue</p><h4>$5,000</h4></div>
-      </div>
-      <div class="col-md-3">
-        <div class="card p-3 text-center"><i class="bi bi-people fs-2 text-info"></i><p>Total Customers</p><h4>350</h4></div>
-      </div>
-      <div class="col-md-3">
-        <div class="card p-3 text-center"><i class="bi bi-box-seam fs-2 text-warning"></i><p>Total Items</p><h4>1200</h4></div>
-      </div>
-    </div>
+                <h4>Sales Overview</h4>
 
-    <div class="mt-5">
-      <h4>Sales Overview</h4>
-      <canvas id="salesChart"></canvas>
-    </div>
+                <p>
+                    Weekly sales performance
+                </p>
 
-  </div>
+            </div>
+
+
+            <div class="chart-container">
+
+                <canvas id="salesChart"></canvas>
+
+            </div>
+
+        </div>
+
+
+    </main>
 
 </div>
+
+
+<!-- =====================================================
+                         FOOTER
+===================================================== -->
+
+<div id="footer-placeholder"></div>
+
+
+<!-- Footer JavaScript -->
+
+<script src="../../js/footer.js"></script>
+
+
+<!-- =====================================================
+                      BOOTSTRAP JS
+===================================================== -->
+
+<script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+</script>
+
+
+<!-- =====================================================
+                       CHART JS
+===================================================== -->
 
 <script>
-const ctx = document.getElementById('salesChart');
 
-new Chart(ctx, {
-  type: 'line',
-  data: {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
-    datasets: [{
-      label: 'Sales',
-      data: [5000, 7000, 8000, 6000, 9000, 11000],
-      borderWidth: 2,
-      tension: 0.4
-    }]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        display: true
-      }
+document.addEventListener("DOMContentLoaded", function () {
+
+    const ctx = document.getElementById("salesChart");
+
+    if (ctx) {
+
+        new Chart(ctx, {
+
+            type: "line",
+
+            data: {
+
+                labels: [
+                    "Mon",
+                    "Tue",
+                    "Wed",
+                    "Thu",
+                    "Fri",
+                    "Sat"
+                ],
+
+                datasets: [
+
+                    {
+
+                        label: "Sales",
+
+                        data: [
+                            5000,
+                            7000,
+                            8000,
+                            6000,
+                            9000,
+                            11000
+                        ],
+
+                        borderColor: "#2196f3",
+
+                        backgroundColor: "rgba(33, 150, 243, 0.10)",
+
+                        borderWidth: 2,
+
+                        pointRadius: 4,
+
+                        pointBackgroundColor: "#ffffff",
+
+                        pointBorderColor: "#2196f3",
+
+                        pointBorderWidth: 2,
+
+                        fill: false,
+
+                        tension: 0.4
+
+                    }
+
+                ]
+
+            },
+
+            options: {
+
+                responsive: true,
+
+                maintainAspectRatio: false,
+
+                interaction: {
+
+                    intersect: false,
+
+                    mode: "index"
+
+                },
+
+                plugins: {
+
+                    legend: {
+
+                        display: true,
+
+                        position: "top"
+
+                    }
+
+                },
+
+                scales: {
+
+                    y: {
+
+                        beginAtZero: false,
+
+                        grid: {
+
+                            color: "#e5e5e5"
+
+                        },
+
+                        ticks: {
+
+                            color: "#777777"
+
+                        }
+
+                    },
+
+                    x: {
+
+                        grid: {
+
+                            color: "#e5e5e5"
+
+                        },
+
+                        ticks: {
+
+                            color: "#777777"
+
+                        }
+
+                    }
+
+                }
+
+            }
+
+        });
+
     }
-  }
+
 });
 
 </script>
+
+
 </body>
+
 </html>
