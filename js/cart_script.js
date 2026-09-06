@@ -148,13 +148,6 @@ function setupAddToCartButtons() {
    CART COUNT
 ========================================================= */
 
-function getCart() {
-    return JSON.parse(
-        localStorage.getItem("foodieCart")
-    ) || [];
-}
-
-
 function updateCartCount() {
 
     const cart = getCart();
@@ -181,12 +174,6 @@ function updateCartCount() {
     });
 }
 
-
-/* Update count whenever a page loads */
-document.addEventListener(
-    "DOMContentLoaded",
-    updateCartCount
-);
 
 /* =========================================================
    RENDER CART PAGE
@@ -882,195 +869,165 @@ function setupPaymentMethods() {
 /* =========================================================
    PLACE ORDER
 ========================================================= */
-
 function setupPlaceOrder() {
 
-    const form =
-        document.getElementById(
-            "checkout-form"
-        );
-
+    const form = document.getElementById("checkout-form");
 
     if (!form) {
-
         return;
-
     }
 
-
-    /* Prevent duplicate event listeners */
-
-    if (
-        form.dataset.orderHandler === "true"
-    ) {
-
+    // Prevent duplicate event listeners
+    if (form.dataset.orderHandler === "true") {
         return;
-
     }
 
+    form.dataset.orderHandler = "true";
 
-    form.dataset.orderHandler =
-        "true";
+    form.addEventListener("submit", function (event) {
 
+        event.preventDefault();
 
-    form.addEventListener(
-        "submit",
-        function (event) {
+        console.log("PLACE ORDER CLICKED");
 
-            event.preventDefault();
+        const cart = getCart();
 
+        // Do NOT redirect to cart here
+        if (cart.length === 0) {
+            console.log("Cart is empty");
+            return;
+        }
 
-            const cart = getCart();
+        // Validate delivery form
+        if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+        }
 
-
-            if (cart.length === 0) {
-
-                alert(
-                    "Your cart is empty!"
-                );
-
-                return;
-
-            }
-
-
-            /* Check required fields */
-
-            if (!form.checkValidity()) {
-
-                form.reportValidity();
-
-                return;
-
-            }
-
-
-            const selectedPayment =
-                document.querySelector(
-                    'input[name="payment"]:checked'
-                );
-
-
-            const paymentMethod =
-                selectedPayment
-                    ? selectedPayment.value
-                    : "Cash on Delivery";
-
-
-            const totals =
-                calculateTotals(cart);
-
-
-            const order = {
-
-                orderId:
-                    "FH" +
-                    Math.floor(
-                        100000 +
-                        Math.random() * 900000
-                    ),
-
-                date:
-                    new Date().toLocaleString(),
-
-                payment:
-                    paymentMethod,
-
-                cart:
-                    cart,
-
-                subtotal:
-                    totals.subtotal,
-
-                delivery:
-                    totals.delivery,
-
-                discount:
-                    totals.discount,
-
-                gst:
-                    totals.gst,
-
-                total:
-                    totals.total
-
-            };
-
-
-            /* Save latest order */
-
-            localStorage.setItem(
-                "foodieOrder",
-                JSON.stringify(order)
+        // Selected payment
+        const selectedPayment =
+            document.querySelector(
+                'input[name="payment"]:checked'
             );
 
+        const paymentMethod =
+            selectedPayment
+                ? selectedPayment.value
+                : "Cash on Delivery";
 
-            /* Get existing history */
+        // Calculate totals
+        const totals = calculateTotals(cart);
 
-            let history = [];
+        // Create order
+        const order = {
 
+            orderId:
+                "FH" +
+                Math.floor(
+                    100000 +
+                    Math.random() * 900000
+                ),
 
-            try {
+            date:
+                new Date().toLocaleString(),
 
-                history =
-                    JSON.parse(
-                        localStorage.getItem(
-                            "foodieOrderHistory"
-                        )
-                    ) || [];
+            payment:
+                paymentMethod,
 
-            } catch (error) {
+            customer: {
 
-                history = [];
+                name:
+                    document.getElementById("full-name").value,
 
-            }
+                phone:
+                    document.getElementById("phone").value,
 
+                address:
+                    document.getElementById("address").value,
 
-            /* Add new order */
+                city:
+                    document.getElementById("city").value,
 
-            history.push(order);
+                pincode:
+                    document.getElementById("pincode").value
+            },
 
+            cart: cart,
 
-            localStorage.setItem(
-                "foodieOrderHistory",
-                JSON.stringify(history)
-            );
+            subtotal: totals.subtotal,
 
+            delivery: totals.delivery,
 
-            /* CLEAR CART */
+            discount: totals.discount,
 
-            localStorage.removeItem(
-                "foodieCart"
-            );
+            gst: totals.gst,
 
+            total: totals.total
+        };
 
-            /* Update cart count */
+        console.log("Order created:", order);
 
-            updateCartCount();
+        // Save latest order
+        localStorage.setItem(
+            "foodieOrder",
+            JSON.stringify(order)
+        );
 
+        // Get previous orders
+        let history = [];
 
-            console.log(
-                "Order successfully saved:",
-                order
-            );
+        try {
 
+            history =
+                JSON.parse(
+                    localStorage.getItem(
+                        "foodieOrderHistory"
+                    )
+                ) || [];
 
-            /* IMPORTANT:
-               Go directly to confirmation */
+        } catch (error) {
 
-            window.location.assign(
-                "order-confirmation.html"
-            );
+            history = [];
 
         }
-    );
 
+        // Add new order to history
+        history.push(order);
+
+        // Save complete order history
+        localStorage.setItem(
+            "foodieOrderHistory",
+            JSON.stringify(history)
+        );
+
+        console.log(
+            "Order history:",
+            history
+        );
+
+        // Clear cart AFTER saving order
+        localStorage.removeItem(
+            "foodieCart"
+        );
+
+        // Update cart count
+        updateCartCount();
+
+        console.log(
+            "Cart cleared successfully"
+        );
+
+        // Go ONLY to confirmation page
+        window.location.href =
+            "order-confirmation.html";
+
+    });
 }
 
 
 /* =========================================================
    ORDER HISTORY
-   SHOW ONLY THE LATEST ORDER
+   SHOW ALL ORDERS-NEWEST FIRST
 ========================================================= */
 console.log("RENDER ORDER HISTORY CALLED")
 function renderOrderHistory() {
