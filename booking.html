@@ -217,14 +217,14 @@
                     rgba(0,0,0,0.55)
                 ),
 
-                url("images/restaurant.jpg");
+                url("images/restaurant\ 3.png");
 
 
             background-size: cover;
 
             background-position: center;
 
-            height: 280px;
+            height: 380px;
 
 
             display: flex;
@@ -476,7 +476,7 @@
                     <li class="nav-item">
 
                         <a
-                            class="nav-link active"
+                            class="nav-link"
                             href="index.html">
 
                             Home
@@ -587,7 +587,7 @@
 <!-- HEADER -->
 
 <section class="booking-header">
-<img src="images/book table.png" height="250" width="600">
+ <img src="images/book table.png" height="380" width="1500">
 </section>
 
 
@@ -616,228 +616,251 @@
 
                     </p>
 
+                        <form id="bookingForm">
 
-                    <form id="bookingForm">
+                            <div class="row">
 
+                                <!-- Full Name -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="name" class="form-label">
+                                        Full Name
+                                    </label>
 
-                        <!-- NAME -->
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-person"></i>
+                                        </span>
 
-                        <div class="mb-3">
+                                        <input
+                                            type="text"
+                                            class="form-control"
+                                            id="name"
+                                            name="name"
+                                            placeholder="Enter your full name"
+                                            required
+                                        >
+                                    </div>
 
-                            <label
-                                class="form-label"
-                                for="name"
-                            >
-                                Full Name
-                            </label>
-
-                            <input
-                                type="text"
-                                class="form-control"
-                                id="name"
-                                placeholder="Enter your name"
-                                required
-                            >
-
-                        </div>
-
-
-                        <!-- PHONE -->
-
-                        <div class="mb-3">
-
-                            <label
-                                class="form-label"
-                                for="phone"
-                            >
-                                Phone Number
-                            </label>
-
-                            <input
-                                type="tel"
-                                class="form-control"
-                                id="phone"
-                                placeholder="Enter your phone number"
-                                pattern="[0-9]{10}"
-                                required
-                            >
-
-                        </div>
+                                    <small id="nameError" class="text-danger"></small>
+                                </div>
 
 
-                        <!-- EMAIL -->
+                                <!-- Email -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="email" class="form-label">
+                                        Email Address
+                                    </label>
 
-                        <div class="mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-envelope"></i>
+                                        </span>
 
-                            <label
-                                class="form-label"
-                                for="email"
-                            >
-                                Email Address
-                            </label>
+                                        <input
+                                            type="email"
+                                            class="form-control"
+                                            id="email"
+                                            name="email"
+                                            placeholder="Enter your email address"
+                                            required
+                                        >
+                                    </div>
 
-                            <input
-                                type="email"
-                                class="form-control"
-                                id="email"
-                                placeholder="Enter your email"
-                                required
-                            >
-
-                        </div>
-
-
-                        <div class="row">
+                                    <small id="emailError" class="text-danger"></small>
+                                </div>
 
 
-                            <!-- DATE -->
+                                <!-- Phone -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="phone" class="form-label">
+                                        Phone Number
+                                    </label>
 
-                            <div class="col-md-6 mb-3">
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-telephone"></i>
+                                        </span>
 
-                                <label
-                                    class="form-label"
-                                    for="date"
-                                >
-                                    Date
-                                </label>
+                                        <input
+                                            type="tel"
+                                            class="form-control"
+                                            id="phone"
+                                            name="phone"
+                                            placeholder="Enter your phone number"
+                                            required
+                                        >
+                                    </div>
 
-                                <input
-                                    type="date"
-                                    class="form-control"
-                                    id="date"
-                                    required
-                                >
+                                    <small id="phoneError" class="text-danger"></small>
+                                </div>
+
+
+                                <!-- Guests -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="guests" class="form-label">
+                                        Number of Guests
+                                    </label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-people"></i>
+                                        </span>
+
+                                        <select
+                                            class="form-select"
+                                            id="guests"
+                                            name="guests"
+                                        >
+                                            <option value="">Select number of guests</option>
+                                            <option value="1">1 Guest</option>
+                                            <option value="2">2 Guests</option>
+                                            <option value="3">3 Guests</option>
+                                            <option value="4">4 Guests</option>
+                                            <option value="5">5 Guests</option>
+                                            <option value="6">6 Guests</option>
+                                            <option value="7">7 Guests</option>
+                                            <option value="8">8 Guests</option>
+                                            <option value="9+">9+ Guests</option>
+                                        </select>
+                                    </div>
+
+                                    <small id="guestsError" class="text-danger"></small>
+                                </div>
+
+
+                                <!-- Date -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="date" class="form-label">
+                                        Reservation Date
+                                    </label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-calendar3"></i>
+                                        </span>
+
+                                        <input
+                                            type="date"
+                                            class="form-control"
+                                            id="date"
+                                            name="date"
+                                            required
+                                        >
+                                    </div>
+
+                                    <small id="dateError" class="text-danger"></small>
+                                </div>
+
+
+                                <!-- Time -->
+                                <div class="col-md-6 mb-3">
+                                    <label for="time" class="form-label">
+                                        Reservation Time
+                                    </label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-clock"></i>
+                                        </span>
+
+                                        <select
+                                            class="form-select"
+                                            id="time"
+                                            name="time"
+                                            required
+                                        >
+                                            <option value="">Select reservation time</option>
+                                            <option value="10:00 AM">10:00 Am</option>
+                                            <option value="11:00 AM">11:00 AM</option>
+                                            <option value="12:00 PM">12:00 PM</option>
+                                            <option value="1:00 PM">1:00 PM</option>
+                                            <option value="2:00 PM">2:00 PM</option>
+                                            <option value="5:00 PM">5:00 PM</option>
+                                            <option value="6:00 PM">6:00 PM</option>
+                                            <option value="7:00 PM">7:00 PM</option>
+                                            <option value="8:00 PM">8:00 PM</option>
+                                            <option value="9:00 PM">9:00 PM</option>
+                                            <option value="10:00 PM">10:00 PM</option>
+                                        </select>
+                                    </div>
+
+                                    <small id="timeError" class="text-danger"></small>
+                                </div>
+
+
+                                <!-- Special Requests -->
+                                <div class="col-12 mb-3">
+                                    <label for="message" class="form-label">
+                                        Special Requests
+                                        <span class="text-muted">(Optional)</span>
+                                    </label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">
+                                            <i class="bi bi-chat-left-text"></i>
+                                        </span>
+
+                                        <textarea
+                                            class="form-control"
+                                            id="message"
+                                            name="message"
+                                            rows="4"
+                                            placeholder="Any special requests, dietary requirements, birthday celebration, etc."
+                                        ></textarea>
+                                    </div>
+
+                                    <small id="messageError" class="text-danger"></small>
+                                </div>
+
+
+                                <!-- Agreement -->
+                                <div class="col-12 mb-3">
+
+                                    <div class="form-check">
+
+                                        <input
+                                            class="form-check-input"
+                                            type="checkbox"
+                                            id="agreement"
+                                            name="agreement"
+                                            required
+                                        >
+
+                                        <label
+                                            class="form-check-label"
+                                            for="agreement"
+                                        >
+                                            I agree to the reservation terms and confirm
+                                            that the information provided is correct.
+                                        </label>
+
+                                    </div>
+
+                                    <small id="agreementError" class="text-danger"></small>
+
+                                </div>
+
+
+                                <!-- Submit Button -->
+                                <div class="col-12">
+
+                                    <button
+                                        type="submit"
+                                        class="book-btn"
+                                    >
+                                        Confirm Reservation
+                                        <i class="bi bi-arrow-right"></i>
+                                    </button>
+
+                                </div>
 
                             </div>
 
-
-                            <!-- TIME -->
-
-                            <div class="col-md-6 mb-3">
-
-                                <label
-                                    class="form-label"
-                                    for="time"
-                                >
-                                    Time
-                                </label>
-
-                                <input
-                                    type="time"
-                                    class="form-control"
-                                    id="time"
-                                    required
-                                >
-
-                            </div>
-
-                        </div>
-
-
-                        <!-- GUESTS -->
-
-                        <div class="mb-3">
-
-                            <label
-                                class="form-label"
-                                for="guests"
-                            >
-                                Number of Guests
-                            </label>
-
-                            <select
-                                class="form-select"
-                                id="guests"
-                                required
-                            >
-
-                                <option value="">
-                                    Select guests
-                                </option>
-
-                                <option value="1">
-                                    1 Guest
-                                </option>
-
-                                <option value="2">
-                                    2 Guests
-                                </option>
-
-                                <option value="3">
-                                    3 Guests
-                                </option>
-
-                                <option value="4">
-                                    4 Guests
-                                </option>
-
-                                <option value="5">
-                                    5 Guests
-                                </option>
-
-                                <option value="6">
-                                    6 Guests
-                                </option>
-
-                                <option value="7">
-                                    7 Guests
-                                </option>
-
-                                <option value="8">
-                                    8 Guests
-                                </option>
-
-                                <option value="9+">
-                                    9+ Guests
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <!-- SPECIAL REQUEST -->
-
-                        <div class="mb-3">
-
-                            <label
-                                class="form-label"
-                                for="message"
-                            >
-
-                                Special Request
-
-                            </label>
-
-                            <textarea
-                                class="form-control"
-                                id="message"
-                                rows="4"
-                                placeholder="Any special request?"
-                            ></textarea>
-
-                        </div>
-
-
-                        <button
-                            type="submit"
-                            class="book-btn"
-                        >
-
-                            <i class="fa-solid fa-calendar-check"></i>
-
-                            Confirm Booking
-
-                        </button>
-
-
-                    </form>
-
-                </div>
-
-            </div>
-
-
+                        </form>
+                
+                    </div>
+            </div>  
+            
             <!-- INFORMATION -->
 
             <div class="col-lg-4">
@@ -878,11 +901,9 @@
 
                 <div class="info-card">
 
-                    <i class="fa-solid fa-utensils"></i>
+                    <i class="bi bi-egg-fried"></i>
 
-                    <h5>
-                        FoodieHub
-                    </h5>
+                            Foodie<span>Hub</span>
 
                     <p>
                         Enjoy delicious food and a comfortable

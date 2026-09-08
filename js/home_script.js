@@ -123,20 +123,7 @@ orderButton.addEventListener("click", function () {
 });
 
 
-// =======================================
-// BOOK TABLE BUTTON
-// =======================================
 
-const bookButton =
-    document.querySelector(".secondary-btn");
-
-bookButton.addEventListener("click", function () {
-
-    alert(
-        "Table booking feature will be available soon!"
-    );
-
-});
 
 
 // =======================================
