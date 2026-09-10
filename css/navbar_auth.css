@@ -1,0 +1,54 @@
+/* =========================================================
+   FOODIEHUB NAVBAR AUTH STATE
+   Only controls the Login / logged-in user display.
+========================================================= */
+
+#authButtons {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#userSection.navbar-user {
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    margin-left: 12px;
+    text-decoration: none;
+}
+
+#userSection .navbar-avatar {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    border-radius: 50%;
+    background: #ff7a00;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 15px;
+    font-weight: 700;
+}
+
+#userSection .navbar-greeting {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.1;
+    color: #ffffff;
+}
+
+#userSection .navbar-greeting span {
+    font-size: 12px;
+    opacity: 0.8;
+}
+
+#userSection .navbar-greeting strong {
+    font-size: 15px;
+}
+
+@media (max-width: 991px) {
+    #userSection.navbar-user {
+        margin: 10px 0 0;
+    }
+}
