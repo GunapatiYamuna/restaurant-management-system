@@ -108,96 +108,505 @@ function validPassword(p){
 }
 
 /* Registration */
-const registerForm=document.getElementById("registerForm");
-if(registerForm){
-  setupPasswordValidation("registerPassword","register");
-  registerForm.addEventListener("submit",(e)=>{
-    e.preventDefault();
-    const name=document.getElementById("fullName").value.trim();
-    const email=document.getElementById("registerEmail").value.trim().toLowerCase();
-    const phone=document.getElementById("phone").value.trim();
-    const password=document.getElementById("registerPassword").value;
-    const confirm=document.getElementById("confirmPassword").value;
+const registerForm = document.getElementById("registerForm");
 
-    if(!name || !email || !phone || !password || !confirm){
-      return showAlert("registerAlert","Please fill in all required fields.","danger");
+if (registerForm) {
+  setupPasswordValidation("registerPassword", "register");
+
+  registerForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const name = document.getElementById("fullName").value.trim();
+    const email = document.getElementById("registerEmail").value.trim().toLowerCase();
+    const phone = document.getElementById("phone").value.trim();
+    const password = document.getElementById("registerPassword").value;
+    const confirm = document.getElementById("confirmPassword").value;
+
+    if (!name || !email || !phone || !password || !confirm) {
+      return showAlert(
+        "registerAlert",
+        "Please fill in all required fields.",
+        "danger"
+      );
     }
-    if(!/^[0-9]{10}$/.test(phone)){
-      return showAlert("registerAlert","Phone number must contain exactly 10 digits.","danger");
+
+    if (!/^[0-9]{10}$/.test(phone)) {
+      return showAlert(
+        "registerAlert",
+        "Phone number must contain exactly 10 digits.",
+        "danger"
+      );
     }
-    if(!validPassword(password)){
-      return showAlert("registerAlert","Password must be 8+ characters and include an uppercase letter, number and special character.","danger");
+
+    if (!validPassword(password)) {
+      return showAlert(
+        "registerAlert",
+        "Password must be 8+ characters and include an uppercase letter, number and special character.",
+        "danger"
+      );
     }
-    if(password!==confirm){
-      return showAlert("registerAlert","Passwords do not match.","danger");
+
+    if (password !== confirm) {
+      return showAlert(
+        "registerAlert",
+        "Passwords do not match.",
+        "danger"
+      );
     }
-    const users=getUsers();
-    if(users.some(u=>u.email===email)){
-      return showAlert("registerAlert","An account with this email already exists.","danger");
+
+    const formData = new URLSearchParams();
+
+    formData.append("name", name);
+    formData.append("email", email);
+    formData.append("phone", phone);
+    formData.append("password", password);
+
+    try {
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/register/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        return showAlert(
+          "registerAlert",
+          data.message || "Registration failed.",
+          "danger"
+        );
+      }
+
+      showAlert(
+        "registerAlert",
+        "Account created successfully. You can now log in.",
+        "success"
+      );
+
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 1000);
+
+    } catch (error) {
+      console.error("Registration error:", error);
+
+      showAlert(
+        "registerAlert",
+        "Unable to connect to the server. Please make sure Django is running.",
+        "danger"
+      );
     }
-    const user={id:Date.now(),name,email,phone,city:"",password};
-    users.push(user); saveUsers(users); setSession(user);
-    showAlert("registerAlert","Account created successfully. Opening your profile...","success");
-    setTimeout(()=>window.location.href="profile.html",900);
   });
 }
 
 /* Login */
-const loginForm=document.getElementById("loginForm");
-if(loginForm){
-  loginForm.addEventListener("submit",(e)=>{
+
+const loginForm = document.getElementById("loginForm");
+
+if (loginForm) {
+
+  loginForm.addEventListener("submit", async (e) => {
+
     e.preventDefault();
-    const email=document.getElementById("loginEmail").value.trim().toLowerCase();
-    const password=document.getElementById("loginPassword").value;
-    const user=getUsers().find(u=>u.email===email && u.password===password);
-    if(!user){
-      return showAlert("loginAlert","Invalid email or password. Try the demo account shown below.","danger");
+
+    const email = document
+      .getElementById("loginEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+    const password = document.getElementById("loginPassword").value;
+
+    if (!email || !password) {
+      return showAlert(
+        "loginAlert",
+        "Please enter your email and password.",
+        "danger"
+      );
     }
-    setSession(user);
-    showAlert("loginAlert","Login successful. Redirecting...","success");
-    setTimeout(()=>window.location.href="profile.html",700);
+
+    const formData = new URLSearchParams();
+
+    formData.append("email", email);
+    formData.append("password", password);
+
+    try {
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/login/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        return showAlert(
+          "loginAlert",
+          data.message || "Invalid email or password.",
+          "danger"
+        );
+      }
+
+      // Store the logged-in user information for the frontend session
+      localStorage.setItem(
+        "foodiehub_session",
+        JSON.stringify(data.user)
+      );
+
+      showAlert(
+        "loginAlert",
+        "Login successful. Redirecting...",
+        "success"
+      );
+
+      setTimeout(() => {
+        window.location.href = "profile.html";
+      }, 700);
+
+    } catch (error) {
+
+      console.error("Login error:", error);
+
+      showAlert(
+        "loginAlert",
+        "Unable to connect to the server. Please make sure Django is running.",
+        "danger"
+      );
+    }
+
   });
+
 }
 
-/* Forgot password */
-const forgotForm=document.getElementById("forgotForm");
-if(forgotForm){
-  forgotForm.addEventListener("submit",(e)=>{
+/* Forgot Password */
+
+const forgotForm = document.getElementById("forgotForm");
+
+if (forgotForm) {
+
+  forgotForm.addEventListener("submit", async (e) => {
+
     e.preventDefault();
-    const email=document.getElementById("forgotEmail").value.trim().toLowerCase();
-    const user=getUsers().find(u=>u.email===email);
-    if(!user){
-      return showAlert("forgotAlert","No account was found with that email.","danger");
+
+    const email = document
+      .getElementById("forgotEmail")
+      .value
+      .trim()
+      .toLowerCase();
+
+    if (!email) {
+      return showAlert(
+        "forgotAlert",
+        "Please enter your email address.",
+        "danger"
+      );
     }
-    sessionStorage.setItem("reset_email",email);
-    showAlert("forgotAlert","Reset request accepted for this demo. Continue to create a new password.","success");
-    setTimeout(()=>window.location.href="reset-password.html",900);
+
+    const formData = new URLSearchParams();
+
+    formData.append("email", email);
+
+    try {
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/forgot-password/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        return showAlert(
+          "forgotAlert",
+          data.message || "Unable to send reset link.",
+          "danger"
+        );
+      }
+
+      showAlert(
+        "forgotAlert",
+        data.message,
+        "success"
+      );
+
+      forgotForm.reset();
+
+    } catch (error) {
+
+      console.error("Forgot password error:", error);
+
+      showAlert(
+        "forgotAlert",
+        "Unable to connect to the server. Please make sure Django is running.",
+        "danger"
+      );
+    }
+
   });
+
 }
 
-/* Reset password */
-const resetForm=document.getElementById("resetForm");
-if(resetForm){
-  setupPasswordValidation("resetPassword","reset");
-  const resetEmail=sessionStorage.getItem("reset_email");
-  const emailLabel=document.getElementById("resetEmailLabel");
-  if(emailLabel) emailLabel.textContent=resetEmail || "your registered email";
-  resetForm.addEventListener("submit",(e)=>{
+
+function updatePasswordRule(element, valid) {
+
+  if (!element) return;
+
+  if (valid) {
+
+    element.classList.remove("invalid");
+    element.classList.add("valid");
+
+    const icon = element.querySelector("i");
+
+    if (icon) {
+      icon.className = "bi bi-check-circle-fill";
+    }
+
+  } else {
+
+    element.classList.remove("valid");
+    element.classList.add("invalid");
+
+    const icon = element.querySelector("i");
+
+    if (icon) {
+      icon.className = "bi bi-circle";
+    }
+
+  }
+
+}
+
+/* Reset Password */
+
+const resetForm = document.getElementById("resetForm");
+
+if (resetForm) {
+
+  const params = new URLSearchParams(window.location.search);
+
+  const uid = params.get("uid");
+  const token = params.get("token");
+
+  const resetEmailLabel = document.getElementById("resetEmailLabel");
+  const resetPassword = document.getElementById("resetPassword");
+  const resetConfirmPassword = document.getElementById("resetConfirmPassword");
+
+  /*
+   * Check that the reset link contains the required
+   * uid and token values.
+   */
+  if (!uid || !token) {
+
+    showAlert(
+      "resetAlert",
+      "This password reset link is invalid or incomplete.",
+      "danger"
+    );
+
+    resetForm.querySelector("button[type='submit']").disabled = true;
+
+  }
+
+  /*
+   * Password strength indicators
+   */
+  if (resetPassword) {
+
+    resetPassword.addEventListener("input", () => {
+
+      const password = resetPassword.value;
+
+      const lengthRule = document.getElementById("resetlengthRule");
+      const upperRule = document.getElementById("resetupperRule");
+      const numberRule = document.getElementById("resetnumberRule");
+      const specialRule = document.getElementById("resetspecialRule");
+
+      const hasLength = password.length >= 8;
+      const hasUpper = /[A-Z]/.test(password);
+      const hasNumber = /[0-9]/.test(password);
+      const hasSpecial = /[^A-Za-z0-9]/.test(password);
+
+      updatePasswordRule(lengthRule, hasLength);
+      updatePasswordRule(upperRule, hasUpper);
+      updatePasswordRule(numberRule, hasNumber);
+      updatePasswordRule(specialRule, hasSpecial);
+
+      const meterFill = document.getElementById(
+        "resetpasswordMeterFill"
+      );
+
+      if (meterFill) {
+
+        let strength = 0;
+
+        if (hasLength) strength++;
+        if (hasUpper) strength++;
+        if (hasNumber) strength++;
+        if (hasSpecial) strength++;
+
+        meterFill.style.width = `${strength * 25}%`;
+      }
+
+    });
+
+  }
+
+  /*
+   * Submit new password
+   */
+  resetForm.addEventListener("submit", async (e) => {
+
     e.preventDefault();
-    const email=sessionStorage.getItem("reset_email");
-    const password=document.getElementById("resetPassword").value;
-    const confirm=document.getElementById("resetConfirmPassword").value;
-    if(!email) return showAlert("resetAlert","Please start from the Forgot Password page.","danger");
-    if(!validPassword(password)) return showAlert("resetAlert","Choose a stronger password.","danger");
-    if(password!==confirm) return showAlert("resetAlert","Passwords do not match.","danger");
-    const users=getUsers();
-    const index=users.findIndex(u=>u.email===email);
-    if(index<0) return showAlert("resetAlert","Account not found.","danger");
-    users[index].password=password; saveUsers(users);
-    sessionStorage.removeItem("reset_email");
-    showAlert("resetAlert","Password updated successfully. Redirecting to login...","success");
-    setTimeout(()=>window.location.href="login.html",900);
+
+    if (!uid || !token) {
+      return;
+    }
+
+    const password = resetPassword.value;
+    const confirmPassword = resetConfirmPassword.value;
+
+    if (password !== confirmPassword) {
+
+      return showAlert(
+        "resetAlert",
+        "Passwords do not match.",
+        "danger"
+      );
+
+    }
+
+    if (password.length < 8) {
+
+      return showAlert(
+        "resetAlert",
+        "Password must be at least 8 characters long.",
+        "danger"
+      );
+
+    }
+
+    if (!/[A-Z]/.test(password)) {
+
+      return showAlert(
+        "resetAlert",
+        "Password must contain at least one uppercase letter.",
+        "danger"
+      );
+
+    }
+
+    if (!/[0-9]/.test(password)) {
+
+      return showAlert(
+        "resetAlert",
+        "Password must contain at least one number.",
+        "danger"
+      );
+
+    }
+
+    if (!/[^A-Za-z0-9]/.test(password)) {
+
+      return showAlert(
+        "resetAlert",
+        "Password must contain at least one special character.",
+        "danger"
+      );
+
+    }
+
+    const formData = new URLSearchParams();
+
+    formData.append("uid", uid);
+    formData.append("token", token);
+    formData.append("password", password);
+
+    const submitButton = resetForm.querySelector(
+      "button[type='submit']"
+    );
+
+    try {
+
+      submitButton.disabled = true;
+      submitButton.innerHTML =
+        '<i class="bi bi-hourglass-split me-1"></i> Resetting...';
+
+      const response = await fetch(
+        "http://127.0.0.1:8000/api/reset-password/",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+          },
+          body: formData
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+
+        submitButton.disabled = false;
+        submitButton.innerHTML =
+          '<i class="bi bi-check2-circle me-1"></i> Reset Password';
+
+        return showAlert(
+          "resetAlert",
+          data.message || "Unable to reset password.",
+          "danger"
+        );
+
+      }
+
+      showAlert(
+        "resetAlert",
+        "Password reset successfully! Redirecting to login...",
+        "success"
+      );
+
+      resetForm.reset();
+
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 1500);
+
+    } catch (error) {
+
+      console.error("Reset password error:", error);
+
+      submitButton.disabled = false;
+      submitButton.innerHTML =
+        '<i class="bi bi-check2-circle me-1"></i> Reset Password';
+
+      showAlert(
+        "resetAlert",
+        "Unable to connect to the server. Please make sure Django is running.",
+        "danger"
+      );
+
+    }
+
   });
+
 }
 
 /* Profile */
