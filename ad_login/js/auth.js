@@ -26,16 +26,22 @@ seedDemoUser();
 
 function setSession(user){
   localStorage.setItem(SESSION_KEY, JSON.stringify({
-    id:user.id,name:user.name,email:user.email,phone:user.phone,city:user.city
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+    city: user.city,
+    role: user.role || "user"
   }));
 }
+
 function getSession(){
   try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
   catch(e){ return null; }
 }
 function logout(){
-  localStorage.removeItem(SESSION_KEY);
-  window.location.href = "login.html";
+  localStorage.removeItem(foodiehub_session);
+  window.location.href = "../../index.html";
 }
 
 function showAlert(targetId, message, type="success"){
@@ -202,6 +208,10 @@ if (registerForm) {
         "danger"
       );
     }
+    const user={id:Date.now(),name,email,phone,city:"",password,role:"user"};
+    users.push(user); saveUsers(users); setSession(user);
+    showAlert("registerAlert","Account created successfully. Opening your profile...","success");
+    setTimeout(()=>window.location.href="../../index.html",900);
   });
 }
 
@@ -649,9 +659,3 @@ if(profileForm){
     showAlert("profileAlert","Profile updated successfully.","success");
   });
 }
-
-/* Navbar profile name */
-document.addEventListener("DOMContentLoaded",()=>{
-  const user=getSession();
-  document.querySelectorAll("[data-user-name]").forEach(el=>el.textContent=user?.name || "Guest");
-});

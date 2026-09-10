@@ -26,16 +26,22 @@ seedDemoUser();
 
 function setSession(user){
   localStorage.setItem(SESSION_KEY, JSON.stringify({
-    id:user.id,name:user.name,email:user.email,phone:user.phone,city:user.city
+    id:user.id,name:user.name,email:user.email,phone:user.phone,city:user.city,role:user.role||"user"
   }));
 }
 function getSession(){
   try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
   catch(e){ return null; }
 }
-function logout(){
-  localStorage.removeItem(SESSION_KEY);
-  window.location.href = "login.html";
+function logout() {
+    console.log("Logout button clicked");
+
+    localStorage.removeItem("foodiehub_session");
+
+    console.log("Session after logout:",
+        localStorage.getItem("foodiehub_session"));
+
+    window.location.href = "../../index.html";
 }
 
 function showAlert(targetId, message, type="success"){
@@ -202,6 +208,10 @@ if (registerForm) {
         "danger"
       );
     }
+    const user={id:Date.now(),name,email,phone,city:"",password,role:"user"};
+    users.push(user); saveUsers(users); setSession(user);
+    showAlert("registerAlert","Account created successfully. Opening your profile...","success");
+    setTimeout(()=>window.location.href="../../index.html",900);
   });
 }
 
@@ -286,6 +296,15 @@ if (loginForm) {
       );
     }
 
+    const email=document.getElementById("loginEmail").value.trim().toLowerCase();
+    const password=document.getElementById("loginPassword").value;
+    const user=getUsers().find(u=>u.email===email && u.password===password);
+    if(!user){
+      return showAlert("loginAlert","Invalid email or password. Try the demo account shown below.","danger");
+    }
+    setSession(user);
+    showAlert("loginAlert","Login successful. Redirecting...","success");
+    setTimeout(()=>window.location.href="../../index.html",700);
   });
 
 }
@@ -679,7 +698,50 @@ if(profileForm){
 }
 
 /* Navbar profile name */
-document.addEventListener("DOMContentLoaded",()=>{
-  const user=getSession();
-  document.querySelectorAll("[data-user-name]").forEach(el=>el.textContent=user?.name || "Guest");
+document.addEventListener("DOMContentLoaded", () => {
+
+  const user = getSession();
+
+  const loginSection = document.getElementById("loginSection");
+  const userSection = document.getElementById("userSection");
+  const userName = document.getElementById("navbarUserName");
+  const avatar = document.getElementById("navbarAvatar");
+
+  // Nobody is logged in
+  if (!user) {
+    if (loginSection) loginSection.style.display = "block";
+    if (userSection) userSection.style.display = "none";
+    return;
+  }
+
+  // Do not show admin as a normal user
+  if (user.role === "admin") {
+    if (loginSection) loginSection.style.display = "block";
+    if (userSection) userSection.style.display = "none";
+    return;
+  }
+
+  // Normal user is logged in
+  if (loginSection) loginSection.style.display = "none";
+  if (userSection) userSection.style.display = "flex";
+
+  const nameParts = user.name.trim().split(/\s+/);
+
+  const firstName = nameParts[0];
+
+  let initials = firstName.charAt(0).toUpperCase();
+
+  if (nameParts.length > 1) {
+    initials += nameParts[nameParts.length - 1]
+      .charAt(0)
+      .toUpperCase();
+  }
+
+  if (userName) {
+    userName.textContent = firstName;
+  }
+
+  if (avatar) {
+    avatar.textContent = initials;
+  }
 });

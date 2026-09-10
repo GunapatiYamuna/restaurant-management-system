@@ -29,7 +29,9 @@
 
     <!-- FoodieHub CSS -->
     <link rel="stylesheet" href="css/cart_style.css">
+    <link rel="stylesheet" href="css/footer.css">
 
+<link rel="stylesheet" href="css/navbar_auth.css">
 </head>
 
 <body>
@@ -109,15 +111,23 @@
                 <span class="cart-count">0</span>
 
             </a>
+            <div id="authButtons">
 
-            <a
-                href="login/login_register.html"
-                class="nav-login">
+                <a
+                    href="login/login_register.html"
+                    class="nav-login">
 
-                Login
+                    Login
 
-            </a>
-
+                </a>
+            </div>
+                <div id="userSection" class="navbar-user" style="display:none;">
+                    <div class="navbar-avatar" id="navbarAvatar"></div>
+                    <div class="navbar-greeting">
+                        <span>Hi,</span>
+                        <strong id="navbarUserName"></strong>
+                    </div>
+                </div>
         </div>
 
     </div>
@@ -622,50 +632,8 @@
 </section>
 
 
-<!-- ================= FOOTER ================= -->
-
-<footer class="bg-dark text-white py-4">
-
-    <div class="container text-center">
-
-        <h4>
-            FoodieHub
-        </h4>
-
-        <p>
-            <i class="bi bi-geo-alt-fill"></i>
-            Ongole, Andhra Pradesh
-        </p>
-
-        <p>
-            <i class="bi bi-envelope-fill"></i>
-            foodieHub@gmail.com
-        </p>
-
-        <p>
-            <i class="bi bi-telephone-fill"></i>
-            +91 9329154612
-        </p>
-
-        <div class="mb-3">
-
-            <i class="bi bi-facebook fs-3 me-3"></i>
-
-            <i class="bi bi-instagram fs-3 me-3"></i>
-
-            <i class="bi bi-twitter-x fs-3 me-3"></i>
-
-            <i class="bi bi-whatsapp fs-3"></i>
-
-        </div>
-
-        <p>
-            &copy; 2026 FoodieHub. All Rights Reserved.
-        </p>
-
-    </div>
-
-</footer>
+<div id="footer-placeholder" style="margin-top: 50px;"></div>
+<script src="js/footer.js"></script>
 
 
 <!-- Bootstrap JS -->
@@ -676,5 +644,6 @@
 
 <script src="js/cart_script.js"></script>
 
+<script src="js/navbar_auth.js"></script>
 </body>
 </html>
