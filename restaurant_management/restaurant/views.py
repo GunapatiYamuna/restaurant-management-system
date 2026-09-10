@@ -1,5 +1,16 @@
 from django.shortcuts import render
-
+from django.http import JsonResponse
+from django.contrib.auth.models import User
+from django.contrib.auth import authenticate
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.conf import settings
+from django.views.decorators.http import require_POST
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes
+from django.core.exceptions import ValidationError
+from django.contrib.auth.password_validation import validate_password
 
 RESTAURANTS = [
     {
@@ -70,6 +81,224 @@ RESTAURANTS = [
     },
 ]
 
+@csrf_exempt
+@require_POST
+def register_user(request):
+    name = request.POST.get("name", "").strip()
+    email = request.POST.get("email", "").strip().lower()
+    phone = request.POST.get("phone", "").strip()
+    password = request.POST.get("password", "")
+
+    if not name or not email or not phone or not password:
+        return JsonResponse(
+            {"success": False, "message": "All fields are required."},
+            status=400
+        )
+
+    if not email:
+        return JsonResponse(
+            {"success": False, "message": "Email is required."},
+            status=400
+        )
+
+    if User.objects.filter(username=email).exists():
+        return JsonResponse(
+            {"success": False, "message": "An account with this email already exists."},
+            status=400
+        )
+
+    if User.objects.filter(email=email).exists():
+        return JsonResponse(
+            {"success": False, "message": "An account with this email already exists."},
+            status=400
+        )
+
+    user = User.objects.create_user(
+        username=email,
+        email=email,
+        password=password,
+        first_name=name,
+    )
+
+    user.save()
+
+    return JsonResponse({
+        "success": True,
+        "message": "Account created successfully."
+    })
+
+@csrf_exempt
+@require_POST
+def login_user(request):
+    email = request.POST.get("email", "").strip().lower()
+    password = request.POST.get("password", "")
+
+    if not email or not password:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Email and password are required."
+            },
+            status=400
+        )
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid email or password."
+            },
+            status=401
+        )
+
+    authenticated_user = authenticate(
+        request,
+        username=user.username,
+        password=password
+    )
+
+    if authenticated_user is None:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid email or password."
+            },
+            status=401
+        )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Login successful.",
+        "user": {
+            "id": user.id,
+            "name": user.first_name or user.username,
+            "email": user.email,
+        }
+    })
+
+@csrf_exempt
+@require_POST
+def forgot_password(request):
+    email = request.POST.get("email", "").strip().lower()
+
+    if not email:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Please enter your email address."
+            },
+            status=400
+        )
+
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        # Don't reveal whether an email is registered.
+        return JsonResponse(
+            {
+                "success": True,
+                "message": "If an account exists with this email, a password reset link has been sent."
+            }
+        )
+
+    uid = urlsafe_base64_encode(force_bytes(user.pk))
+    token = default_token_generator.make_token(user)
+
+    reset_link = (
+        "http://127.0.0.1:5500/login/pages/reset-password.html"
+        f"?uid={uid}&token={token}"
+    )
+
+    subject = "FoodieHub Password Reset"
+
+    message = f"""Hello {user.first_name or user.username},
+
+We received a request to reset your FoodieHub password.
+
+Click the link below to create a new password:
+
+{reset_link}
+
+If you did not request a password reset, you can safely ignore this email.
+
+Thanks,
+FoodieHub Team
+"""
+
+    send_mail(
+        subject,
+        message,
+        settings.DEFAULT_FROM_EMAIL,
+        [user.email],
+        fail_silently=False,
+    )
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "If an account exists with this email, a password reset link has been sent."
+        }
+    )
+
+@csrf_exempt
+@require_POST
+def reset_password(request):
+    uid = request.POST.get("uid", "").strip()
+    token = request.POST.get("token", "").strip()
+    new_password = request.POST.get("password", "")
+
+    if not uid or not token or not new_password:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid password reset request."
+            },
+            status=400
+        )
+
+    try:
+        uid_value = urlsafe_base64_decode(uid).decode()
+        user = User.objects.get(pk=uid_value)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid or expired reset link."
+            },
+            status=400
+        )
+
+    if not default_token_generator.check_token(user, token):
+        return JsonResponse(
+            {
+                "success": False,
+                "message": "Invalid or expired reset link."
+            },
+            status=400
+        )
+
+    try:
+        validate_password(new_password, user=user)
+    except ValidationError as error:
+        return JsonResponse(
+            {
+                "success": False,
+                "message": error.messages[0]
+            },
+            status=400
+        )
+
+    user.set_password(new_password)
+    user.save()
+
+    return JsonResponse(
+        {
+            "success": True,
+            "message": "Password reset successfully."
+        }
+    )
 
 def restaurant_list(request):
     return render(
