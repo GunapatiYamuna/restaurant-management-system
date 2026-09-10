@@ -31,6 +31,7 @@
     <link rel="stylesheet" href="css/cart_style.css">
     <link rel="stylesheet" href="css/footer.css">
 
+<link rel="stylesheet" href="css/navbar_auth.css">
 </head>
 
 <body>
@@ -110,15 +111,23 @@
                 <span class="cart-count">0</span>
 
             </a>
+            <div id="authButtons">
 
-            <a
-                href="login/login_register.html"
-                class="nav-login">
+                <a
+                    href="login/login_register.html"
+                    class="nav-login">
 
-                Login
+                    Login
 
-            </a>
-
+                </a>
+            </div>
+                <div id="userSection" class="navbar-user" style="display:none;">
+                    <div class="navbar-avatar" id="navbarAvatar"></div>
+                    <div class="navbar-greeting">
+                        <span>Hi,</span>
+                        <strong id="navbarUserName"></strong>
+                    </div>
+                </div>
         </div>
 
     </div>
@@ -635,5 +644,6 @@
 
 <script src="js/cart_script.js"></script>
 
+<script src="js/navbar_auth.js"></script>
 </body>
 </html>

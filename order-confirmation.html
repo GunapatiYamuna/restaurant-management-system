@@ -35,6 +35,7 @@
     <link rel="stylesheet" href="css/cart_style.css">
     <link rel="stylesheet" href="css/footer.css">
 
+<link rel="stylesheet" href="css/navbar_auth.css">
 </head>
 
 <body>
@@ -112,13 +113,28 @@
             </a>
 
 
-            <a
+            <div id="authButtons">
+
+
+
+                <a
                 href="login/login_register.html"
                 class="nav-login">
 
                 Login
 
             </a>
+
+
+
+            </div>
+                <div id="userSection" class="navbar-user" style="display:none;">
+                    <div class="navbar-avatar" id="navbarAvatar"></div>
+                    <div class="navbar-greeting">
+                        <span>Hi,</span>
+                        <strong id="navbarUserName"></strong>
+                    </div>
+                </div>
 
         </div>
 
@@ -624,6 +640,7 @@ document.addEventListener("DOMContentLoaded", function () {
 </script>
 
 
+<script src="js/navbar_auth.js"></script>
 </body>
 
 </html>
