@@ -169,7 +169,7 @@ if (registerForm) {
 
     try {
       const response = await fetch(
-        "http://127.0.0.1:8000/api/register/",
+        "http://192.168.1.12:8000/api/register/",
         {
           method: "POST",
           headers: {
@@ -249,7 +249,7 @@ if (loginForm) {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/login/",
+        "http://192.168.1.12:8000/api/login/",
         {
           method: "POST",
           headers: {
@@ -331,7 +331,7 @@ if (forgotForm) {
     try {
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/forgot-password/",
+        "http://192.168.1.12:8000/api/forgot-password/",
         {
           method: "POST",
           headers: {
@@ -561,7 +561,7 @@ if (resetForm) {
         '<i class="bi bi-hourglass-split me-1"></i> Resetting...';
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/reset-password/",
+        "http://192.168.1.12:8000/api/reset-password/",
         {
           method: "POST",
           headers: {

@@ -381,7 +381,7 @@ if (registerForm) {
 
         const response =
           await fetch(
-            "http://127.0.0.1:8000/api/register/",
+            "http://192.168.1.12:8000/api/register/",
             {
               method: "POST",
 
@@ -515,7 +515,7 @@ if (loginForm) {
 
         const response =
           await fetch(
-            "http://127.0.0.1:8000/api/login/",
+            "http://192.168.1.12:8000/api/login/",
             {
               method: "POST",
 
@@ -638,7 +638,7 @@ if (forgotForm) {
 
         const response =
           await fetch(
-            "http://127.0.0.1:8000/api/forgot-password/",
+            "http://192.168.1.12:8000/api/forgot-password/",
             {
               method: "POST",
 
@@ -946,7 +946,7 @@ if (resetForm) {
 
         const response =
           await fetch(
-            "http://127.0.0.1:8000/api/reset-password/",
+            "http://192.168.1.12:8000/api/reset-password/",
             {
               method: "POST",
 
