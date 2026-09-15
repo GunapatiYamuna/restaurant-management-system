@@ -1,0 +1,14 @@
+# Environment variables
+.env
+
+# Python virtual environments
+venv/
+.venv/
+.venv-1/
+
+# Python generated files
+__pycache__/
+*.py[cod]
+
+# Local database
+db.sqlite3
