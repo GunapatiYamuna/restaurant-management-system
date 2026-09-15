@@ -207,9 +207,9 @@ def forgot_password(request):
     token = default_token_generator.make_token(user)
 
     reset_link = (
-        "http://127.0.0.1:5500/login/pages/reset-password.html"
-        f"?uid={uid}&token={token}"
-    )
+    "http://192.168.1.12:5500/login/pages/reset-password.html"
+    f"?uid={uid}&token={token}"
+)
 
     subject = "FoodieHub Password Reset"
 
