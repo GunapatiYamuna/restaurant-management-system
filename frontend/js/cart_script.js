@@ -2,6 +2,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     updateCartCount();
     setupAddToCartButtons();
+    setupUniversalSearch();
     renderCartPage();
     renderCheckoutPage();
     setupPaymentMethods();
@@ -56,100 +57,81 @@ function saveCart(cart) {
 
 function setupAddToCartButtons() {
 
-    const buttons =
-        document.querySelectorAll(
-            ".add-to-cart, .add-cart"
-        );
+    /*
+     * Menu cards are loaded dynamically from Django.  Therefore we must
+     * listen on document instead of attaching listeners only to buttons
+     * that exist during the first page load.
+     */
+    if (document.body.dataset.foodieCartClickHandler === "true") {
+        return;
+    }
 
-    buttons.forEach(function (button) {
+    document.body.dataset.foodieCartClickHandler = "true";
 
-        button.addEventListener("click", function () {
+    document.addEventListener("click", function (event) {
 
-            const name =
-                button.getAttribute("data-name");
+        const button = event.target.closest(".add-to-cart, .add-cart");
 
-            const price =
-                Number(
-                    button.getAttribute("data-price")
-                );
+        if (!button) {
+            return;
+        }
 
-            const image =
-                button.getAttribute("data-image") || "";
+        event.preventDefault();
 
-            const id = Number(button.getAttribute("data-id") || 0);
-            const restaurantId = Number(button.getAttribute("data-restaurant-id") || 0);
-            const restaurantName = button.getAttribute("data-restaurant-name") || "";
+        const name = button.getAttribute("data-name") || "";
+        const price = Number(button.getAttribute("data-price") || 0);
+        const image = button.getAttribute("data-image") || "";
+        const id = Number(button.getAttribute("data-id") || 0);
+        const restaurantId = Number(button.getAttribute("data-restaurant-id") || 0);
+        const restaurantName = button.getAttribute("data-restaurant-name") || "";
 
-            if (!name || !price) {
+        if (!name || !Number.isFinite(price) || price <= 0) {
+            console.error("Add to Cart: missing or invalid data-name/data-price", button);
+            return;
+        }
 
-                console.error(
-                    "Missing data-name or data-price"
-                );
+        let cart = getCart();
 
-                return;
-
+        const existingItem = cart.find(function (item) {
+            if (id && Number(item.id) === id) {
+                return true;
             }
 
-            let cart = getCart();
-
-            const existingItem =
-                cart.find(function (item) {
-
-                    return (id && Number(item.id) === id) || (!id && item.name === name && Number(item.restaurant_id || 0) === restaurantId);
-
-                });
-
-
-            if (existingItem) {
-
-                existingItem.quantity += 1;
-
-            } else {
-
-                cart.push({
-
-                    id: id || null,
-                    restaurant_id: restaurantId || null,
-                    restaurant_name: restaurantName,
-                    name: name,
-                    price: price,
-                    image: image,
-                    quantity: 1
-
-                });
-
-            }
-
-
-            saveCart(cart);
-            showGoToCartButton();
-
-            const oldHTML =
-                button.innerHTML;
-
-
-            button.innerHTML =
-                "✓ Added";
-
-            button.disabled = true;
-
-
-            setTimeout(function () {
-
-                button.innerHTML =
-                    oldHTML;
-
-                button.disabled = false;
-
-            }, 1000);
-
-
+            return !id &&
+                item.name === name &&
+                Number(item.restaurant_id || 0) === restaurantId;
         });
 
+        if (existingItem) {
+            existingItem.quantity = Number(existingItem.quantity || 0) + 1;
+        } else {
+            cart.push({
+                id: id || null,
+                restaurant_id: restaurantId || null,
+                restaurant_name: restaurantName,
+                name: name,
+                price: price,
+                image: image,
+                quantity: 1
+            });
+        }
+
+        saveCart(cart);
+        showGoToCartButton();
+
+        const oldHTML = button.innerHTML;
+        const oldDisabled = button.disabled;
+
+        button.innerHTML = "✓ Added";
+        button.disabled = true;
+
+        setTimeout(function () {
+            button.innerHTML = oldHTML;
+            button.disabled = oldDisabled;
+        }, 1000);
     });
 
 }
-
 
 /* =========================================================
    CART COUNT
@@ -159,28 +141,22 @@ function updateCartCount() {
 
     const cart = getCart();
 
-    const totalItems = cart.reduce(
-        function (total, item) {
-            return total + Number(item.quantity || 0);
-        },
-        0
-    );
+    const totalItems = cart.reduce(function (total, item) {
+        return total + Math.max(0, Number(item.quantity || 0));
+    }, 0);
 
-    const cartLinks =
-        document.querySelectorAll(".nav-cart");
+    /* Support every FoodieHub navbar/cart markup used in the project. */
+    document.querySelectorAll(".cart-count, #cart-count").forEach(function (badge) {
+        badge.textContent = totalItems;
+        badge.style.display = "inline-block";
+    });
 
-    cartLinks.forEach(function (cartIcon) {
-
-        const badge =
-            cartIcon.querySelector(".cart-count");
-
-        if (badge) {
-            badge.textContent = totalItems;
-        }
-
+    /* Keep a numeric accessibility/value attribute available as well. */
+    document.querySelectorAll(".nav-cart").forEach(function (cartLink) {
+        cartLink.setAttribute("data-cart-count", String(totalItems));
+        cartLink.setAttribute("aria-label", `Cart (${totalItems} item${totalItems === 1 ? "" : "s"})`);
     });
 }
-
 
 /* =========================================================
    RENDER CART PAGE
@@ -1445,23 +1421,186 @@ document.addEventListener("DOMContentLoaded", function () {
 
 });
 function showGoToCartButton() {
+
     let button = document.getElementById("goToCartButton");
 
     if (!button) {
         button = document.createElement("button");
-
         button.id = "goToCartButton";
+        button.type = "button";
         button.className = "primary-btn";
-
-        button.innerHTML =
-            '<i class="fa-solid fa-cart-shopping"></i> Go to Cart';
+        button.innerHTML = '<i class="fa-solid fa-cart-shopping"></i> Go to Cart';
 
         button.addEventListener("click", function () {
             window.location.href = "cart.html";
+        });
+
+        Object.assign(button.style, {
+            position: "fixed",
+            right: "25px",
+            bottom: "25px",
+            zIndex: "9999",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+            padding: "12px 22px",
+            border: "none",
+            borderRadius: "8px",
+            background: "#ff6b00",
+            color: "#ffffff",
+            fontSize: "15px",
+            fontWeight: "600",
+            cursor: "pointer",
+            boxShadow: "0 4px 12px rgba(0,0,0,.2)"
         });
 
         document.body.appendChild(button);
     }
 
     button.style.display = "flex";
+}
+
+/* =========================================================
+   UNIVERSAL FOODIEHUB SEARCH
+========================================================= */
+
+function setupUniversalSearch() {
+
+    const searchInputs = document.querySelectorAll(
+        "#searchInput, #restaurantSearch, #heroSearch"
+    );
+
+    if (!searchInputs.length) {
+        return;
+    }
+
+    /* Avoid installing the same handler twice if another script initializes it. */
+    searchInputs.forEach(function (input) {
+
+        if (input.dataset.foodieSearchReady === "true") {
+            return;
+        }
+
+        input.dataset.foodieSearchReady = "true";
+
+        input.addEventListener("input", function () {
+            filterCurrentPage(this.value);
+        });
+
+        input.addEventListener("keydown", function (event) {
+            if (event.key !== "Enter") {
+                return;
+            }
+
+            event.preventDefault();
+            const value = this.value.trim();
+
+            filterCurrentPage(value);
+
+            /* On pages without searchable cards, take the search to Menu. */
+            if (value && !hasSearchableContent()) {
+                localStorage.setItem("foodieSearchQuery", value);
+                window.location.href = "menu.html";
+            }
+        });
+    });
+
+    /* If the menu was opened from another page with a search term, apply it. */
+    const savedQuery = localStorage.getItem("foodieSearchQuery");
+    if (savedQuery && isMenuPage()) {
+        localStorage.removeItem("foodieSearchQuery");
+
+        searchInputs.forEach(function (input) {
+            if (!input.value) {
+                input.value = savedQuery;
+            }
+        });
+
+        filterCurrentPage(savedQuery);
+    }
+}
+
+function hasSearchableContent() {
+    return document.querySelectorAll(
+        ".restaurant-item, .food-card, #dynamicMenuSections .card, .menu-item-card, .searchable-item"
+    ).length > 0;
+}
+
+function isMenuPage() {
+    return Boolean(document.getElementById("dynamicMenuSections")) ||
+        /(^|\/)menu\.html$/i.test(window.location.pathname);
+}
+
+function filterCurrentPage(value) {
+
+    const searchTerm = String(value || "").trim().toLowerCase();
+
+    /* Keep all visible search boxes synchronized. */
+    document.querySelectorAll(
+        "#searchInput, #restaurantSearch, #heroSearch"
+    ).forEach(function (input) {
+        if (input.value !== String(value || "")) {
+            input.value = String(value || "");
+        }
+    });
+
+    const restaurantItems = document.querySelectorAll(".restaurant-item");
+    const foodItems = document.querySelectorAll(
+        ".food-card, #dynamicMenuSections .card, .menu-item-card, .searchable-item"
+    );
+
+    let found = 0;
+
+    restaurantItems.forEach(function (item) {
+
+        const text = [
+            item.dataset.name || "",
+            item.dataset.cuisine || "",
+            item.dataset.location || "",
+            item.textContent || ""
+        ].join(" ").toLowerCase();
+
+        const match = !searchTerm || text.includes(searchTerm);
+        item.style.display = match ? "" : "none";
+
+        if (match) found++;
+    });
+
+    foodItems.forEach(function (item) {
+
+        const text = [
+            item.dataset.name || "",
+            item.dataset.category || "",
+            item.dataset.restaurantName || "",
+            item.textContent || ""
+        ].join(" ").toLowerCase();
+
+        const match = !searchTerm || text.includes(searchTerm);
+        item.style.display = match ? "" : "none";
+
+        if (match) found++;
+    });
+
+    /* Remove empty menu category sections after filtering. */
+    document.querySelectorAll("#dynamicMenuSections section").forEach(function (section) {
+        const cards = section.querySelectorAll(".card");
+        if (!cards.length) return;
+
+        const visibleCards = Array.from(cards).filter(function (card) {
+            return card.style.display !== "none";
+        });
+
+        section.style.display = visibleCards.length ? "" : "none";
+    });
+
+    const noResults = document.getElementById("noResults");
+    if (noResults) {
+        noResults.style.display = (found === 0 && searchTerm) ? "block" : "none";
+    }
+
+    const restaurantCount = document.getElementById("restaurantCount");
+    if (restaurantCount && restaurantItems.length) {
+        restaurantCount.textContent =
+            `${found} Restaurant${found !== 1 ? "s" : ""}`;
+    }
 }

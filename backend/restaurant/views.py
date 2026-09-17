@@ -266,6 +266,34 @@ def create_order(request):
     return JsonResponse({"success": True, "order_id": order.id, "total": float(order.total), "message": "Order placed successfully."})
 
 
+@require_GET
+def reservation_history(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Login required."}, status=401)
+
+    reservations = []
+    for r in request.user.reservations.select_related("restaurant").prefetch_related("items").order_by("-created_at"):
+        reservations.append({
+            "id": r.id,
+            "restaurant": r.restaurant.name,
+            "restaurant_id": r.restaurant_id,
+            "name": r.name,
+            "date": r.date.isoformat(),
+            "time": r.time.strftime("%H:%M"),
+            "guests": r.guests,
+            "status": r.status,
+            "message": r.message,
+            "created_at": r.created_at.isoformat(),
+            "prebook_total": float(sum(item.price * item.quantity for item in r.items.all())),
+            "items": [
+                {"name": item.name, "price": float(item.price), "quantity": item.quantity}
+                for item in r.items.all()
+            ],
+        })
+
+    return JsonResponse({"success": True, "reservations": reservations})
+
+
 @csrf_exempt
 @require_POST
 def forgot_password(request):

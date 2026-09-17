@@ -1045,103 +1045,214 @@ if (resetForm) {
 
 function loadProfile() {
 
-  const user =
-    getSession();
-
+  const user = getSession();
 
   if (!user) {
-
-    window.location.href =
-      "login.html";
-
+    window.location.href = "login.html";
     return;
-
   }
-
 
   const fields = {
-
-    profileName:
-      user.name,
-
-    profileEmail:
-      user.email,
-
-    profilePhone:
-      user.phone || "Not added",
-
-    profileCity:
-      user.city || "Not added",
-
-    editName:
-      user.name,
-
-    editEmail:
-      user.email,
-
-    editPhone:
-      user.phone || "",
-
-    editCity:
-      user.city || ""
-
+    profileName: user.name,
+    profileEmail: user.email,
+    profilePhone: user.phone || "Not added",
+    profileCity: user.city || "Not added",
+    editName: user.name,
+    editEmail: user.email,
+    editPhone: user.phone || "",
+    editCity: user.city || ""
   };
 
-
-  Object.entries(fields).forEach(
-    ([id, value]) => {
-
-      const element =
-        document.getElementById(id);
-
-
-      if (!element) return;
-
-
-      if (
-        element.value !== undefined
-      ) {
-
-        element.value = value;
-
-      } else {
-
-        element.textContent = value;
-
-      }
-
+  Object.entries(fields).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (!element) return;
+    if (element.value !== undefined) {
+      element.value = value;
+    } else {
+      element.textContent = value;
     }
-  );
+  });
 
+  const name = user.name || "User";
+  const initials = name
+    .split(/\s+/)
+    .map(x => x[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
 
-  const name =
-    user.name || "User";
+  const avatar = document.getElementById("profileAvatar");
+  if (avatar) avatar.textContent = initials;
 
-
-  const initials =
-    name
-      .split(/\s+/)
-      .map(x => x[0])
-      .slice(0, 2)
-      .join("")
-      .toUpperCase();
-
-
-  const avatar =
-    document.getElementById(
-      "profileAvatar"
-    );
-
-
-  if (avatar) {
-
-    avatar.textContent =
-      initials;
-
-  }
-
+  loadProfileActivity();
 }
 
+
+async function loadProfileActivity() {
+
+  const orderCount = document.getElementById("orderCount");
+  const reservationCount = document.getElementById("reservationCount");
+  const navOrderCount = document.getElementById("navOrderCount");
+  const navReservationCount = document.getElementById("navReservationCount");
+  const ordersList = document.getElementById("ordersList");
+  const reservationsList = document.getElementById("reservationsList");
+
+  try {
+    const [ordersResponse, reservationsResponse] = await Promise.all([
+      fetch("/api/orders/history/", { credentials: "same-origin" }),
+      fetch("/api/reservations/history/", { credentials: "same-origin" })
+    ]);
+
+    const ordersData = await ordersResponse.json();
+    const reservationsData = await reservationsResponse.json();
+
+    if (ordersResponse.status === 401 || reservationsResponse.status === 401) {
+      localStorage.removeItem(SESSION_KEY);
+      window.location.href = "login.html";
+      return;
+    }
+
+    const orders = ordersData.success && Array.isArray(ordersData.orders)
+      ? ordersData.orders
+      : [];
+
+    const reservations = reservationsData.success && Array.isArray(reservationsData.reservations)
+      ? reservationsData.reservations
+      : [];
+
+    if (orderCount) orderCount.textContent = orders.length;
+    if (reservationCount) reservationCount.textContent = reservations.length;
+    if (navOrderCount) navOrderCount.textContent = orders.length;
+    if (navReservationCount) navReservationCount.textContent = reservations.length;
+
+    renderProfileOrders(orders, ordersList);
+    renderProfileReservations(reservations, reservationsList);
+
+  } catch (error) {
+    console.error("Profile activity error:", error);
+
+    if (ordersList) {
+      ordersList.innerHTML = '<div class="alert alert-danger mb-0">Unable to load your orders. Please refresh the page.</div>';
+    }
+
+    if (reservationsList) {
+      reservationsList.innerHTML = '<div class="alert alert-danger mb-0">Unable to load your reservations. Please refresh the page.</div>';
+    }
+  }
+}
+
+
+function escapeProfileText(value) {
+  return String(value ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+function formatProfileDate(value) {
+  if (!value) return "";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+
+  return date.toLocaleString([], {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+
+function formatReservationDate(dateValue, timeValue) {
+  if (!dateValue) return "";
+
+  const date = new Date(`${dateValue}T${timeValue || "00:00"}`);
+  if (Number.isNaN(date.getTime())) return `${dateValue} ${timeValue || ""}`;
+
+  return date.toLocaleString([], {
+    day: "2-digit",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
+}
+
+
+function renderProfileOrders(orders, container) {
+
+  if (!container) return;
+
+  if (!orders.length) {
+    container.innerHTML = '<div class="text-muted">You have not placed any delivery orders yet.</div>';
+    return;
+  }
+
+  container.innerHTML = orders.map(order => {
+    const items = Array.isArray(order.items) ? order.items : [];
+    const itemText = items.length
+      ? items.map(item => `${escapeProfileText(item.name)} × ${Number(item.quantity || 1)}`).join(", ")
+      : "No item details";
+
+    return `
+      <div class="border rounded-3 p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+          <div>
+            <strong>Order #${escapeProfileText(order.id)}</strong>
+            <div class="text-muted small mt-1">${escapeProfileText(formatProfileDate(order.created_at))}</div>
+          </div>
+          <span class="badge bg-secondary text-uppercase">${escapeProfileText(order.status || "placed")}</span>
+        </div>
+        <div class="mt-2 small">${itemText}</div>
+        <div class="mt-2 fw-semibold">Total: ₹${Number(order.total || 0).toFixed(2)}</div>
+      </div>
+    `;
+  }).join("");
+}
+
+
+function renderProfileReservations(reservations, container) {
+
+  if (!container) return;
+
+  if (!reservations.length) {
+    container.innerHTML = '<div class="text-muted">You have not booked any tables yet.</div>';
+    return;
+  }
+
+  container.innerHTML = reservations.map(reservation => {
+    const items = Array.isArray(reservation.items) ? reservation.items : [];
+    const itemText = items.length
+      ? `<div class="small mt-2"><strong>Pre-booked:</strong> ${items.map(item => `${escapeProfileText(item.name)} × ${Number(item.quantity || 1)}`).join(", ")}</div>`
+      : "";
+
+    const total = Number(reservation.prebook_total || 0);
+    const totalText = total > 0
+      ? `<div class="small mt-1"><strong>Pre-booked food:</strong> ₹${total.toFixed(2)}</div>`
+      : "";
+
+    return `
+      <div class="border rounded-3 p-3 mb-3">
+        <div class="d-flex justify-content-between align-items-start gap-3 flex-wrap">
+          <div>
+            <strong>${escapeProfileText(reservation.restaurant)}</strong>
+            <div class="text-muted small mt-1">Reservation #${escapeProfileText(reservation.id)}</div>
+          </div>
+          <span class="badge bg-secondary text-uppercase">${escapeProfileText(reservation.status || "pending")}</span>
+        </div>
+        <div class="small mt-2"><strong>Date & Time:</strong> ${escapeProfileText(formatReservationDate(reservation.date, reservation.time))}</div>
+        <div class="small mt-1"><strong>Guests:</strong> ${escapeProfileText(reservation.guests)}</div>
+        ${itemText}
+        ${totalText}
+      </div>
+    `;
+  }).join("");
+}
 
 const profileForm =
   document.getElementById(

@@ -14,6 +14,7 @@ urlpatterns = [
     path("menu-items/", views.menu_items),
     path("restaurants/<int:restaurant_id>/", views.restaurant_detail),
     path("reservations/", views.create_reservation),
+    path("reservations/history/", views.reservation_history),
     path("orders/", views.create_order),
     path("orders/history/", views.order_history),
 ]

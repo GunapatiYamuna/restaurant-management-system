@@ -48,9 +48,9 @@
 
       <div class="card profile-nav-card mt-4">
         <a class="nav-link active" href="profile.html"><i class="bi bi-person me-2"></i> Profile Information</a>
-        <a class="nav-link" href="#"><i class="bi bi-bag-check me-2"></i> My Orders <span class="badge bg-secondary float-end">Coming Soon</span></a>
-        <a class="nav-link" href="#"><i class="bi bi-calendar-check me-2"></i> Reservations <span class="badge bg-secondary float-end">Coming Soon</span></a>
-        <a class="nav-link" href="#"><i class="bi bi-heart me-2"></i> Favorites <span class="badge bg-secondary float-end">Coming Soon</span></a>
+        <a class="nav-link" href="#ordersSection"><i class="bi bi-bag-check me-2"></i> My Orders <span id="navOrderCount" class="badge bg-secondary float-end">0</span></a>
+        <a class="nav-link" href="#reservationsSection"><i class="bi bi-calendar-check me-2"></i> Reservations <span id="navReservationCount" class="badge bg-secondary float-end">0</span></a>
+
       </div>
     </div>
 
@@ -86,7 +86,7 @@
           <div class="card stat-card">
             <div class="d-flex align-items-center gap-3">
               <div class="stat-icon"><i class="bi bi-bag"></i></div>
-              <div><div class="small text-muted">Orders</div><strong>0</strong></div>
+              <div><div class="small text-muted">Orders</div><strong id="orderCount">0</strong></div>
             </div>
           </div>
         </div>
@@ -94,17 +94,25 @@
           <div class="card stat-card">
             <div class="d-flex align-items-center gap-3">
               <div class="stat-icon"><i class="bi bi-calendar-check"></i></div>
-              <div><div class="small text-muted">Reservations</div><strong>0</strong></div>
+              <div><div class="small text-muted">Reservations</div><strong id="reservationCount">0</strong></div>
             </div>
           </div>
         </div>
-        <div class="col-md-4">
-          <div class="card stat-card">
-            <div class="d-flex align-items-center gap-3">
-              <div class="stat-icon"><i class="bi bi-heart"></i></div>
-              <div><div class="small text-muted">Favorites</div><strong>0</strong></div>
-            </div>
-          </div>
+        
+      </div>
+
+      <div id="ordersSection" class="card section-card mt-4">
+        <h2 class="section-title
+        "><i class="bi bi-bag-check me-2"></i>My Orders</h2>
+        <div id="ordersList">
+          <div class="text-muted">Loading orders...</div>
+        </div>
+      </div>
+
+      <div id="reservationsSection" class="card section-card mt-4">
+        <h2 class="section-title"><i class="bi bi-calendar-check me-2"></i>My Reservations</h2>
+        <div id="reservationsList">
+          <div class="text-muted">Loading reservations...</div>
         </div>
       </div>
 
