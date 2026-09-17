@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="t d">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff4ee"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-opacity=".14"/></filter></defs>
+<rect width="800" height="560" fill="url(#g)"/><circle cx="110" cy="95" r="85" fill="#ff7043" opacity=".10"/><circle cx="690" cy="465" r="120" fill="#ffab70" opacity=".10"/>
+<rect x="80" y="70" width="640" height="420" rx="34" fill="#fff" filter="url(#s)"/>
+<text x="120" y="125" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#ff7043">ROTI</text>
+<ellipse cx="450" cy="325" rx="165" ry="85" fill="#fff"/><path d="M340 325q55-105 110 0 55-105 110 0-50 95-110 0-60 95-110 0" fill="#ffab70"/>
+<text id="t" x="400" y="455" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="800" fill="#242424">Pulka</text>
+<text x="400" y="482" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#777">Freshly prepared • FoodieHub</text>
+<desc id="d">Food illustration for Pulka</desc></svg>

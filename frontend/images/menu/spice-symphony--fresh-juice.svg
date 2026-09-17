@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="t d">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0ea"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-opacity=".14"/></filter></defs>
+<rect width="800" height="560" fill="url(#g)"/><circle cx="110" cy="95" r="85" fill="#c94c2c" opacity=".10"/><circle cx="690" cy="465" r="120" fill="#ff7849" opacity=".10"/>
+<rect x="80" y="70" width="640" height="420" rx="34" fill="#fff" filter="url(#s)"/>
+<text x="120" y="125" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#c94c2c">BEVERAGES</text>
+<path d="M370 250h160l-25 170H395z" fill="#fff"/><path d="M385 300h130v100H400z" fill="#c94c2c"/><path d="M490 225l55-55" stroke="#c94c2c" stroke-width="12" stroke-linecap="round"/><circle cx="450" cy="300" r="24" fill="#ff7849"/>
+<text id="t" x="400" y="455" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="800" fill="#242424">Fresh Juice</text>
+<text x="400" y="482" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#777">Freshly prepared • FoodieHub</text>
+<desc id="d">Food illustration for Fresh Juice</desc></svg>

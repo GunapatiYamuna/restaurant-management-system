@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 560" role="img" aria-labelledby="t d">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff3e6"/><stop offset="1" stop-color="#ffffff"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="10" stdDeviation="12" flood-opacity=".16"/></filter></defs>
+<rect width="900" height="560" fill="url(#g)"/><circle cx="730" cy="95" r="120" fill="#ff7b00" opacity=".22"/><circle cx="130" cy="460" r="150" fill="#d94801" opacity=".10"/>
+<rect x="95" y="120" width="710" height="300" rx="28" fill="#fff" filter="url(#s)"/>
+<rect x="125" y="155" width="650" height="65" rx="16" fill="#d94801"/><text x="450" y="198" text-anchor="middle" font-family="Arial,sans-serif" font-size="30" font-weight="700" fill="#fff">FOODIEHUB</text>
+<rect x="155" y="255" width="150" height="105" rx="14" fill="#f5f5f5"/><rect x="375" y="255" width="150" height="105" rx="14" fill="#f5f5f5"/><rect x="595" y="255" width="150" height="105" rx="14" fill="#f5f5f5"/>
+<circle cx="230" cy="307" r="32" fill="#ff7b00"/><circle cx="450" cy="307" r="32" fill="#d94801"/><circle cx="670" cy="307" r="32" fill="#ff7b00"/>
+<path d="M195 365h70M415 365h70M635 365h70" stroke="#444" stroke-width="10" stroke-linecap="round"/>
+<circle cx="450" cy="472" r="42" fill="#d94801"/><text x="450" y="485" text-anchor="middle" font-family="Arial,sans-serif" font-size="28" font-weight="800" fill="#fff">SS</text>
+<text id="t" x="450" y="525" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="700" fill="#242424">Spice Symphony</text><desc id="d">FoodieHub restaurant illustration for Spice Symphony</desc></svg>

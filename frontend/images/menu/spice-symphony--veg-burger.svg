@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 560" role="img" aria-labelledby="t d">
+<defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0ea"/><stop offset="1" stop-color="#fff"/></linearGradient><filter id="s"><feDropShadow dx="0" dy="10" stdDeviation="10" flood-opacity=".14"/></filter></defs>
+<rect width="800" height="560" fill="url(#g)"/><circle cx="110" cy="95" r="85" fill="#c94c2c" opacity=".10"/><circle cx="690" cy="465" r="120" fill="#ff7849" opacity=".10"/>
+<rect x="80" y="70" width="640" height="420" rx="34" fill="#fff" filter="url(#s)"/>
+<text x="120" y="125" font-family="Arial,sans-serif" font-size="18" font-weight="700" fill="#c94c2c">BURGERS</text>
+<rect x="315" y="255" width="270" height="120" rx="45" fill="#8b4a2b"/><rect x="335" y="300" width="230" height="25" rx="10" fill="#f2c14e"/><rect x="325" y="330" width="250" height="25" rx="8" fill="#c94c2c"/><path d="M330 265q120-80 240 0" fill="#d9a066"/><circle cx="400" cy="245" r="5" fill="#fff"/><circle cx="470" cy="235" r="5" fill="#fff"/>
+<text id="t" x="400" y="455" text-anchor="middle" font-family="Arial,sans-serif" font-size="25" font-weight="800" fill="#242424">Veg Burger</text>
+<text x="400" y="482" text-anchor="middle" font-family="Arial,sans-serif" font-size="14" fill="#777">Freshly prepared • FoodieHub</text>
+<desc id="d">Food illustration for Veg Burger</desc></svg>
