@@ -24,8 +24,6 @@ document.addEventListener("DOMContentLoaded", async function () {
                 <div class="restaurant-card">
                     <div class="restaurant-image">
                         <img src="${escapeAttr(image)}" alt="${escapeAttr(r.name)}" onerror="this.src='https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=900&q=80';">
-                        ${index < 3 ? '<span class="featured-tag">Featured</span>' : ''}
-                        <button class="favorite-btn" type="button"><i class="bi bi-heart"></i></button>
                     </div>
                     <div class="restaurant-card-body">
                         <div class="restaurant-top">
@@ -50,7 +48,6 @@ document.addEventListener("DOMContentLoaded", async function () {
             </div>`;
         }).join("");
 
-        bindFavorites();
         document.querySelectorAll("#restaurantSearch, #cuisineFilter, #priceFilter, #ratingFilter").forEach(el => el.dispatchEvent(new Event(el.tagName === 'INPUT' ? 'input' : 'change')));
         const count = document.getElementById("restaurantCount");
         if (count) count.textContent = `${restaurants.length} Restaurant${restaurants.length !== 1 ? 's' : ''}`;
@@ -60,16 +57,5 @@ document.addEventListener("DOMContentLoaded", async function () {
     }
 });
 
-function bindFavorites() {
-    document.querySelectorAll(".favorite-btn").forEach(button => {
-        button.addEventListener("click", function () {
-            button.classList.toggle("active");
-            const icon = button.querySelector("i");
-            if (!icon) return;
-            icon.classList.toggle("bi-heart", !button.classList.contains("active"));
-            icon.classList.toggle("bi-heart-fill", button.classList.contains("active"));
-        });
-    });
-}
 function escapeHtml(value) { return String(value ?? "").replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
 function escapeAttr(value) { return escapeHtml(value); }

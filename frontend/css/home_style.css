@@ -1136,3 +1136,53 @@ footer h3 {
         font-size: 12px !important;
     }
 }
+
+/* Dynamic restaurant grid */
+#restaurantGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+#restaurantGrid .restaurant-item {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* Dynamic restaurant cards */
+#restaurantGrid .restaurant-card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+/* Restaurant card image */
+#restaurantGrid .restaurant-card img {
+    width: 100%;
+    height: 220px;
+    object-fit: cover;
+    display: block;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+    #restaurantGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+    #restaurantGrid {
+        grid-template-columns: 1fr;
+        padding: 0 12px;
+    }
+}

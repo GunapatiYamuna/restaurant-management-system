@@ -69,41 +69,7 @@ addButtons.forEach(button => {
 updateCartCount();
 
 
-// =======================================
-// SEARCH FOOD
-// =======================================
 
-const searchInput =
-    document.getElementById("searchInput");
-
-const foodCards =
-    document.querySelectorAll(".food-card");
-
-searchInput.addEventListener("input", function () {
-
-    const searchValue =
-        this.value.toLowerCase().trim();
-
-    foodCards.forEach(card => {
-
-        const foodName =
-            card.querySelector("h3")
-                .textContent
-                .toLowerCase();
-
-        if (foodName.includes(searchValue)) {
-
-            card.style.display = "block";
-
-        } else {
-
-            card.style.display = "none";
-
-        }
-
-    });
-
-});
 
 
 // =======================================
@@ -116,38 +82,12 @@ const orderButton =
 orderButton.addEventListener("click", function () {
 
     document
-        .getElementById("popular")
+        .getElementById("restaurants")
         .scrollIntoView({
             behavior: "smooth"
         });
 
 });
-
-
-
-
-
-// =======================================
-// EXPLORE BUTTONS
-// =======================================
-
-const exploreButtons =
-    document.querySelectorAll(".explore-btn");
-
-exploreButtons.forEach(button => {
-
-    button.addEventListener("click", function () {
-
-        document
-            .getElementById("popular")
-            .scrollIntoView({
-                behavior: "smooth"
-            });
-
-    });
-
-});
-
 
 // =======================================
 // VIEW MENU BUTTONS
@@ -161,7 +101,7 @@ menuButtons.forEach(button => {
     button.addEventListener("click", function () {
 
         document
-            .getElementById("popular")
+            .getElementById("restaurants")
             .scrollIntoView({
                 behavior: "smooth"
             });
