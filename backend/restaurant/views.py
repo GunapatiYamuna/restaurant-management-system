@@ -3,6 +3,7 @@ from datetime import date
 from decimal import Decimal
 from pathlib import Path
 from django.conf import settings
+from django.core.mail import send_mail
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -299,14 +300,49 @@ def reservation_history(request):
 def forgot_password(request):
     data = _data(request)
     email = str(data.get("email", "")).strip().lower()
+
     user = User.objects.filter(email=email).first()
-    # Do not reveal whether an email exists. In DEBUG, expose a local reset URL for project demos.
-    response = {"success": True, "message": "If an account exists for that email, password reset instructions are ready."}
-    if user and settings.DEBUG:
+
+    # Do not reveal whether an account exists.
+    response = {
+        "success": True,
+        "message": "If an account exists for that email, password reset instructions are ready."
+    }
+
+    if user:
         uid = urlsafe_base64_encode(force_bytes(user.pk))
         token = default_token_generator.make_token(user)
-        response["reset_url"] = f"/login/pages/reset-password.html?uid={uid}&token={token}"
-        response["message"] += f" <a href='{response['reset_url']}'>Open the password reset page</a>."
+
+        reset_path = f"/login/pages/reset-password.html?uid={uid}&token={token}"
+        reset_url = f"{settings.FRONTEND_BASE_URL}{reset_path}"
+
+        try:
+            send_mail(
+                "FoodieHub Password Reset",
+                (
+                    "Hello,\n\n"
+                    "We received a request to reset your FoodieHub password.\n\n"
+                    "Click the link below to reset your password:\n\n"
+                    f"{reset_url}\n\n"
+                    "If you did not request a password reset, you can ignore this email.\n\n"
+                    "FoodieHub Team"
+                ),
+                settings.DEFAULT_FROM_EMAIL,
+                [user.email],
+                fail_silently=False,
+            )
+
+        except Exception as error:
+            print("Password reset email error:", error)
+
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Unable to send the password reset email. Please try again."
+                },
+                status=500,
+            )
+
     return JsonResponse(response)
 
 
