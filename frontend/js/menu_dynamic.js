@@ -67,7 +67,22 @@ document.addEventListener("DOMContentLoaded", async function () {
                     </div>
                 </section>`;
         }).join("");
+                    // Scroll to the category requested from the homepage
+        if (window.location.hash) {
+            const targetId = window.location.hash.substring(1);
 
+            setTimeout(() => {
+                const target = document.getElementById(targetId);
+
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: "smooth",
+                        block: "start"
+                    });
+                }
+            }, 100);
+        }
+        
         /* Keep the existing category buttons and only point them to
            the categories that actually exist in the database. */
         document.querySelectorAll(".category-btn").forEach(button => {
