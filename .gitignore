@@ -1,5 +1,6 @@
 # Environment variables
 .env
+backend/.env
 
 # Python virtual environments
 venv/
@@ -11,4 +12,10 @@ __pycache__/
 *.py[cod]
 
 # Local database
-db.sqlite3
+*.sqlite3
+
+# Django generated static files
+backend/staticfiles/
+
+# macOS
+.DS_Store
