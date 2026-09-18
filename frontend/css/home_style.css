@@ -1186,3 +1186,274 @@ footer h3 {
         padding: 0 12px;
     }
 }
+/* =========================================================
+   HOME PAGE - DYNAMIC RESTAURANT GRID
+   Scoped only to #restaurantGrid
+   ========================================================= */
+
+#restaurantGrid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 24px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+    box-sizing: border-box;
+}
+
+/* Restaurant item wrapper */
+#restaurantGrid .restaurant-item {
+    width: 100%;
+    max-width: none;
+    min-width: 0;
+    box-sizing: border-box;
+}
+
+/* Restaurant card */
+#restaurantGrid .restaurant-card {
+    background: #ffffff;
+    border: 1px solid #e5e5e5;
+    border-radius: 12px;
+    overflow: hidden;
+    height: 100%;
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+
+    transition:
+        transform 0.3s ease,
+        box-shadow 0.3s ease;
+}
+
+#restaurantGrid .restaurant-card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+}
+
+/* Restaurant image */
+#restaurantGrid .restaurant-image {
+    height: 235px;
+    position: relative;
+    overflow: hidden;
+}
+
+#restaurantGrid .restaurant-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.5s ease;
+}
+
+#restaurantGrid .restaurant-card:hover .restaurant-image img {
+    transform: scale(1.06);
+}
+
+/* Featured tag */
+#restaurantGrid .featured-tag {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+
+    background: #ff6b00;
+    color: #ffffff;
+
+    padding: 6px 11px;
+    border-radius: 7px;
+
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+}
+
+/* Favorite button */
+#restaurantGrid .favorite-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+
+    width: 38px;
+    height: 38px;
+
+    border: 0;
+    border-radius: 50%;
+
+    background: rgba(255, 255, 255, 0.94);
+    color: #444;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor: pointer;
+    transition: 0.25s ease;
+}
+
+#restaurantGrid .favorite-btn:hover,
+#restaurantGrid .favorite-btn.active {
+    background: #ff6b00;
+    color: #ffffff;
+}
+
+/* Restaurant card body */
+#restaurantGrid .restaurant-card-body {
+    padding: 22px;
+}
+
+/* Top part of card */
+#restaurantGrid .restaurant-top {
+    display: flex;
+    justify-content: space-between;
+    gap: 10px;
+}
+
+#restaurantGrid .restaurant-top h3 {
+    font-size: 1.2rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+#restaurantGrid .restaurant-top p {
+    color: #888;
+    font-size: 0.8rem;
+    margin: 0;
+}
+
+#restaurantGrid .restaurant-top p i {
+    color: #ff6b00;
+}
+
+/* Rating */
+#restaurantGrid .rating {
+    background: #fff1e7;
+    color: #ff6b00;
+
+    height: fit-content;
+    padding: 5px 8px;
+
+    border-radius: 7px;
+
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+#restaurantGrid .rating i {
+    font-size: 0.65rem;
+}
+
+/* Restaurant tags */
+#restaurantGrid .restaurant-tags {
+    display: flex;
+    gap: 7px;
+    flex-wrap: wrap;
+
+    margin: 16px 0;
+}
+
+#restaurantGrid .restaurant-tags span {
+    padding: 5px 9px;
+
+    background: #f5f4f2;
+    border-radius: 5px;
+
+    font-size: 0.7rem;
+    color: #666;
+    font-weight: 600;
+}
+
+/* Description */
+#restaurantGrid .restaurant-description {
+    color: #777;
+    font-size: 0.85rem;
+    min-height: 50px;
+}
+
+/* Restaurant footer */
+#restaurantGrid .restaurant-footer {
+    border-top: 1px solid #e5e5e5;
+
+    padding-top: 16px;
+    margin-top: 17px;
+
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 10px;
+}
+
+#restaurantGrid .restaurant-footer > span {
+    color: #888;
+    font-size: 0.72rem;
+}
+
+#restaurantGrid .restaurant-footer > span i {
+    color: #ff6b00;
+    margin-right: 4px;
+}
+
+/* View details button */
+#restaurantGrid .view-btn {
+    color: #ff6b00;
+    font-size: 0.78rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+#restaurantGrid .view-btn:hover {
+    color: #e85d00;
+}
+
+/* No results */
+#restaurantGrid .no-results {
+    text-align: center;
+    padding: 60px 20px;
+    display: none;
+}
+
+#restaurantGrid .no-results i {
+    font-size: 2.5rem;
+    color: #aaa;
+}
+
+#restaurantGrid .no-results h3 {
+    margin-top: 15px;
+    font-weight: 800;
+}
+
+#restaurantGrid .no-results p {
+    color: #888;
+}
+
+
+/* =========================================================
+   RESPONSIVE - DYNAMIC RESTAURANTS
+   ========================================================= */
+
+@media (max-width: 900px) {
+    #restaurantGrid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 600px) {
+    #restaurantGrid {
+        grid-template-columns: 1fr;
+        padding: 0 12px;
+    }
+
+    #restaurantGrid .restaurant-image {
+        height: 220px;
+    }
+
+    #restaurantGrid .restaurant-card-body {
+        padding: 18px;
+    }
+
+    #restaurantGrid .restaurant-footer {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+}

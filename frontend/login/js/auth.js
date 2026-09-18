@@ -32,12 +32,11 @@ function getSession() {
 }
 
 
-function logout() {
-
+async function logout(){
+  try { await fetch("/api/logout/", {method:"POST", credentials:"same-origin", cache:"no-store"}); }
+  catch(e){ console.error("Logout request failed",e); }
   localStorage.removeItem(SESSION_KEY);
-
   window.location.href = "../../index.html";
-
 }
 
 

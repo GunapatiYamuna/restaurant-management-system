@@ -9,11 +9,11 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.models import User
-from django.db import transaction
+from django.db import transaction, models
 from django.http import JsonResponse, Http404, FileResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_GET, require_POST
+from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, Order, OrderItem
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
@@ -45,8 +45,21 @@ def _data(request):
 
 def _user_payload(user):
     profile, _ = Profile.objects.get_or_create(user=user)
+    role = "admin" if user.is_staff else ("restaurant" if hasattr(user, "owned_restaurant") else "user")
     return {"id": user.id, "name": user.first_name or user.username, "email": user.email,
-            "phone": profile.phone, "city": profile.city, "role": "admin" if user.is_staff else "user"}
+            "phone": profile.phone, "city": profile.city, "role": role}
+
+def _restaurant_owner(request):
+    if not request.user.is_authenticated:
+        return None, JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    restaurant = getattr(request.user, "owned_restaurant", None)
+    if not restaurant:
+        return None, JsonResponse({"success": False, "message": "Restaurant account is not linked to a restaurant."}, status=403)
+    return restaurant, None
+
+def _restaurant_payload(r):
+    return {"id": r.id, "name": r.name, "cuisine": r.cuisine, "rating": float(r.rating), "reviews": r.reviews,
+            "price": r.price, "location": r.location, "description": r.description, "image": r.image}
 
 @csrf_exempt
 @require_POST
@@ -78,6 +91,7 @@ def admin_register(request):
 @csrf_exempt
 @require_POST
 def login_user(request):
+    logout(request)
     data = _data(request)
     email, password = str(data.get("email", "")).strip().lower(), str(data.get("password", ""))
     try: user = User.objects.get(email=email)
@@ -91,6 +105,7 @@ def login_user(request):
 @csrf_exempt
 @require_POST
 def admin_login(request):
+    logout(request)
     data = _data(request)
     email = str(data.get("email", "")).strip().lower()
     password = str(data.get("password", ""))
@@ -104,6 +119,7 @@ def admin_login(request):
     login(request, auth_user)
     return JsonResponse({"success": True, "message": "Admin login successful.", "user": _user_payload(auth_user)})
 
+@csrf_exempt
 @require_POST
 def logout_user(request):
     logout(request)
@@ -112,8 +128,13 @@ def logout_user(request):
 @require_GET
 def current_user(request):
     if not request.user.is_authenticated:
-        return JsonResponse({"authenticated": False})
-    return JsonResponse({"authenticated": True, "user": _user_payload(request.user)})
+        response = JsonResponse({"authenticated": False})
+    else:
+        response = JsonResponse({"authenticated": True, "user": _user_payload(request.user)})
+    response["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response["Pragma"] = "no-cache"
+    response["Expires"] = "0"
+    return response
 
 @require_GET
 def restaurants(request):
@@ -149,6 +170,8 @@ def restaurant_detail(request, restaurant_id):
 @csrf_exempt
 @require_POST
 def create_reservation(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login to reserve a table."}, status=401)
     data = _data(request)
     required = ("restaurant_id", "name", "email", "phone", "date", "time", "guests")
     if any(not str(data.get(k, "")).strip() for k in required):
@@ -167,7 +190,7 @@ def create_reservation(request):
         with transaction.atomic():
             r = Restaurant.objects.get(pk=int(data["restaurant_id"]))
             reservation = Reservation.objects.create(
-                user=request.user if request.user.is_authenticated else None,
+                user=request.user,
                 restaurant=r,
                 name=str(data["name"]).strip(),
                 email=str(data["email"]).strip(),
@@ -219,6 +242,8 @@ def create_reservation(request):
 @csrf_exempt
 @require_POST
 def create_order(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login to place an order."}, status=401)
     data = _data(request)
     items = data.get("items", [])
     if isinstance(items, str):
@@ -231,7 +256,7 @@ def create_order(request):
 
     with transaction.atomic():
         order = Order.objects.create(
-            user=request.user if request.user.is_authenticated else None,
+            user=request.user,
             name=str(data.get("name", "")).strip(),
             email=str(data.get("email", "")).strip(),
             phone=str(data.get("phone", "")).strip(),
@@ -294,6 +319,185 @@ def reservation_history(request):
 
     return JsonResponse({"success": True, "reservations": reservations})
 
+
+
+@csrf_exempt
+@require_POST
+def restaurant_register(request):
+    data = _data(request)
+    name = str(data.get("name", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    phone = str(data.get("phone", "")).strip()
+    password = str(data.get("password", ""))
+    try:
+        restaurant_id = int(data.get("restaurant_id"))
+    except (TypeError, ValueError):
+        restaurant_id = 0
+    if not all((name, email, phone, password)) or not restaurant_id:
+        return JsonResponse({"success": False, "message": "Name, email, phone, password and restaurant are required."}, status=400)
+    if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username=email).exists():
+        return JsonResponse({"success": False, "message": "An account with this email already exists."}, status=400)
+    restaurant = Restaurant.objects.filter(pk=restaurant_id).first()
+    if not restaurant:
+        return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
+    if restaurant.owner_id:
+        return JsonResponse({"success": False, "message": "This restaurant already has a restaurant account."}, status=400)
+    user = User.objects.create_user(username=email, email=email, password=password, first_name=name)
+    Profile.objects.create(user=user, phone=phone, city=restaurant.location)
+    restaurant.owner = user
+    restaurant.save(update_fields=["owner"])
+    return JsonResponse({"success": True, "message": "Restaurant account created successfully.", "user": _user_payload(user), "restaurant": _restaurant_payload(restaurant)})
+
+@csrf_exempt
+@require_POST
+def restaurant_login(request):
+    logout(request)
+    data = _data(request)
+    email = str(data.get("email", "")).strip().lower()
+    password = str(data.get("password", ""))
+    user = User.objects.filter(email__iexact=email).first()
+    auth_user = authenticate(request, username=user.username if user else email, password=password)
+    if not auth_user or not hasattr(auth_user, "owned_restaurant"):
+        return JsonResponse({"success": False, "message": "Invalid restaurant credentials."}, status=401)
+    login(request, auth_user)
+    return JsonResponse({"success": True, "message": "Restaurant login successful.", "user": _user_payload(auth_user), "restaurant": _restaurant_payload(auth_user.owned_restaurant)})
+
+@require_GET
+def restaurant_me(request):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    return JsonResponse({"success": True, "user": _user_payload(request.user), "restaurant": _restaurant_payload(restaurant)})
+
+@require_GET
+def restaurant_dashboard(request):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    order_ids = OrderItem.objects.filter(menu_item__restaurant=restaurant).values_list("order_id", flat=True).distinct()
+    orders = Order.objects.filter(id__in=order_ids)
+    reservations = restaurant.reservations.all()
+    inventory = restaurant.inventory.all()
+    return JsonResponse({"success": True, "restaurant": _restaurant_payload(restaurant), "stats": {
+        "menu_items": restaurant.menu_items.count(), "available_items": restaurant.menu_items.filter(available=True).count(),
+        "orders": orders.count(), "pending_orders": orders.filter(status__in=["placed", "pending"]).count(),
+        "reservations": reservations.count(), "pending_reservations": reservations.filter(status="pending").count(),
+        "inventory_items": inventory.count(), "low_stock": inventory.filter(quantity__lte=models.F("reorder_level")).count(),
+    }})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def restaurant_menu(request):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    if request.method == "GET":
+        items = list(restaurant.menu_items.order_by("category", "name").values("id", "name", "category", "description", "price", "image", "available"))
+        for x in items: x["price"] = float(x["price"])
+        return JsonResponse({"success": True, "items": items})
+    data = _data(request)
+    name = str(data.get("name", "")).strip()
+    if not name or data.get("price") in (None, ""):
+        return JsonResponse({"success": False, "message": "Item name and price are required."}, status=400)
+    try: price = Decimal(str(data.get("price")))
+    except Exception: return JsonResponse({"success": False, "message": "Invalid price."}, status=400)
+    if price < 0: return JsonResponse({"success": False, "message": "Price cannot be negative."}, status=400)
+    item = MenuItem.objects.create(restaurant=restaurant, name=name, category=str(data.get("category", "Other")).strip(), description=str(data.get("description", "")).strip(), price=price, image=str(data.get("image", "")).strip(), available=bool(data.get("available", True)))
+    return JsonResponse({"success": True, "item": {"id": item.id, "name": item.name, "category": item.category, "description": item.description, "price": float(item.price), "image": item.image, "available": item.available}})
+
+@csrf_exempt
+@require_http_methods(["PUT", "PATCH", "DELETE"])
+def restaurant_menu_item(request, item_id):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    item = restaurant.menu_items.filter(pk=item_id).first()
+    if not item: return JsonResponse({"success": False, "message": "Menu item not found."}, status=404)
+    if request.method == "DELETE":
+        item.delete(); return JsonResponse({"success": True, "message": "Menu item deleted."})
+    data = _data(request)
+    for field in ("name", "category", "description", "image"):
+        if field in data: setattr(item, field, str(data.get(field, "")).strip())
+    if "price" in data:
+        try: item.price = Decimal(str(data.get("price")))
+        except Exception: return JsonResponse({"success": False, "message": "Invalid price."}, status=400)
+    if "available" in data:
+        value=data.get("available"); item.available = value is True or str(value).lower() in ("true","1","yes","available")
+    item.save()
+    return JsonResponse({"success": True, "message": "Menu item updated."})
+
+@require_GET
+def restaurant_orders(request):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    order_ids = OrderItem.objects.filter(menu_item__restaurant=restaurant).values_list("order_id", flat=True).distinct()
+    result=[]
+    for o in Order.objects.filter(id__in=order_ids).prefetch_related("items").order_by("-created_at"):
+        items=[{"name":i.name,"price":float(i.price),"quantity":i.quantity} for i in o.items.all() if i.menu_item_id and i.menu_item.restaurant_id==restaurant.id]
+        result.append({"id":o.id,"name":o.name,"email":o.email,"phone":o.phone,"address":o.address,"city":o.city,"payment_method":o.payment_method,"total":float(o.total),"status":o.status,"created_at":o.created_at.isoformat(),"items":items})
+    return JsonResponse({"success":True,"orders":result})
+
+@csrf_exempt
+@require_http_methods(["PATCH", "POST"])
+def restaurant_order_detail(request, order_id):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    if not OrderItem.objects.filter(order_id=order_id, menu_item__restaurant=restaurant).exists(): return JsonResponse({"success":False,"message":"Order not found."},status=404)
+    order=Order.objects.get(pk=order_id); data=_data(request); status=str(data.get("status","")).strip().lower()
+    allowed={"placed","confirmed","preparing","ready","out_for_delivery","delivered","cancelled"}
+    if status not in allowed: return JsonResponse({"success":False,"message":"Invalid order status."},status=400)
+    order.status=status; order.save(update_fields=["status"])
+    return JsonResponse({"success":True,"message":"Order status updated.","status":order.status})
+
+@require_GET
+def restaurant_reservations(request):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    rows=[]
+    for r in restaurant.reservations.prefetch_related("items").order_by("-date","-time"):
+        rows.append({"id":r.id,"name":r.name,"email":r.email,"phone":r.phone,"date":r.date.isoformat(),"time":r.time.strftime("%H:%M"),"guests":r.guests,"message":r.message,"status":r.status,"created_at":r.created_at.isoformat(),"prebook_total":float(sum(i.price*i.quantity for i in r.items.all())),"items":[{"name":i.name,"price":float(i.price),"quantity":i.quantity} for i in r.items.all()]})
+    return JsonResponse({"success":True,"reservations":rows})
+
+@csrf_exempt
+@require_http_methods(["PATCH", "POST"])
+def restaurant_reservation_detail(request, reservation_id):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    r=restaurant.reservations.filter(pk=reservation_id).first()
+    if not r: return JsonResponse({"success":False,"message":"Reservation not found."},status=404)
+    status=str(_data(request).get("status","")).strip().lower()
+    if status not in {"pending","confirmed","completed","cancelled"}: return JsonResponse({"success":False,"message":"Invalid reservation status."},status=400)
+    r.status=status; r.save(update_fields=["status"])
+    return JsonResponse({"success":True,"message":"Reservation status updated.","status":r.status})
+
+@csrf_exempt
+@require_http_methods(["GET", "POST"])
+def restaurant_inventory(request):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    if request.method == "GET":
+        rows=list(restaurant.inventory.order_by("name").values("id","name","quantity","unit","reorder_level","updated_at"))
+        for x in rows: x["quantity"]=float(x["quantity"]); x["reorder_level"]=float(x["reorder_level"]); x["updated_at"]=x["updated_at"].isoformat()
+        return JsonResponse({"success":True,"items":rows})
+    data=_data(request); name=str(data.get("name","")).strip()
+    if not name: return JsonResponse({"success":False,"message":"Inventory item name is required."},status=400)
+    try: quantity=Decimal(str(data.get("quantity",0))); reorder=Decimal(str(data.get("reorder_level",0)))
+    except Exception: return JsonResponse({"success":False,"message":"Invalid inventory values."},status=400)
+    item=InventoryItem.objects.create(restaurant=restaurant,name=name,quantity=quantity,unit=str(data.get("unit","units")).strip() or "units",reorder_level=reorder)
+    return JsonResponse({"success":True,"id":item.id})
+
+@csrf_exempt
+@require_http_methods(["PATCH", "DELETE"])
+def restaurant_inventory_item(request, item_id):
+    restaurant, error = _restaurant_owner(request)
+    if error: return error
+    item=restaurant.inventory.filter(pk=item_id).first()
+    if not item: return JsonResponse({"success":False,"message":"Inventory item not found."},status=404)
+    if request.method=="DELETE": item.delete(); return JsonResponse({"success":True})
+    data=_data(request)
+    for f in ("name","unit"):
+        if f in data: setattr(item,f,str(data.get(f)).strip())
+    for f in ("quantity","reorder_level"):
+        if f in data:
+            try: setattr(item,f,Decimal(str(data.get(f))))
+            except Exception: return JsonResponse({"success":False,"message":"Invalid inventory value."},status=400)
+    item.save(); return JsonResponse({"success":True})
 
 @csrf_exempt
 @require_POST

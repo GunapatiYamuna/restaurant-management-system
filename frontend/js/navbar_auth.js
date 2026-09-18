@@ -1,69 +1,30 @@
-/* =========================================================
-   FOODIEHUB NAVBAR LOGIN / USER DISPLAY
-   Only controls the Login/Admin Login -> user avatar state.
-========================================================= */
-
-document.addEventListener("DOMContentLoaded", function () {
+document.addEventListener("DOMContentLoaded", async function () {
     const authButtons = document.getElementById("authButtons");
     const userSection = document.getElementById("userSection");
     const userName = document.getElementById("navbarUserName");
     const avatar = document.getElementById("navbarAvatar");
-
-    if (!authButtons || !userSection) {
-        return;
-    }
-
-    const sessionData = localStorage.getItem("foodiehub_session");
-
-    if (!sessionData) {
-        authButtons.style.display = "flex";
-        userSection.style.display = "none";
-        return;
-    }
-
-    let user;
-
+    if (!authButtons || !userSection) return;
     try {
-        user = JSON.parse(sessionData);
-    } catch (error) {
-        authButtons.style.display = "flex";
-        userSection.style.display = "none";
-        return;
-    }
-
-    if (!user || !user.name) {
-        authButtons.style.display = "flex";
-        userSection.style.display = "none";
-        return;
-    }
-
-    authButtons.style.display = "none";
-    userSection.style.display = "flex";
-
-    const nameParts = user.name.trim().split(/\s+/);
-    const firstName = nameParts[0] || "User";
-
-    if (userName) {
-        userName.textContent = firstName;
-    }
-
-    let initials = firstName.charAt(0).toUpperCase();
-
-    if (nameParts.length > 1) {
-        initials += nameParts[nameParts.length - 1]
-            .charAt(0)
-            .toUpperCase();
-    }
-
-    if (avatar) {
-        avatar.textContent = initials;
-    }
-
-    userSection.addEventListener("click", function () {
-        if (user.role === "admin") {
-            window.location.href = "ad_login/pages/profile.html";
-        } else {
-            window.location.href = "login/pages/profile.html";
+        const response = await fetch("/api/me/", {credentials:"same-origin", cache:"no-store"});
+        const data = await response.json();
+        if (!response.ok || !data.authenticated || !data.user) {
+            localStorage.removeItem("foodiehub_session");
+            authButtons.style.display="flex"; userSection.style.display="none"; return;
         }
-    });
+        const user=data.user;
+        localStorage.setItem("foodiehub_session", JSON.stringify(user));
+        authButtons.style.display="none"; userSection.style.display="flex";
+        const parts=(user.name||"User").trim().split(/\s+/), first=parts[0]||"User";
+        if(userName) userName.textContent=first;
+        if(avatar) avatar.textContent=(first[0]+(parts[1]?parts[parts.length-1][0]:"")).toUpperCase();
+        userSection.onclick=function(){
+            if(user.role==="admin") location.href="ad_login/pages/profile.html";
+            else if(user.role==="restaurant") location.href="restaurant_portal/dashboard.html";
+            else location.href="login/pages/profile.html";
+        };
+    } catch(e) {
+        console.error("Navbar authentication check failed",e);
+        const cached=localStorage.getItem("foodiehub_session");
+        if(!cached){authButtons.style.display="flex";userSection.style.display="none";}
+    }
 });

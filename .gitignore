@@ -1,4 +1,6 @@
-# Environment variables
+__pycache__/
+*.py[cod]
+*.sqlite3
 .env
 backend/.env
 

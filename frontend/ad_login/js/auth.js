@@ -39,7 +39,9 @@ function getSession(){
   try { return JSON.parse(localStorage.getItem(SESSION_KEY)); }
   catch(e){ return null; }
 }
-function logout(){
+async function logout(){
+  try { await fetch("/api/logout/", {method:"POST", credentials:"same-origin", cache:"no-store"}); }
+  catch(e){ console.error("Logout request failed",e); }
   localStorage.removeItem(SESSION_KEY);
   window.location.href = "../../index.html";
 }

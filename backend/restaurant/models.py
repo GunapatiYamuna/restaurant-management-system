@@ -11,6 +11,7 @@ class Profile(models.Model):
         return self.user.email or self.user.username
 
 class Restaurant(models.Model):
+    owner = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True, related_name="owned_restaurant")
     name = models.CharField(max_length=150)
     cuisine = models.CharField(max_length=100)
     rating = models.DecimalField(max_digits=3, decimal_places=1, default=0)
