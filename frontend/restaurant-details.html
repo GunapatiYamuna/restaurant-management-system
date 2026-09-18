@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodieHub | Restaurant Details</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<link href="css/res_style.css" rel="stylesheet"/>
+<link href="css/footer.css" rel="stylesheet"/>
+<link href="css/navbar_auth.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- =====================================================
+                         NAVBAR
+    ===================================================== -->
+<nav class="navbar navbar-expand-lg foodie-navbar">
+<div class="container">
+<a class="navbar-brand" href="restaurant.html">
+<i class="bi bi-egg-fried"></i>
+
+                Foodie<span>Hub</span>
+</a>
+<button aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#mainNavbar" data-bs-toggle="collapse" type="button">
+<span class="navbar-toggler-icon"></span>
+</button>
+<div class="collapse navbar-collapse" id="mainNavbar">
+<ul class="navbar-nav mx-auto">
+<li class="nav-item">
+<a class="nav-link" href="index.html">
+
+                            Home
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link active" href="restaurant.html#restaurants">
+
+                            Restaurants
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link " href="restaurant-details.html">
+
+                            Menu
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="about.html">
+
+                            About
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="contact.html">
+
+                            Contact
+
+                        </a>
+</li>
+</ul>
+
+<a class="nav-cart" href="cart.html">
+<i class="bi bi-cart3"></i>
+<span class="cart-count">0</span>
+</a>
+<div id="authButtons">
+<a class="nav-login" href="login/login_register.html">
+
+                    Login
+
+                </a>
+</div>
+<div class="navbar-user" id="userSection" style="display:none;">
+<div class="navbar-avatar" id="navbarAvatar"></div>
+<div class="navbar-greeting">
+<span>Hi,</span>
+<strong id="navbarUserName"></strong>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- =====================================================
+                    RESTAURANT DETAILS HERO
+    ===================================================== -->
+<section class="details-hero">
+<img alt="Spice Symphony" id="restaurantHeroImage" src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&amp;fit=crop&amp;w=1600&amp;q=85"/>
+<div class="details-overlay"></div>
+<div class="container details-content">
+<a class="back-link" href="restaurant.html">
+<i class="bi bi-arrow-left"></i>
+                Back to restaurants
+
+            </a>
+<span class="details-badge">
+                FEATURED RESTAURANT
+            </span>
+<h1 id="restaurantName">Loading restaurant...</h1>
+<p id="restaurantCuisine">Loading...</p>
+<div class="details-meta">
+<span id="restaurantRating">
+<i class="bi bi-star-fill"></i>
+                    4.8
+                </span>
+<span id="restaurantLocation">
+<i class="bi bi-geo-alt"></i>
+                    Ongole
+                </span>
+<span id="restaurantPrice">
+<i class="bi bi-currency-rupee"></i>
+                    ₹₹
+                </span>
+</div>
+</div>
+</section>
+<!-- =====================================================
+                    DETAILS CONTENT
+    ===================================================== -->
+<section class="details-section">
+<div class="container"><div class="row g-5">
+<div class="col-lg-8">
+<div class="details-card">
+<span class="section-label">ABOUT THE RESTAURANT</span>
+<h2 id="aboutTitle">About this restaurant</h2>
+<p id="restaurantDescription">Loading restaurant information...</p>
+<div class="feature-grid">
+<div class="feature-item"><i class="bi bi-stars"></i><div><strong>Quality Dining</strong><span>Freshly prepared food</span></div></div>
+<div class="feature-item"><i class="bi bi-cup-hot"></i><div><strong>Fresh Ingredients</strong><span>Carefully selected</span></div></div>
+<div class="feature-item"><i class="bi bi-people"></i><div><strong>Family Friendly</strong><span>Perfect for groups</span></div></div>
+<div class="feature-item"><i class="bi bi-wifi"></i><div><strong>Comfortable Visit</strong><span>Enjoy your meal</span></div></div>
+</div>
+</div>
+<div class="details-card">
+<span class="section-label">RESTAURANT MENU</span>
+<h2>Pre-book Your Food</h2>
+<p>Select the dishes you want ready for your table. These items are reserved with your table booking and are <strong>not added to the delivery cart</strong>.</p>
+<div id="prebookMenu"><div class="text-center py-4">Loading menu...</div></div>
+<div class="d-flex justify-content-between align-items-center mt-4 p-3" style="background:#fff1e7;border-radius:12px;">
+<strong>Pre-book total: <span id="prebookTotal">₹0</span></strong>
+<button class="booking-btn" id="prebookButton" type="button">Pre-book Selected &amp; Reserve</button>
+</div>
+</div>
+</div>
+<div class="col-lg-4">
+<div class="booking-card">
+<div class="booking-header"><span>RESERVE YOUR TABLE</span><h3>Make a Reservation</h3></div>
+<div class="booking-info">
+<div><i class="bi bi-clock"></i><span><strong>Opening Hours</strong>10:00 AM - 11:00 PM</span></div>
+<div><i class="bi bi-geo-alt"></i><span><strong>Location</strong><span id="bookingLocation">Ongole</span></span></div>
+<div><i class="bi bi-telephone"></i><span><strong>Restaurant</strong><span id="bookingRestaurant">FoodieHub Partner</span></span></div>
+</div>
+<a class="booking-btn" href="booking.html" id="reserveOnlyButton">Reserve a Table <i class="bi bi-arrow-right"></i></a>
+</div>
+</div>
+</div></div>
+</section>
+<!-- =====================================================
+                         FOOTER
+    ===================================================== -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+<script src="js/restaurant_details_dynamic.js"></script><script src="js/app.js"></script>
+<script src="js/cart_script.js"></script>
+<div id="footer-placeholder"></div>
+<script src="js/footer.js"></script>
+<script src="js/navbar_auth.js"></script>
+</body>
+</html>

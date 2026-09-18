@@ -1,0 +1,358 @@
+/* =========================================================
+   COMMON FOOTER
+   ========================================================= */
+
+.foodie-footer {
+    background-color: #07111c !important;
+    color: #d5dbe1 !important;
+    padding: 55px 0 0 !important;
+}
+
+
+/* =========================================================
+   FOOTER LOGO
+   ========================================================= */
+
+.foodie-footer .footer-logo {
+    color: #ffffff !important;
+    font-size: 20px;
+    font-weight: 700;
+    margin-bottom: 15px;
+}
+
+.foodie-footer .footer-logo i {
+    color: #ff6b00 !important;
+    margin-right: 6px;
+}
+
+.foodie-footer .footer-logo span {
+    color: #ff6b00 !important;
+}
+
+
+/* =========================================================
+   FOOTER DESCRIPTION
+   ========================================================= */
+
+.foodie-footer .footer-text {
+    color: #9da7b0 !important;
+    font-size: 12px;
+    line-height: 1.8;
+    max-width: 300px;
+}
+
+
+/* =========================================================
+   SOCIAL MEDIA ICONS
+   ========================================================= */
+
+.foodie-footer .social-icons {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+}
+
+.foodie-footer .social-icons a {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    /* WHITE OUTLINE */
+    border: 1px solid #ffffff !important;
+    border-radius: 50%;
+
+    /* ORANGE ICON */
+    color: #ff6b00 !important;
+    background-color: transparent !important;
+
+    text-decoration: none;
+
+    transition: 0.3s;
+}
+
+
+/* Orange social media icons */
+
+.foodie-footer .social-icons a i {
+    color: #ff6b00 !important;
+}
+
+
+/* Hover effect */
+
+.foodie-footer .social-icons a:hover {
+    background-color: #ff6b00 !important;
+    border-color: #ff6b00 !important;
+}
+
+
+/* White icon when hovering */
+
+.foodie-footer .social-icons a:hover i {
+    color: #ffffff !important;
+}
+
+
+/* =========================================================
+   FOOTER HEADINGS
+   ========================================================= */
+
+.foodie-footer h6 {
+    color: #ffffff !important;
+
+    font-size: 14px;
+    font-weight: 600;
+
+    margin-bottom: 18px;
+}
+
+
+/* =========================================================
+   FOOTER LINKS
+   ========================================================= */
+
+.foodie-footer .footer-links {
+    list-style: none;
+
+    padding: 0;
+    margin: 0;
+}
+
+.foodie-footer .footer-links li {
+    margin-bottom: 10px;
+}
+
+.foodie-footer .footer-links a {
+    color: #9da7b0 !important;
+
+    font-size: 12px;
+
+    text-decoration: none;
+
+    transition: 0.3s;
+}
+
+.foodie-footer .footer-links a:hover {
+    color: #ff6b00 !important;
+}
+
+
+/* =========================================================
+   CONTACT INFORMATION
+   ========================================================= */
+
+.foodie-footer .contact-item {
+    color: #9da7b0 !important;
+
+    font-size: 12px;
+
+    margin-bottom: 12px;
+}
+
+.foodie-footer .contact-item i {
+    color: #ff6b00 !important;
+
+    margin-right: 8px;
+}
+
+
+/* =========================================================
+   NEWSLETTER
+   ========================================================= */
+
+.foodie-footer .newsletter {
+    margin-top: 45px;
+
+    padding: 25px 30px;
+
+    background-color: #0d1a27 !important;
+
+    border: 1px solid #263746;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+
+    gap: 25px;
+}
+
+
+/* Newsletter heading */
+
+.foodie-footer .newsletter-content h5 {
+    color: #ffffff !important;
+
+    font-size: 16px;
+    font-weight: 600;
+
+    margin-bottom: 4px;
+}
+
+
+/* Newsletter description */
+
+.foodie-footer .newsletter-content p {
+    color: #9da7b0 !important;
+
+    font-size: 11px;
+
+    margin: 0;
+}
+
+
+/* Newsletter form */
+
+.foodie-footer .newsletter-form {
+    display: flex;
+
+    width: 380px;
+}
+
+
+/* Newsletter input */
+
+.foodie-footer .newsletter-form input {
+    flex: 1;
+
+    min-width: 0;
+
+    background-color: transparent !important;
+
+    border: 1px solid #344452;
+
+    border-right: none;
+
+    color: #ffffff !important;
+
+    padding: 11px 13px;
+
+    font-size: 11px;
+
+    outline: none;
+}
+
+
+/* Input placeholder */
+
+.foodie-footer .newsletter-form input::placeholder {
+    color: #8995a0 !important;
+}
+
+
+/* Subscribe button */
+
+.foodie-footer .newsletter-form button {
+    background-color: #ff6b00 !important;
+
+    color: #ffffff !important;
+
+    border: none;
+
+    padding: 0 20px;
+
+    font-size: 11px;
+
+    font-weight: 600;
+
+    cursor: pointer;
+
+    transition: 0.3s;
+}
+
+
+/* Subscribe button hover */
+
+.foodie-footer .newsletter-form button:hover {
+    background-color: #e85d00 !important;
+}
+
+
+/* =========================================================
+   FOOTER BOTTOM
+   ========================================================= */
+
+.foodie-footer .footer-bottom {
+    margin-top: 15px;
+
+    padding: 18px 0;
+
+    border-top: 1px solid #1e2d39;
+
+    display: flex;
+
+    align-items: center;
+    justify-content: space-between;
+}
+
+
+/* Copyright */
+
+.foodie-footer .footer-bottom p {
+    color: #71808c !important;
+
+    font-size: 10px;
+
+    margin: 0;
+}
+
+
+/* Terms & Privacy */
+
+.foodie-footer .footer-bottom a {
+    color: #71808c !important;
+
+    font-size: 10px;
+
+    margin-left: 20px;
+
+    text-decoration: none;
+
+    transition: 0.3s;
+}
+
+
+/* Bottom links hover */
+
+.foodie-footer .footer-bottom a:hover {
+    color: #ff6b00 !important;
+}
+
+
+/* =========================================================
+   RESPONSIVE DESIGN
+   ========================================================= */
+
+@media (max-width: 768px) {
+
+    .foodie-footer {
+        padding-top: 40px !important;
+    }
+
+    .foodie-footer .newsletter {
+        flex-direction: column;
+
+        align-items: flex-start;
+    }
+
+    .foodie-footer .newsletter-form {
+        width: 100%;
+    }
+
+    .foodie-footer .footer-bottom {
+        flex-direction: column;
+
+        gap: 10px;
+
+        text-align: center;
+    }
+
+    .foodie-footer .footer-bottom a {
+        margin-left: 10px;
+
+        margin-right: 10px;
+    }
+}
