@@ -7,7 +7,19 @@ document.addEventListener("DOMContentLoaded", async function () {
         const result = await response.json();
         if (!response.ok || !result.success) throw new Error(result.message || "Unable to load restaurants.");
 
-        const restaurants = result.restaurants || [];
+        const allRestaurants = result.restaurants || [];
+
+const restaurants =
+    window.location.pathname.endsWith("/index.html") ||
+    window.location.pathname === "/"
+        ? allRestaurants.filter(r =>
+            [
+                "V Grand Family Restaurant",
+                "Hotel Paradise",
+                "Prakriti Multicuisine Restaurant"
+            ].includes(String(r.name).trim())
+        )
+        : allRestaurants;
         const cuisineSelect = document.getElementById("cuisineFilter");
         if (cuisineSelect) {
             const cuisines = [...new Set(restaurants.flatMap(r => String(r.cuisine || "").split(",").map(x => x.trim()).filter(Boolean)))].sort();
