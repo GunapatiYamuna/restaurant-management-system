@@ -18,7 +18,7 @@
   document.querySelectorAll('[data-admin-fullname]').forEach(el=>el.textContent=user.name||'Administrator');
   document.querySelectorAll('[data-admin-email]').forEach(el=>el.textContent=user.email||'');
   document.querySelectorAll('[data-admin-avatar]').forEach(el=>el.textContent=initials);
-  document.querySelectorAll('[data-admin-logout]').forEach(el=>el.addEventListener('click',async function(e){e.preventDefault();try{await fetch('/api/logout/',{method:'POST',credentials:'same-origin',cache:'no-store'});}catch(_){}localStorage.removeItem(sessionKey);location.href='../login_register.html'}));
+  document.querySelectorAll('[data-admin-logout]').forEach(el=>el.addEventListener('click',async function(e){e.preventDefault();try{await fetch('/api/logout/',{method:'POST',credentials:'same-origin',cache:'no-store'});}catch(_){}localStorage.removeItem(sessionKey);location.href='../../index.html'}));
   const toggle=document.getElementById('adminMenuToggle'), sidebar=document.getElementById('adminSidebar'), overlay=document.getElementById('adminOverlay');
   function close(){sidebar&&sidebar.classList.remove('open');overlay&&overlay.classList.remove('show')}
   toggle&&toggle.addEventListener('click',()=>{sidebar.classList.toggle('open');overlay&&overlay.classList.toggle('show')});
