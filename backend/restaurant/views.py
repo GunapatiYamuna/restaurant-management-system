@@ -14,7 +14,7 @@ from django.http import JsonResponse, Http404, FileResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
-from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, Order, OrderItem
+from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem,InventoryItem, Order, OrderItem 
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
 
