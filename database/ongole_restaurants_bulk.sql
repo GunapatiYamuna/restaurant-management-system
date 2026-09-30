@@ -15,7 +15,7 @@
 --   restaurant_menuitem
 --
 -- Run:
---   mysql -u root -p foodiehub < ongole_restaurants_bulk.sql
+--   mysql -u root -p foodiehub_db < ongole_restaurants_bulk.sql
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 1;
