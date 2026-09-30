@@ -1,4 +1,5 @@
 import json
+import re
 from datetime import date
 from decimal import Decimal
 from pathlib import Path
@@ -9,6 +10,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.contrib.auth.models import User
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError
 from django.db import transaction, models
 from django.http import JsonResponse, Http404, FileResponse
 from django.shortcuts import render
@@ -49,6 +52,21 @@ def _user_payload(user):
     return {"id": user.id, "name": user.first_name or user.username, "email": user.email,
             "phone": profile.phone, "city": profile.city, "role": role}
 
+def _validate_password(password, user=None):
+    if len(password) < 8:
+        return "Password must be at least 8 characters long."
+    if not re.search(r"[A-Z]", password):
+        return "Password must contain at least one uppercase letter."
+    if not re.search(r"\d", password):
+        return "Password must contain at least one number."
+    if not re.search(r"[^A-Za-z0-9]", password):
+        return "Password must contain at least one special character."
+    try:
+        validate_password(password, user=user)
+    except ValidationError as error:
+        return " ".join(error.messages)
+    return None
+
 def _restaurant_owner(request):
     if not request.user.is_authenticated:
         return None, JsonResponse({"success": False, "message": "Please login first."}, status=401)
@@ -70,6 +88,9 @@ def register_user(request):
         return JsonResponse({"success": False, "message": "All fields are required."}, status=400)
     if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
         return JsonResponse({"success": False, "message": "An account with this email already exists."}, status=400)
+    password_error = _validate_password(password)
+    if password_error:
+        return JsonResponse({"success": False, "message": password_error}, status=400)
     user = User.objects.create_user(username=email, email=email, password=password, first_name=name)
     Profile.objects.create(user=user, phone=phone)
     return JsonResponse({"success": True, "message": "Account created successfully.", "user": _user_payload(user)})
@@ -83,6 +104,9 @@ def admin_register(request):
         return JsonResponse({"success": False, "message": "All fields are required."}, status=400)
     if User.objects.filter(username=email).exists() or User.objects.filter(email=email).exists():
         return JsonResponse({"success": False, "message": "An account with this email already exists."}, status=400)
+    password_error = _validate_password(password)
+    if password_error:
+        return JsonResponse({"success": False, "message": password_error}, status=400)
     user = User.objects.create_user(username=email, email=email, password=password, first_name=name, is_staff=True)
     Profile.objects.create(user=user, phone=phone)
     return JsonResponse({"success": True, "message": "Administrator account created successfully.", "user": _user_payload(user)})
@@ -177,63 +201,79 @@ def create_reservation(request):
     if any(not str(data.get(k, "")).strip() for k in required):
         return JsonResponse({"success": False, "message": "All reservation fields are required."}, status=400)
 
+    try:
+        restaurant_id = int(data["restaurant_id"])
+        guests = int(data["guests"])
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "message": "Invalid reservation data."}, status=400)
+    if guests < 1:
+        return JsonResponse({"success": False, "message": "Guests must be at least 1."}, status=400)
+
     items = data.get("items", [])
     if isinstance(items, str):
         try:
             items = json.loads(items)
         except json.JSONDecodeError:
-            items = []
+            return JsonResponse({"success": False, "message": "Invalid pre-booked items."}, status=400)
     if not isinstance(items, list):
-        items = []
+        return JsonResponse({"success": False, "message": "Invalid pre-booked items."}, status=400)
 
     try:
-        with transaction.atomic():
-            r = Restaurant.objects.get(pk=int(data["restaurant_id"]))
-            reservation = Reservation.objects.create(
-                user=request.user,
-                restaurant=r,
-                name=str(data["name"]).strip(),
-                email=str(data["email"]).strip(),
-                phone=str(data["phone"]).strip(),
-                date=data["date"],
-                time=data["time"],
-                guests=int(data["guests"]),
-                message=str(data.get("message", "")).strip(),
+        restaurant = Restaurant.objects.get(pk=restaurant_id)
+    except Restaurant.DoesNotExist:
+        return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
+
+    # Validate all pre-booked items before creating the reservation so a later
+    # validation failure cannot leave a partial reservation in the database.
+    validated_items = []
+    total = Decimal("0.00")
+    for item in items:
+        try:
+            menu_id = int(item.get("id"))
+            qty = int(item.get("quantity", 1))
+        except (TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Invalid pre-booked item."}, status=400)
+        if qty < 1:
+            return JsonResponse({"success": False, "message": "Invalid pre-booked item quantity."}, status=400)
+
+        menu_item = MenuItem.objects.filter(
+            pk=menu_id, restaurant=restaurant, available=True
+        ).first()
+        if not menu_item:
+            return JsonResponse({"success": False, "message": "One of the selected menu items is unavailable."}, status=400)
+
+        price = menu_item.price
+        validated_items.append((menu_item, qty, price))
+        total += price * qty
+
+    with transaction.atomic():
+        reservation = Reservation.objects.create(
+            user=request.user,
+            restaurant=restaurant,
+            name=str(data["name"]).strip(),
+            email=str(data["email"]).strip(),
+            phone=str(data["phone"]).strip(),
+            date=data["date"],
+            time=data["time"],
+            guests=guests,
+            message=str(data.get("message", "")).strip(),
+        )
+
+        saved_items = []
+        for menu_item, qty, price in validated_items:
+            ReservationItem.objects.create(
+                reservation=reservation,
+                menu_item=menu_item,
+                name=menu_item.name,
+                price=price,
+                quantity=qty,
             )
-
-            total = Decimal("0.00")
-            saved_items = []
-            for item in items:
-                try:
-                    menu_id = int(item.get("id"))
-                    qty = max(1, int(item.get("quantity", 1)))
-                except (TypeError, ValueError):
-                    return JsonResponse({"success": False, "message": "Invalid pre-booked item."}, status=400)
-
-                menu_item = MenuItem.objects.filter(
-                    pk=menu_id, restaurant=r, available=True
-                ).first()
-                if not menu_item:
-                    return JsonResponse({"success": False, "message": "One of the selected menu items is unavailable."}, status=400)
-
-                price = menu_item.price
-                ReservationItem.objects.create(
-                    reservation=reservation,
-                    menu_item=menu_item,
-                    name=menu_item.name,
-                    price=price,
-                    quantity=qty,
-                )
-                total += price * qty
-                saved_items.append({"name": menu_item.name, "price": float(price), "quantity": qty})
-
-    except (Restaurant.DoesNotExist, ValueError):
-        return JsonResponse({"success": False, "message": "Invalid reservation data."}, status=400)
+            saved_items.append({"name": menu_item.name, "price": float(price), "quantity": qty})
 
     return JsonResponse({
         "success": True,
         "reservation_id": reservation.id,
-        "restaurant": r.name,
+        "restaurant": restaurant.name,
         "items": saved_items,
         "prebook_total": float(total),
         "message": "Table reserved successfully."
@@ -273,17 +313,20 @@ def create_order(request):
                 return JsonResponse({"success": False, "message": "Invalid item quantity."}, status=400)
             menu_item = None
             item_id = item.get("id")
-            if item_id:
+            if item_id not in (None, ""):
                 menu_item = MenuItem.objects.filter(pk=item_id, available=True).first()
-            # Existing frontend cart entries may not have database IDs, so retain their snapshot price.
-            try:
-                price = Decimal(str(item.get("price", "0")))
-            except Exception:
-                return JsonResponse({"success": False, "message": "Invalid item price."}, status=400)
-            if price < 0:
-                return JsonResponse({"success": False, "message": "Invalid item price."}, status=400)
-            if menu_item is not None:
+                if menu_item is None:
+                    return JsonResponse({"success": False, "message": "One of the selected menu items is unavailable."}, status=400)
+                # Always use the database price when a valid menu item is supplied.
                 price = menu_item.price
+            else:
+                # Keep compatibility with legacy cart entries that do not have a database ID.
+                try:
+                    price = Decimal(str(item.get("price", "0")))
+                except Exception:
+                    return JsonResponse({"success": False, "message": "Invalid item price."}, status=400)
+                if price < 0:
+                    return JsonResponse({"success": False, "message": "Invalid item price."}, status=400)
             name = str(item.get("name", "Item")).strip() or "Item"
             total += price * qty
             OrderItem.objects.create(order=order, menu_item=menu_item, name=name, price=price, quantity=qty)
@@ -342,6 +385,9 @@ def restaurant_register(request):
         return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
     if restaurant.owner_id:
         return JsonResponse({"success": False, "message": "This restaurant already has a restaurant account."}, status=400)
+    password_error = _validate_password(password)
+    if password_error:
+        return JsonResponse({"success": False, "message": password_error}, status=400)
     user = User.objects.create_user(username=email, email=email, password=password, first_name=name)
     Profile.objects.create(user=user, phone=phone, city=restaurant.location)
     restaurant.owner = user
@@ -563,6 +609,9 @@ def reset_password(request):
         return JsonResponse({"success": False, "message": "Invalid or expired reset link."}, status=400)
     if not default_token_generator.check_token(user, token):
         return JsonResponse({"success": False, "message": "Invalid or expired reset link."}, status=400)
+    password_error = _validate_password(password, user=user)
+    if password_error:
+        return JsonResponse({"success": False, "message": password_error}, status=400)
     user.set_password(password)
     user.save(update_fields=["password"])
     return JsonResponse({"success": True, "message": "Password reset successfully."})

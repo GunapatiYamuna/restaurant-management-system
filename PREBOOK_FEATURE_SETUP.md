@@ -31,7 +31,7 @@ The new migration is `restaurant/migrations/0003_reservationitem.py`.
 If the 20 Ongole restaurants have not yet been imported into MySQL, run:
 
 ```bash
-mysql -u root -p foodiehub < database/ongole_restaurants_bulk.sql
+mysql -u root -p foodiehub_db < database/ongole_restaurants_bulk.sql
 ```
 
 Do not run the seed repeatedly if you have modified the same restaurant/menu records manually; the seed uses `NOT EXISTS` checks for restaurant/menu names.

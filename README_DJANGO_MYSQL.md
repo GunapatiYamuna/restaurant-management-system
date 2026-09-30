@@ -10,7 +10,7 @@ Create the database with:
 ```bash
 mysql -u root -p < database/mysql_setup.sql
 ```
-Then copy `backend/.env.example` to `backend/.env` and set your MySQL credentials.
+Then copy `backend/.env.example` to `backend/.env` and set your MySQL and Gmail SMTP credentials. For phone/LAN testing, add the laptop LAN IP to `DJANGO_ALLOWED_HOSTS` and set `FRONTEND_BASE_URL` to the laptop LAN URL, for example `http://192.168.0.129:8000`.
 
 ## Run
 ```bash
