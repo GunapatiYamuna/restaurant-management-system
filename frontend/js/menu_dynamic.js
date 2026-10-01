@@ -10,7 +10,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             throw new Error(result.message || "Unable to load menu.");
         }
 
-        const items = Array.isArray(result.items) ? result.items : [];
+        const requestedRestaurantId = Number(new URLSearchParams(window.location.search).get("restaurant_id")) || 0;
+        const allItems = Array.isArray(result.items) ? result.items : [];
+        const items = requestedRestaurantId ? allItems.filter(item => Number(item.restaurant_id) === requestedRestaurantId) : allItems;
 
         if (!items.length) {
             root.innerHTML = `
