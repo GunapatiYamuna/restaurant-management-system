@@ -360,8 +360,8 @@ def create_order(request):
     return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "payment_status": order.payment_status, "message": "Order placed successfully."})
 
 
-@csrf_exempt
 @require_POST
+@csrf_exempt
 def create_demo_payment(request):
     """Create a simulated paid order for the college-project demo checkout."""
     if not request.user.is_authenticated:
