@@ -6,6 +6,7 @@ class Profile(models.Model):
     phone = models.CharField(max_length=15, blank=True)
     city = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
+    google_sub = models.CharField(max_length=255, blank=True, unique=True, null=True)
 
     def __str__(self):
         return self.user.email or self.user.username
