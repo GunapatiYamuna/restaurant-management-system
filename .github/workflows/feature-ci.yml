@@ -1,0 +1,40 @@
+name: FoodieHub Feature CI
+
+on:
+  push:
+    branches:
+      - feature/delivery-tracking-google-map
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+      - name: Python syntax check
+        run: python -m py_compile backend/restaurant/models.py backend/restaurant/views.py backend/restaurant/urls.py backend/config/settings.py
+      - name: Django system check
+        working-directory: backend
+        env:
+          MYSQL_DATABASE: foodiehub
+          MYSQL_USER: root
+          MYSQL_PASSWORD: ""
+          MYSQL_HOST: 127.0.0.1
+          MYSQL_PORT: "3306"
+        run: python manage.py check
+      - name: JavaScript syntax check
+        run: |
+          node --check frontend/js/google_auth.js
+          node --check frontend/js/checkout_map.js
+          node --check frontend/js/cart_script.js
+          node --check frontend/js/menu_dynamic.js
+          node --check frontend/js/restaurant_details_dynamic.js
+          node --check frontend/delivery_portal/delivery_auth.js
+          node --check frontend/delivery_portal/portal.js
+          node --check frontend/user_portal/portal.js
