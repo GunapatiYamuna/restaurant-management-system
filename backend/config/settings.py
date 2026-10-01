@@ -11,6 +11,9 @@ FRONTEND_BASE_URL = os.getenv(
     "http://127.0.0.1:8000"
 )
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
+RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
+RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
+RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"

@@ -1,7 +1,7 @@
 import json
 import re
 from datetime import date
-from decimal import Decimal
+from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from django.conf import settings
 from django.core.mail import send_mail
@@ -22,6 +22,54 @@ from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem,
 
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
+
+def _razorpay_client():
+    if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
+        return None
+    try:
+        import razorpay
+    except ImportError:
+        return None
+    return razorpay.Client(auth=(settings.RAZORPAY_KEY_ID, settings.RAZORPAY_KEY_SECRET))
+
+
+def _validate_order_items(items):
+    if not isinstance(items, list) or not items:
+        raise ValueError("Your cart is empty.")
+    validated = []
+    subtotal = Decimal("0.00")
+    for item in items:
+        try:
+            qty = max(1, int(item.get("quantity", 1)))
+        except (TypeError, ValueError):
+            raise ValueError("Invalid item quantity.")
+        menu_item = None
+        item_id = item.get("id")
+        if item_id not in (None, ""):
+            menu_item = MenuItem.objects.filter(pk=item_id, available=True).first()
+            if menu_item is None:
+                raise ValueError("One of the selected menu items is unavailable.")
+            price = menu_item.price
+        else:
+            try:
+                price = Decimal(str(item.get("price", "0")))
+            except Exception:
+                raise ValueError("Invalid item price.")
+            if price < 0:
+                raise ValueError("Invalid item price.")
+        name = str(item.get("name", "Item")).strip() or "Item"
+        subtotal += price * qty
+        validated.append((menu_item, name, price, qty))
+    return validated, subtotal
+
+
+def _checkout_totals(subtotal):
+    delivery = Decimal("50.00") if subtotal > 0 else Decimal("0.00")
+    discount = Decimal("0.00")
+    gst = (subtotal * Decimal("0.05")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
+    return delivery, discount, gst, subtotal + delivery + gst
+
+
 
 def frontend_page(request, path=""):
     clean = path.strip("/") or "index.html"
@@ -289,57 +337,126 @@ def create_order(request):
     data = _data(request)
     items = data.get("items", [])
     if isinstance(items, str):
-        try:
-            items = json.loads(items)
-        except json.JSONDecodeError:
-            items = []
-    if not isinstance(items, list) or not items:
-        return JsonResponse({"success": False, "message": "Your cart is empty."}, status=400)
-
+        try: items = json.loads(items)
+        except json.JSONDecodeError: items = []
+    try:
+        validated_items, subtotal = _validate_order_items(items)
+    except ValueError as error:
+        return JsonResponse({"success": False, "message": str(error)}, status=400)
+    payment_method = str(data.get("payment_method", "Cash on Delivery")).strip() or "Cash on Delivery"
+    if payment_method != "Cash on Delivery":
+        return JsonResponse({"success": False, "message": "Online payments must be completed through Razorpay checkout."}, status=400)
+    delivery, discount, gst, total = _checkout_totals(subtotal)
     with transaction.atomic():
         order = Order.objects.create(
-            user=request.user,
-            name=str(data.get("name", "")).strip(),
-            email=str(data.get("email", "")).strip(),
-            phone=str(data.get("phone", "")).strip(),
-            address=str(data.get("address", "")).strip(),
-            city=str(data.get("city", "")).strip(),
-            pincode=str(data.get("pincode", "")).strip(),
-            delivery_lat=data.get("delivery_lat") or None,
-            delivery_lng=data.get("delivery_lng") or None,
-            payment_method=str(data.get("payment_method", "Cash on Delivery")).strip() or "Cash on Delivery",
+            user=request.user, name=str(data.get("name", "")).strip(), email=str(data.get("email", "")).strip(),
+            phone=str(data.get("phone", "")).strip(), address=str(data.get("address", "")).strip(),
+            city=str(data.get("city", "")).strip(), pincode=str(data.get("pincode", "")).strip(),
+            delivery_lat=data.get("delivery_lat") or None, delivery_lng=data.get("delivery_lng") or None,
+            payment_method="Cash on Delivery", payment_status="cod_pending", status="placed", total=total,
         )
-        total = Decimal("0.00")
-        for item in items:
-            try:
-                qty = max(1, int(item.get("quantity", 1)))
-            except (TypeError, ValueError):
-                return JsonResponse({"success": False, "message": "Invalid item quantity."}, status=400)
-            menu_item = None
-            item_id = item.get("id")
-            if item_id not in (None, ""):
-                menu_item = MenuItem.objects.filter(pk=item_id, available=True).first()
-                if menu_item is None:
-                    return JsonResponse({"success": False, "message": "One of the selected menu items is unavailable."}, status=400)
-                # Always use the database price when a valid menu item is supplied.
-                price = menu_item.price
-            else:
-                # Keep compatibility with legacy cart entries that do not have a database ID.
-                try:
-                    price = Decimal(str(item.get("price", "0")))
-                except Exception:
-                    return JsonResponse({"success": False, "message": "Invalid item price."}, status=400)
-                if price < 0:
-                    return JsonResponse({"success": False, "message": "Invalid item price."}, status=400)
-            name = str(item.get("name", "Item")).strip() or "Item"
-            total += price * qty
+        for menu_item, name, price, qty in validated_items:
             OrderItem.objects.create(order=order, menu_item=menu_item, name=name, price=price, quantity=qty)
-        order.total = total
-        order.save(update_fields=["total"])
-    return JsonResponse({"success": True, "order_id": order.id, "total": float(order.total), "message": "Order placed successfully."})
+    return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "payment_status": order.payment_status, "message": "Order placed successfully."})
 
 
 @require_GET
+def payment_config(request):
+    return JsonResponse({"success": True, "configured": bool(settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET), "key_id": settings.RAZORPAY_KEY_ID})
+
+
+@csrf_exempt
+@require_POST
+def create_razorpay_order(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login to place an order."}, status=401)
+    client = _razorpay_client()
+    if client is None:
+        return JsonResponse({"success": False, "message": "Razorpay is not configured on this server. Add RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET."}, status=503)
+    data = _data(request)
+    items = data.get("items", [])
+    if isinstance(items, str):
+        try: items = json.loads(items)
+        except json.JSONDecodeError: items = []
+    try:
+        validated_items, subtotal = _validate_order_items(items)
+    except ValueError as error:
+        return JsonResponse({"success": False, "message": str(error)}, status=400)
+    delivery, discount, gst, total = _checkout_totals(subtotal)
+    amount_paise = int((total * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    try:
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=request.user, name=str(data.get("name", "")).strip(), email=str(data.get("email", "")).strip(),
+                phone=str(data.get("phone", "")).strip(), address=str(data.get("address", "")).strip(),
+                city=str(data.get("city", "")).strip(), pincode=str(data.get("pincode", "")).strip(),
+                delivery_lat=data.get("delivery_lat") or None, delivery_lng=data.get("delivery_lng") or None,
+                payment_method="Razorpay", payment_status="pending", status="pending_payment", total=total,
+            )
+            for menu_item, name, price, qty in validated_items:
+                OrderItem.objects.create(order=order, menu_item=menu_item, name=name, price=price, quantity=qty)
+            razorpay_order = client.order.create({"amount": amount_paise, "currency": "INR", "receipt": f"foodiehub-{order.id}", "notes": {"foodiehub_order_id": str(order.id)}})
+            order.razorpay_order_id = razorpay_order["id"]
+            order.save(update_fields=["razorpay_order_id"])
+    except Exception:
+        return JsonResponse({"success": False, "message": "Unable to start Razorpay payment. Check the server Razorpay configuration."}, status=502)
+    return JsonResponse({"success": True, "order_id": order.id, "razorpay_order_id": order.razorpay_order_id, "amount": amount_paise, "currency": "INR", "key_id": settings.RAZORPAY_KEY_ID, "total": float(total)})
+
+
+@csrf_exempt
+@require_POST
+def verify_razorpay_payment(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    client = _razorpay_client()
+    if client is None:
+        return JsonResponse({"success": False, "message": "Razorpay is not configured on this server."}, status=503)
+    data = _data(request)
+    try: local_order_id = int(data.get("order_id"))
+    except (TypeError, ValueError): return JsonResponse({"success": False, "message": "Invalid FoodieHub order."}, status=400)
+    order = Order.objects.filter(pk=local_order_id, user=request.user).first()
+    if not order: return JsonResponse({"success": False, "message": "FoodieHub order not found."}, status=404)
+    razorpay_order_id = str(data.get("razorpay_order_id", "")).strip()
+    razorpay_payment_id = str(data.get("razorpay_payment_id", "")).strip()
+    razorpay_signature = str(data.get("razorpay_signature", "")).strip()
+    if order.razorpay_order_id != razorpay_order_id or not razorpay_payment_id or not razorpay_signature:
+        return JsonResponse({"success": False, "message": "Incomplete or mismatched Razorpay payment response."}, status=400)
+    try:
+        client.utility.verify_payment_signature({"razorpay_order_id": order.razorpay_order_id, "razorpay_payment_id": razorpay_payment_id, "razorpay_signature": razorpay_signature})
+        payment = client.payment.fetch(razorpay_payment_id)
+    except Exception:
+        return JsonResponse({"success": False, "message": "Razorpay payment verification failed."}, status=400)
+    expected_amount = int((order.total * 100).quantize(Decimal("1"), rounding=ROUND_HALF_UP))
+    if payment.get("order_id") != order.razorpay_order_id or int(payment.get("amount", 0)) != expected_amount:
+        return JsonResponse({"success": False, "message": "Payment details do not match the FoodieHub order."}, status=400)
+    if payment.get("status") != "captured":
+        return JsonResponse({"success": False, "message": "Payment is not captured yet."}, status=400)
+    order.payment_status = "paid"
+    order.razorpay_payment_id = razorpay_payment_id
+    order.razorpay_signature = razorpay_signature
+    order.paid_at = timezone.now()
+    order.status = "placed"
+    order.save(update_fields=["payment_status", "razorpay_payment_id", "razorpay_signature", "paid_at", "status"])
+    return JsonResponse({"success": True, "order_id": order.id, "payment_status": "paid", "status": order.status, "total": float(order.total)})
+
+
+@csrf_exempt
+@require_POST
+def mark_razorpay_payment_failed(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    data = _data(request)
+    try: order_id = int(data.get("order_id"))
+    except (TypeError, ValueError): return JsonResponse({"success": False, "message": "Invalid FoodieHub order."}, status=400)
+    order = Order.objects.filter(pk=order_id, user=request.user).first()
+    if not order: return JsonResponse({"success": False, "message": "FoodieHub order not found."}, status=404)
+    if order.payment_status != "paid":
+        order.payment_status = "failed"
+        order.save(update_fields=["payment_status"])
+    return JsonResponse({"success": True, "payment_status": order.payment_status})
+
+
+
 def reservation_history(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Login required."}, status=401)
@@ -480,7 +597,7 @@ def restaurant_orders(request):
     result=[]
     for o in Order.objects.filter(id__in=order_ids).prefetch_related("items").order_by("-created_at"):
         items=[{"name":i.name,"price":float(i.price),"quantity":i.quantity} for i in o.items.all() if i.menu_item_id and i.menu_item.restaurant_id==restaurant.id]
-        result.append({"id":o.id,"name":o.name,"email":o.email,"phone":o.phone,"address":o.address,"city":o.city,"payment_method":o.payment_method,"total":float(o.total),"status":o.status,"created_at":o.created_at.isoformat(),"items":items})
+        result.append({"id":o.id,"name":o.name,"email":o.email,"phone":o.phone,"address":o.address,"city":o.city,"payment_method":o.payment_method,"payment_status":o.payment_status,"total":float(o.total),"status":o.status,"created_at":o.created_at.isoformat(),"items":items})
     return JsonResponse({"success":True,"orders":result})
 
 @csrf_exempt
@@ -492,6 +609,8 @@ def restaurant_order_detail(request, order_id):
     order=Order.objects.get(pk=order_id); data=_data(request); status=str(data.get("status","")).strip().lower()
     allowed={"placed","confirmed","preparing","ready","out_for_delivery","delivered","cancelled"}
     if status not in allowed: return JsonResponse({"success":False,"message":"Invalid order status."},status=400)
+    if order.payment_method == "Razorpay" and order.payment_status != "paid" and status in {"confirmed","preparing","ready","out_for_delivery","delivered"}:
+        return JsonResponse({"success":False,"message":"Online order payment must be successful before processing."},status=400)
     order.status=status; order.save(update_fields=["status"])
     return JsonResponse({"success":True,"message":"Order status updated.","status":order.status})
 
@@ -626,7 +745,7 @@ def order_history(request):
     if not request.user.is_authenticated: return JsonResponse({"success": False, "message": "Login required."}, status=401)
     orders = []
     for o in request.user.orders.prefetch_related("items").order_by("-created_at"):
-        orders.append({"id": o.id, "total": float(o.total), "status": o.status, "created_at": o.created_at.isoformat(), "items": [{"name": i.name, "price": float(i.price), "quantity": i.quantity} for i in o.items.all()]})
+        orders.append({"id": o.id, "total": float(o.total), "status": o.status, "payment_method": o.payment_method, "payment_status": o.payment_status, "created_at": o.created_at.isoformat(), "items": [{"name": i.name, "price": float(i.price), "quantity": i.quantity} for i in o.items.all()]})
     return JsonResponse({"success": True, "orders": orders})
 
 
@@ -920,7 +1039,7 @@ def order_tracking(request, order_id):
     return JsonResponse({
         "success": True,
         "order": {
-            "id": order.id, "status": order.status, "address": order.address, "city": order.city,
+            "id": order.id, "status": order.status, "payment_method": order.payment_method, "payment_status": order.payment_status, "address": order.address, "city": order.city,
             "pincode": order.pincode, "delivery_lat": float(order.delivery_lat) if order.delivery_lat is not None else None,
             "delivery_lng": float(order.delivery_lng) if order.delivery_lng is not None else None,
             "total": float(order.total),
@@ -946,6 +1065,7 @@ def admin_orders(request):
         rows.append({
             "id": o.id, "name": o.name, "phone": o.phone, "address": o.address,
             "city": o.city, "pincode": o.pincode, "total": float(o.total), "status": o.status,
+            "payment_method": o.payment_method, "payment_status": o.payment_status,
             "created_at": o.created_at.isoformat(),
             "partner_id": assignment.partner_id if assignment else None,
             "partner_name": (assignment.partner.user.first_name or assignment.partner.user.username) if assignment and assignment.partner else None,
