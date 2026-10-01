@@ -330,40 +330,45 @@
                         class="payment-details"
                         style="display:none;">
 
-                        <div class="border rounded p-4 text-center">
+                        <div class="border rounded p-4">
 
-                            <h5 class="fw-bold mb-3">
-
-                                <i class="bi bi-qr-code"></i>
-
-                                Scan & Pay
-
+                            <h5 class="fw-bold mb-2">
+                                <i class="bi bi-phone-fill"></i>
+                                Choose UPI App
                             </h5>
 
-                            <p class="text-muted">
-                                Scan the QR code using any UPI app
+                            <p class="text-muted small mb-3">
+                                Demo payment for the project — no real money is charged.
                             </p>
 
-                            <div
-                                class="border rounded p-3 mb-3"
-                                style="display:inline-block;">
+                            <div class="row g-2">
 
-                                <i
-                                    class="bi bi-qr-code"
-                                    style="font-size:150px;">
-                                </i>
+                                <div class="col-4">
+                                    <button type="button" class="btn btn-outline-primary w-100 demo-upi-app" data-upi-app="PhonePe">
+                                        <i class="bi bi-phone"></i><br>
+                                        <span>PhonePe</span>
+                                    </button>
+                                </div>
+
+                                <div class="col-4">
+                                    <button type="button" class="btn btn-outline-success w-100 demo-upi-app" data-upi-app="Google Pay">
+                                        <i class="bi bi-google"></i><br>
+                                        <span>GPay</span>
+                                    </button>
+                                </div>
+
+                                <div class="col-4">
+                                    <button type="button" class="btn btn-outline-dark w-100 demo-upi-app" data-upi-app="Paytm">
+                                        <i class="bi bi-wallet2"></i><br>
+                                        <span>Paytm</span>
+                                    </button>
+                                </div>
 
                             </div>
 
-                            <p class="fw-bold mb-2">
-                                Or enter your UPI ID
-                            </p>
-
-                            <input
-                                type="text"
-                                id="upiId"
-                                class="form-control"
-                                placeholder="example@upi">
+                            <div id="selectedUpiApp" class="small text-center text-muted mt-3">
+                                Select PhonePe, GPay, or Paytm.
+                            </div>
 
                         </div>
 
