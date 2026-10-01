@@ -886,6 +886,8 @@ function setupPlaceOrder() {
             address: document.getElementById("address").value.trim(),
             city: document.getElementById("city").value.trim(),
             pincode: document.getElementById("pincode").value.trim(),
+            delivery_lat: document.getElementById("deliveryLat")?.value || null,
+            delivery_lng: document.getElementById("deliveryLng")?.value || null,
             payment_method: paymentMethod,
             items: cart
         };
