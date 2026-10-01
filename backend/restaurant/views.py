@@ -952,3 +952,18 @@ def admin_orders(request):
             "items": [{"name": i.name, "quantity": i.quantity} for i in o.items.all()],
         })
     return JsonResponse({"success": True, "orders": rows})
+
+
+@csrf_exempt
+@require_POST
+def delivery_toggle_availability(request):
+    partner, error = _delivery_partner(request)
+    if error:
+        return error
+    active = DeliveryAssignment.objects.filter(partner=partner, order__status="out_for_delivery").exists()
+    if active:
+        return JsonResponse({"success": False, "message": "Finish your active delivery before changing availability."}, status=400)
+    value = _data(request).get("is_available")
+    partner.is_available = value is True or str(value).lower() in ("true", "1", "yes")
+    partner.save(update_fields=["is_available"])
+    return JsonResponse({"success": True, "is_available": partner.is_available})
