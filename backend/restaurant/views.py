@@ -934,3 +934,21 @@ def order_tracking(request, order_id):
         } if partner else None),
         "assignment": {"status": assignment.status} if assignment else None,
     })
+
+
+@require_GET
+def admin_orders(request):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({"success": False, "message": "Administrator access required."}, status=403)
+    rows = []
+    for o in Order.objects.prefetch_related("items").select_related("delivery_assignment__partner__user").order_by("-created_at"):
+        assignment = getattr(o, "delivery_assignment", None)
+        rows.append({
+            "id": o.id, "name": o.name, "phone": o.phone, "address": o.address,
+            "city": o.city, "pincode": o.pincode, "total": float(o.total), "status": o.status,
+            "created_at": o.created_at.isoformat(),
+            "partner_id": assignment.partner_id if assignment else None,
+            "partner_name": (assignment.partner.user.first_name or assignment.partner.user.username) if assignment and assignment.partner else None,
+            "items": [{"name": i.name, "quantity": i.quantity} for i in o.items.all()],
+        })
+    return JsonResponse({"success": True, "orders": rows})
