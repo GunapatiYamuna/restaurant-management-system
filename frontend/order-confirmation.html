@@ -459,7 +459,13 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById(
         "confirmation-payment"
     ).textContent =
-        order.payment || "Cash on Delivery";
+        (order.payment || "Cash on Delivery") +
+        (order.paymentStatus ? " (" + order.paymentStatus + ")" : "");
+
+    const trackLink = document.getElementById("track-order-link");
+    if (trackLink && order.orderId) {
+        trackLink.href = "tracking.html?id=" + encodeURIComponent(order.orderId);
+    }
 
 
     /* ================= ITEMS ================= */
