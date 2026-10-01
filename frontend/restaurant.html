@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>FoodieHub | Restaurants</title>
+<!-- Bootstrap -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
+<!-- Bootstrap Icons -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet"/>
+<!-- Custom CSS -->
+<link href="css/res_style.css" rel="stylesheet"/>
+<link href="css/footer.css" rel="stylesheet"/>
+<link href="css/navbar_auth.css" rel="stylesheet"/>
+</head>
+<body>
+<!-- =====================================================
+                         NAVBAR
+    ===================================================== -->
+<nav class="navbar navbar-expand-lg foodie-navbar">
+<div class="container">
+<!-- LOGO -->
+<a class="navbar-brand" href="restaurant.html">
+<i class="bi bi-egg-fried"></i>
+
+                Foodie<span>Hub</span>
+</a>
+<!-- MOBILE MENU BUTTON -->
+<button aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation" class="navbar-toggler" data-bs-target="#mainNavbar" data-bs-toggle="collapse" type="button">
+<span class="navbar-toggler-icon"></span>
+</button>
+<!-- NAVIGATION -->
+<div class="collapse navbar-collapse" id="mainNavbar">
+<ul class="navbar-nav mx-auto">
+<li class="nav-item">
+<a class="nav-link" href="index.html">
+
+                            Home
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link active" href="restaurant.html">
+
+                            Restaurants
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="menu.html">
+
+                            Menu
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="about.html">
+
+                            About
+
+                        </a>
+</li>
+<li class="nav-item">
+<a class="nav-link" href="contact.html">
+
+                            Contact
+
+                        </a>
+</li>
+</ul>
+
+<!-- CART -->
+<a class="nav-cart" href="cart.html">
+<i class="bi bi-cart3"></i>
+<span class="cart-count">0</span>
+</a>
+<!-- LOGIN -->
+<div id="authButtons">
+<a class="nav-login" href="login/login_register.html">
+
+                    Login
+
+                </a>
+</div>
+<div class="navbar-user" id="userSection" style="display:none;">
+<div class="navbar-avatar" id="navbarAvatar"></div>
+<div class="navbar-greeting">
+<span>Hi,</span>
+<strong id="navbarUserName"></strong>
+</div>
+</div>
+</div>
+</div>
+</nav>
+<!-- =====================================================
+                         HERO SECTION
+    ===================================================== -->
+<section class="restaurant-hero">
+<div class="container">
+<div class="hero-content">
+<span class="hero-badge">
+<i class="bi bi-stars"></i>
+                    Premium Dining Experience
+                </span>
+<h1>
+                    Discover Your
+                    <span>Perfect Table</span>
+</h1>
+<p>
+                    Explore the finest restaurants, discover amazing
+                    cuisines and reserve your table in just a few clicks.
+                </p>
+<div class="hero-search">
+<i class="bi bi-search"></i>
+<input id="heroSearch" placeholder="Search restaurants, cuisines or locations..." type="text"/>
+<button id="heroSearchBtn" type="button">
+
+                        Search
+
+                    </button>
+</div>
+</div>
+</div>
+</section>
+<!-- =====================================================
+                         RESTAURANT SECTION
+    ===================================================== -->
+<section class="restaurant-section" id="restaurants">
+<div class="container">
+<div class="section-heading">
+<div>
+<span class="section-label">
+                        EXPLORE
+                    </span>
+<h2>
+                        Popular Restaurants in Ongole
+                    </h2>
+<p>
+                        Handpicked places for an unforgettable dining experience.
+                    </p>
+</div>
+<span class="restaurant-count" id="restaurantCount">Loading...</span>
+</div>
+<!-- FILTER AREA -->
+<div class="filter-panel">
+<div class="filter-search">
+<i class="bi bi-search"></i>
+<input id="restaurantSearch" placeholder="Search restaurants..." type="text"/>
+</div>
+<div class="filter-group">
+<select id="cuisineFilter">
+<option value="all">
+                            All Cuisines
+                        </option>
+<option value="Indian">
+                            Indian
+                        </option>
+<option value="Italian">
+                            Italian
+                        </option>
+<option value="Chinese">
+                            Chinese
+                        </option>
+<option value="Japanese">
+                            Japanese
+                        </option>
+<option value="Mexican">
+                            Mexican
+                        </option>
+</select>
+<select id="priceFilter">
+<option value="all">
+                            All Prices (₹)
+                        </option>
+<option value="₹">
+                            ₹
+                        </option>
+<option value="₹₹">
+                            ₹₹
+                        </option>
+<option value="₹₹₹">
+                            ₹₹₹
+                        </option>
+<option value="₹₹₹₹">
+                            ₹₹₹₹
+                        </option>
+</select>
+<select id="ratingFilter">
+<option value="all">
+                            All Ratings
+                        </option>
+<option value="4.5">
+                            4.5+
+                        </option>
+<option value="4">
+                            4.0+
+                        </option>
+<option value="3">
+                            3.0+
+                        </option>
+</select>
+</div>
+</div>
+<!-- RESTAURANT CARDS -->
+<div class="row g-4" id="restaurantGrid"><div class="col-12 text-center py-5" id="restaurantLoading">Loading restaurants...</div></div>
+<!-- NO RESULTS -->
+<div class="no-results" id="noResults">
+<i class="bi bi-search"></i>
+<h3>
+                    No restaurants found
+                </h3>
+<p>
+                    Try changing your search or filters.
+                </p>
+</div>
+</div>
+</section>
+<!-- =====================================================
+                         ABOUT
+    ===================================================== -->
+<section class="about-section" id="about">
+<div class="container">
+<div class="about-box">
+<span class="section-label">
+                    ABOUT FOODIEHUB
+                </span>
+<h2>
+                    Great food deserves a great table.
+                </h2>
+<p>
+                    FoodieHub makes discovering restaurants and
+                    reserving tables simple, fast and enjoyable.
+                </p>
+</div>
+</div>
+</section>
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js">
+</script>
+<!-- Custom JS -->
+<script src="js/restaurants_dynamic.js"></script><script src="js/app.js"></script>
+<script src="js/cart_script.js"></script>
+<div id="footer-placeholder"></div>
+<script src="js/footer.js"></script>
+<script src="js/navbar_auth.js"></script>
+</body>
+</html>
