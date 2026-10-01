@@ -6,8 +6,8 @@ from django.db import migrations
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('restaurant', '0003_delivery_google_tracking'),
-        ('restaurant', '0005_restaurant_owner'),
+        ("restaurant", "0006_order_payment_fields"),
+        ("restaurant", "0003_delivery_google_tracking"),
     ]
 
     operations = [
