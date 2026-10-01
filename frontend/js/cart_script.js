@@ -770,6 +770,8 @@ function setupPaymentMethods() {
     const paymentInputs = document.querySelectorAll('input[name="payment"]');
     const upiDetails = document.getElementById("upiDetails");
     const cardDetails = document.getElementById("cardDetails");
+    const upiButtons = document.querySelectorAll(".demo-upi-app");
+    const selectedUpiApp = document.getElementById("selectedUpiApp");
     if (!paymentInputs.length) return;
 
     function update() {
@@ -778,6 +780,18 @@ function setupPaymentMethods() {
         if (upiDetails) upiDetails.style.display = value === "UPI Payment" ? "block" : "none";
         if (cardDetails) cardDetails.style.display = value === "Credit/Debit Card" ? "block" : "none";
     }
+
+    upiButtons.forEach(function (button) {
+        button.addEventListener("click", function () {
+            upiButtons.forEach(function (item) {
+                item.classList.remove("active");
+            });
+            button.classList.add("active");
+            if (selectedUpiApp) {
+                selectedUpiApp.textContent = button.dataset.upiApp + " selected. Click Place Order to continue.";
+            }
+        });
+    });
 
     paymentInputs.forEach(function (input) {
         input.addEventListener("change", update);
@@ -818,8 +832,19 @@ function setupPlaceOrder() {
         if (button) button.disabled = true;
 
         try {
-            if (paymentMethod === "Razorpay") {
-                await startRazorpayPayment(payload, cart, totals);
+            if (paymentMethod === "UPI Payment" || paymentMethod === "Credit/Debit Card") {
+                const demoMethod = paymentMethod === "UPI Payment"
+                    ? document.querySelector(".demo-upi-app.active")?.dataset.upiApp
+                    : "Credit/Debit Card";
+
+                if (paymentMethod === "UPI Payment" && !demoMethod) {
+                    throw new Error("Please select PhonePe, GPay, or Paytm.");
+                }
+
+                await startDemoPayment({
+                    ...payload,
+                    payment_method: demoMethod
+                }, cart, totals);
             } else {
                 const response = await fetch("/api/orders/", {
                     method: "POST",
@@ -855,6 +880,39 @@ function saveCompletedOrder(order) {
     try { history = JSON.parse(localStorage.getItem("foodieOrderHistory")) || []; } catch (_) {}
     history.push(order);
     localStorage.setItem("foodieOrderHistory", JSON.stringify(history));
+}
+
+async function startDemoPayment(payload, cart, totals) {
+    const button = document.getElementById("place-order-btn");
+    const response = await fetch("/api/payments/demo/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+    });
+    const data = await response.json();
+
+    if (!response.ok || !data.success) {
+        throw new Error(data.message || "Demo payment failed.");
+    }
+
+    saveCompletedOrder({
+        orderId: data.order_id,
+        date: new Date().toLocaleString(),
+        payment: data.payment_method + " (Demo)",
+        paymentStatus: data.payment_status,
+        transactionId: data.transaction_id,
+        customer: payload,
+        cart: cart,
+        subtotal: totals.subtotal,
+        delivery: totals.delivery,
+        discount: totals.discount,
+        gst: totals.gst,
+        total: data.total
+    });
+
+    if (button) {
+        button.innerHTML = '<i class="bi bi-check-circle-fill"></i> Payment Successful';
+    }
 }
 
 async function startRazorpayPayment(payload, cart, totals) {
