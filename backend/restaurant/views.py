@@ -360,6 +360,75 @@ def create_order(request):
     return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "payment_status": order.payment_status, "message": "Order placed successfully."})
 
 
+@csrf_exempt
+@require_POST
+def create_demo_payment(request):
+    """Create a simulated paid order for the college-project demo checkout."""
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login to place an order."}, status=401)
+
+    data = _data(request)
+    method = str(data.get("payment_method", "")).strip()
+    allowed_methods = {"PhonePe", "Google Pay", "Paytm", "Credit/Debit Card"}
+    if method not in allowed_methods:
+        return JsonResponse({"success": False, "message": "Select a valid demo payment method."}, status=400)
+
+    items = data.get("items", [])
+    if isinstance(items, str):
+        try:
+            items = json.loads(items)
+        except json.JSONDecodeError:
+            items = []
+
+    try:
+        validated_items, subtotal = _validate_order_items(items)
+    except ValueError as error:
+        return JsonResponse({"success": False, "message": str(error)}, status=400)
+
+    delivery, discount, gst, total = _checkout_totals(subtotal)
+
+    with transaction.atomic():
+        order = Order.objects.create(
+            user=request.user,
+            name=str(data.get("name", "")).strip(),
+            email=str(data.get("email", "")).strip(),
+            phone=str(data.get("phone", "")).strip(),
+            address=str(data.get("address", "")).strip(),
+            city=str(data.get("city", "")).strip(),
+            pincode=str(data.get("pincode", "")).strip(),
+            delivery_lat=data.get("delivery_lat") or None,
+            delivery_lng=data.get("delivery_lng") or None,
+            payment_method=method,
+            payment_status="paid",
+            status="placed",
+            total=total,
+            paid_at=timezone.now(),
+        )
+
+        for menu_item, name, price, qty in validated_items:
+            OrderItem.objects.create(
+                order=order,
+                menu_item=menu_item,
+                name=name,
+                price=price,
+                quantity=qty,
+            )
+
+        transaction_id = f"DEMO-{order.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+        order.razorpay_payment_id = transaction_id
+        order.save(update_fields=["razorpay_payment_id"])
+
+    return JsonResponse({
+        "success": True,
+        "order_id": order.id,
+        "total": float(total),
+        "payment_method": method,
+        "payment_status": "paid",
+        "transaction_id": transaction_id,
+        "message": "Demo payment successful.",
+    })
+
+
 @require_GET
 def payment_config(request):
     return JsonResponse({"success": True, "configured": bool(settings.RAZORPAY_KEY_ID and settings.RAZORPAY_KEY_SECRET), "key_id": settings.RAZORPAY_KEY_ID})
