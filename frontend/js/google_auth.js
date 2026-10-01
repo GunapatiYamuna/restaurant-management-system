@@ -30,6 +30,7 @@
 
       window.google.accounts.id.initialize({
         client_id: config.client_id,
+        use_fedcm_for_button: true,
         callback: async response => {
           try {
             const result = await fetch("/api/auth/google/", {
