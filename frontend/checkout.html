@@ -266,229 +266,37 @@
                 <div class="card shadow p-4 mt-4">
 
                     <h4 class="mb-4">
-
                         <i class="bi bi-credit-card-fill text-warning"></i>
-
                         Payment Method
-
                     </h4>
 
-
-                    <!-- COD -->
-
                     <div class="form-check mb-3">
-
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="payment"
-                            id="cod"
-                            value="Cash on Delivery"
-                            checked>
-
-                        <label
-                            class="form-check-label"
-                            for="cod">
-
-                            <i class="bi bi-cash-coin"></i>
-
-                            Cash on Delivery
-
+                        <input class="form-check-input" type="radio" name="payment" id="cod" value="Cash on Delivery" checked>
+                        <label class="form-check-label" for="cod">
+                            <i class="bi bi-cash-coin"></i> Cash on Delivery
                         </label>
-
                     </div>
 
-
-                    <!-- UPI -->
-
                     <div class="form-check mb-3">
-
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="payment"
-                            id="upi"
-                            value="UPI Payment">
-
-                        <label
-                            class="form-check-label"
-                            for="upi">
-
-                            <i class="bi bi-phone"></i>
-
-                            UPI Payment
-
+                        <input class="form-check-input" type="radio" name="payment" id="razorpay" value="Razorpay">
+                        <label class="form-check-label" for="razorpay">
+                            <i class="bi bi-shield-check"></i> Pay Online with Razorpay
                         </label>
-
                     </div>
 
-
-                    <!-- UPI DETAILS -->
-
-                    <div
-                        id="upiDetails"
-                        class="payment-details"
-                        style="display:none;">
-
-                        <div class="border rounded p-4 text-center">
-
-                            <h5 class="fw-bold mb-3">
-
-                                <i class="bi bi-qr-code"></i>
-
-                                Scan & Pay
-
-                            </h5>
-
-                            <p class="text-muted">
-                                Scan the QR code using any UPI app
-                            </p>
-
-                            <div
-                                class="border rounded p-3 mb-3"
-                                style="display:inline-block;">
-
-                                <i
-                                    class="bi bi-qr-code"
-                                    style="font-size:150px;">
-                                </i>
-
-                            </div>
-
-                            <p class="fw-bold mb-2">
-                                Or enter your UPI ID
-                            </p>
-
-                            <input
-                                type="text"
-                                id="upiId"
-                                class="form-control"
-                                placeholder="example@upi">
-
+                    <div id="razorpayDetails" class="border rounded p-4 mt-2" style="display:none;">
+                        <h6 class="fw-bold mb-2">UPI, Cards & Netbanking</h6>
+                        <p class="text-muted mb-2">
+                            Razorpay Checkout handles the secure payment. For UPI, supported devices can show
+                            app-based payment and a QR option.
+                        </p>
+                        <div class="small text-muted">
+                            Google Pay, PhonePe and Paytm can appear through Razorpay's UPI flow when those
+                            methods are enabled and available for the customer/device.
                         </div>
-
                     </div>
 
-
-                    <!-- CARD -->
-
-                    <div class="form-check mb-3">
-
-                        <input
-                            class="form-check-input"
-                            type="radio"
-                            name="payment"
-                            id="card"
-                            value="Credit/Debit Card">
-
-                        <label
-                            class="form-check-label"
-                            for="card">
-
-                            <i class="bi bi-credit-card"></i>
-
-                            Credit/Debit Card
-
-                        </label>
-
-                    </div>
-
-
-                    <!-- CARD DETAILS -->
-
-                    <div
-                        id="cardDetails"
-                        class="payment-details"
-                        style="display:none;">
-
-                        <div class="border rounded p-4">
-
-                            <h5 class="fw-bold mb-3">
-
-                                <i class="bi bi-credit-card-fill"></i>
-
-                                Card Details
-
-                            </h5>
-
-
-                            <!-- Card Holder -->
-
-                            <div class="mb-3">
-
-                                <label class="form-label">
-                                    Card Holder Name
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="cardHolder"
-                                    class="form-control"
-                                    placeholder="Enter card holder name">
-
-                            </div>
-
-
-                            <!-- Card Number -->
-
-                            <div class="mb-3">
-
-                                <label class="form-label">
-                                    Card Number
-                                </label>
-
-                                <input
-                                    type="text"
-                                    id="cardNumber"
-                                    class="form-control"
-                                    placeholder="1234 5678 9012 3456"
-                                    maxlength="19">
-
-                            </div>
-
-
-                            <div class="row">
-
-                                <!-- Expiry -->
-
-                                <div class="col-md-6 mb-3">
-
-                                    <label class="form-label">
-                                        Expiry Date
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        id="expiryDate"
-                                        class="form-control"
-                                        placeholder="MM/YY"
-                                        maxlength="5">
-
-                                </div>
-
-
-                                <!-- CVV -->
-
-                                <div class="col-md-6 mb-3">
-
-                                    <label class="form-label">
-                                        CVV
-                                    </label>
-
-                                    <input
-                                        type="password"
-                                        id="cvv"
-                                        class="form-control"
-                                        placeholder="***"
-                                        maxlength="3">
-
-                                </div>
-
-                            </div>
-
-                        </div>
-
-                    </div>
+                </div>
 
                 </div>
 
@@ -642,6 +450,7 @@
 <script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
 <script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script>
 <script src="js/checkout_map.js"></script>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
 <script src="js/cart_script.js"></script>
 
 <script src="js/navbar_auth.js"></script>
