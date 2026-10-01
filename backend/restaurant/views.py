@@ -9,6 +9,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -17,7 +18,8 @@ from django.http import JsonResponse, Http404, FileResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
-from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem,InventoryItem, Order, OrderItem 
+from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, InventoryItem, Order, OrderItem, DeliveryPartner, DeliveryAssignment
+
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
 
@@ -48,7 +50,7 @@ def _data(request):
 
 def _user_payload(user):
     profile, _ = Profile.objects.get_or_create(user=user)
-    role = "admin" if user.is_staff else ("restaurant" if hasattr(user, "owned_restaurant") else "user")
+    role = "admin" if user.is_staff else ("restaurant" if hasattr(user, "owned_restaurant") else ("delivery" if hasattr(user, "delivery_partner") else "user"))
     return {"id": user.id, "name": user.first_name or user.username, "email": user.email,
             "phone": profile.phone, "city": profile.city, "role": role}
 
@@ -303,6 +305,8 @@ def create_order(request):
             address=str(data.get("address", "")).strip(),
             city=str(data.get("city", "")).strip(),
             pincode=str(data.get("pincode", "")).strip(),
+            delivery_lat=data.get("delivery_lat") or None,
+            delivery_lng=data.get("delivery_lng") or None,
             payment_method=str(data.get("payment_method", "Cash on Delivery")).strip() or "Cash on Delivery",
         )
         total = Decimal("0.00")
@@ -624,3 +628,342 @@ def order_history(request):
     for o in request.user.orders.prefetch_related("items").order_by("-created_at"):
         orders.append({"id": o.id, "total": float(o.total), "status": o.status, "created_at": o.created_at.isoformat(), "items": [{"name": i.name, "price": float(i.price), "quantity": i.quantity} for i in o.items.all()]})
     return JsonResponse({"success": True, "orders": orders})
+
+
+# ------------------------- Google Sign-In -------------------------
+
+@require_GET
+def google_auth_config(request):
+    return JsonResponse({"success": True, "client_id": settings.GOOGLE_CLIENT_ID})
+
+
+@csrf_exempt
+@require_POST
+def google_login(request):
+    data = _data(request)
+    credential = str(data.get("credential", "")).strip()
+    requested_role = str(data.get("role", "user")).strip().lower()
+    if not credential:
+        return JsonResponse({"success": False, "message": "Google credential is required."}, status=400)
+    if requested_role not in {"user", "admin", "restaurant", "delivery"}:
+        requested_role = "user"
+    if not settings.GOOGLE_CLIENT_ID:
+        return JsonResponse({"success": False, "message": "Google authentication is not configured on this server."}, status=503)
+    try:
+        from google.oauth2 import id_token
+        from google.auth.transport import requests as google_requests
+        info = id_token.verify_oauth2_token(credential, google_requests.Request(), settings.GOOGLE_CLIENT_ID)
+        if info.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
+            raise ValueError("Invalid issuer.")
+        if not info.get("email_verified"):
+            raise ValueError("Google email is not verified.")
+        google_sub = str(info["sub"])
+        email = str(info.get("email", "")).strip().lower()
+        name = str(info.get("name", "")).strip() or email.split("@")[0]
+    except Exception:
+        return JsonResponse({"success": False, "message": "Unable to verify the Google account."}, status=401)
+
+    profile = Profile.objects.filter(google_sub=google_sub).select_related("user").first()
+    user = profile.user if profile else User.objects.filter(email__iexact=email).first()
+
+    if user is None:
+        if requested_role != "user":
+            return JsonResponse({"success": False, "message": f"Use the {requested_role} registration first, then Sign in with Google."}, status=403)
+        user = User.objects.create_user(username=email, email=email, first_name=name)
+        profile = Profile.objects.create(user=user, google_sub=google_sub)
+    else:
+        profile, _ = Profile.objects.get_or_create(user=user)
+        if profile.google_sub and profile.google_sub != google_sub:
+            return JsonResponse({"success": False, "message": "This account is linked to a different Google account."}, status=409)
+        profile.google_sub = google_sub
+        profile.save(update_fields=["google_sub"])
+
+    actual_role = _user_payload(user)["role"]
+    if actual_role != requested_role:
+        return JsonResponse({"success": False, "message": f"This account is registered as {actual_role}, not {requested_role}."}, status=403)
+
+    logout(request)
+    login(request, user)
+    payload = _user_payload(user)
+    response = {"success": True, "message": "Google login successful.", "user": payload}
+    if actual_role == "restaurant":
+        response["restaurant"] = _restaurant_payload(user.owned_restaurant)
+    return JsonResponse(response)
+
+
+# ------------------------- Delivery Partner -------------------------
+
+def _delivery_partner(request):
+    if not request.user.is_authenticated:
+        return None, JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    partner = getattr(request.user, "delivery_partner", None)
+    if not partner:
+        return None, JsonResponse({"success": False, "message": "Delivery partner account required."}, status=403)
+    return partner, None
+
+
+@csrf_exempt
+@require_POST
+def delivery_register(request):
+    data = _data(request)
+    name = str(data.get("name", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    phone = str(data.get("phone", "")).strip()
+    password = str(data.get("password", ""))
+    vehicle_type = str(data.get("vehicle_type", "Bike")).strip() or "Bike"
+    vehicle_number = str(data.get("vehicle_number", "")).strip()
+    if not all((name, email, phone, password)):
+        return JsonResponse({"success": False, "message": "Name, email, phone and password are required."}, status=400)
+    if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username=email).exists():
+        return JsonResponse({"success": False, "message": "An account with this email already exists."}, status=400)
+    password_error = _validate_password(password)
+    if password_error:
+        return JsonResponse({"success": False, "message": password_error}, status=400)
+    user = User.objects.create_user(username=email, email=email, password=password, first_name=name)
+    Profile.objects.create(user=user, phone=phone)
+    DeliveryPartner.objects.create(user=user, phone=phone, vehicle_type=vehicle_type, vehicle_number=vehicle_number)
+    return JsonResponse({"success": True, "message": "Delivery partner account created successfully.", "user": _user_payload(user)})
+
+
+@csrf_exempt
+@require_POST
+def delivery_login(request):
+    logout(request)
+    data = _data(request)
+    email = str(data.get("email", "")).strip().lower()
+    password = str(data.get("password", ""))
+    user = User.objects.filter(email__iexact=email).first()
+    auth_user = authenticate(request, username=user.username if user else email, password=password)
+    if not auth_user or not hasattr(auth_user, "delivery_partner"):
+        return JsonResponse({"success": False, "message": "Invalid delivery partner credentials."}, status=401)
+    login(request, auth_user)
+    return JsonResponse({"success": True, "message": "Delivery partner login successful.", "user": _user_payload(auth_user)})
+
+
+@require_GET
+def delivery_me(request):
+    partner, error = _delivery_partner(request)
+    if error:
+        return error
+    return JsonResponse({
+        "success": True,
+        "user": _user_payload(request.user),
+        "partner": {
+            "id": partner.id, "phone": partner.phone, "vehicle_type": partner.vehicle_type,
+            "vehicle_number": partner.vehicle_number, "is_available": partner.is_available,
+            "current_lat": float(partner.current_lat) if partner.current_lat is not None else None,
+            "current_lng": float(partner.current_lng) if partner.current_lng is not None else None,
+        },
+    })
+
+
+@require_GET
+def delivery_dashboard(request):
+    partner, error = _delivery_partner(request)
+    if error:
+        return error
+    assigned = DeliveryAssignment.objects.filter(partner=partner).select_related("order").prefetch_related("order__items").order_by("-assigned_at")
+    active = []
+    for a in assigned:
+        active.append({
+            "id": a.order_id, "name": a.order.name, "phone": a.order.phone,
+            "address": a.order.address, "city": a.order.city, "pincode": a.order.pincode,
+            "total": float(a.order.total), "status": a.order.status,
+            "assignment_status": a.status,
+            "delivery_lat": float(a.order.delivery_lat) if a.order.delivery_lat is not None else None,
+            "delivery_lng": float(a.order.delivery_lng) if a.order.delivery_lng is not None else None,
+            "created_at": a.order.created_at.isoformat(),
+            "items": [{"name": i.name, "quantity": i.quantity} for i in a.order.items.all()],
+        })
+    available = []
+    for o in Order.objects.filter(status="ready", delivery_assignment__isnull=True).prefetch_related("items").order_by("created_at"):
+        available.append({
+            "id": o.id, "name": o.name, "address": o.address, "city": o.city,
+            "pincode": o.pincode, "total": float(o.total), "created_at": o.created_at.isoformat(),
+            "items": [{"name": i.name, "quantity": i.quantity} for i in o.items.all()],
+        })
+    return JsonResponse({"success": True, "active_orders": active, "available_orders": available})
+
+
+@csrf_exempt
+@require_POST
+def delivery_accept_order(request, order_id):
+    partner, error = _delivery_partner(request)
+    if error:
+        return error
+    if not partner.is_available:
+        return JsonResponse({"success": False, "message": "Set yourself available before accepting orders."}, status=400)
+    with transaction.atomic():
+        order = Order.objects.select_for_update().filter(pk=order_id, status="ready", delivery_assignment__isnull=True).first()
+        if not order:
+            return JsonResponse({"success": False, "message": "This order is no longer available."}, status=409)
+        DeliveryAssignment.objects.create(order=order, partner=partner, status="accepted")
+        order.status = "out_for_delivery"
+        order.save(update_fields=["status"])
+        partner.is_available = False
+        partner.save(update_fields=["is_available"])
+    return JsonResponse({"success": True, "message": "Delivery accepted.", "order_id": order.id})
+
+
+@csrf_exempt
+@require_POST
+def delivery_update_status(request, order_id):
+    partner, error = _delivery_partner(request)
+    if error:
+        return error
+    assignment = DeliveryAssignment.objects.filter(order_id=order_id, partner=partner).select_related("order").first()
+    if not assignment:
+        return JsonResponse({"success": False, "message": "Delivery assignment not found."}, status=404)
+    status = str(_data(request).get("status", "")).strip().lower()
+    allowed = {"picked_up", "out_for_delivery", "delivered"}
+    if status not in allowed:
+        return JsonResponse({"success": False, "message": "Invalid delivery status."}, status=400)
+    assignment.status = status
+    if status == "picked_up":
+        assignment.picked_up_at = timezone.now()
+    if status == "delivered":
+        assignment.delivered_at = timezone.now()
+        assignment.order.status = "delivered"
+        assignment.order.save(update_fields=["status"])
+        partner.is_available = True
+        partner.save(update_fields=["is_available"])
+    else:
+        assignment.order.status = "out_for_delivery"
+        assignment.order.save(update_fields=["status"])
+    assignment.save(update_fields=["status", "picked_up_at", "delivered_at"])
+    return JsonResponse({"success": True, "status": assignment.status})
+
+
+@csrf_exempt
+@require_POST
+def delivery_update_location(request, order_id):
+    partner, error = _delivery_partner(request)
+    if error:
+        return error
+    assignment = DeliveryAssignment.objects.filter(order_id=order_id, partner=partner).first()
+    if not assignment:
+        return JsonResponse({"success": False, "message": "Delivery assignment not found."}, status=404)
+    data = _data(request)
+    try:
+        lat = Decimal(str(data.get("lat")))
+        lng = Decimal(str(data.get("lng")))
+        if not (-90 <= lat <= 90 and -180 <= lng <= 180):
+            raise ValueError
+    except Exception:
+        return JsonResponse({"success": False, "message": "Invalid location."}, status=400)
+    partner.current_lat, partner.current_lng, partner.last_location_at = lat, lng, timezone.now()
+    partner.save(update_fields=["current_lat", "current_lng", "last_location_at"])
+    return JsonResponse({"success": True})
+
+
+@require_GET
+def delivery_available_partners(request):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({"success": False, "message": "Administrator access required."}, status=403)
+    rows = []
+    for p in DeliveryPartner.objects.select_related("user").filter(is_available=True):
+        rows.append({"id": p.id, "name": p.user.first_name or p.user.username, "phone": p.phone, "vehicle_type": p.vehicle_type, "vehicle_number": p.vehicle_number})
+    return JsonResponse({"success": True, "partners": rows})
+
+
+@csrf_exempt
+@require_POST
+def admin_assign_delivery(request):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({"success": False, "message": "Administrator access required."}, status=403)
+    data = _data(request)
+    try:
+        order_id = int(data.get("order_id"))
+        partner_id = int(data.get("partner_id"))
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "message": "Order and delivery partner are required."}, status=400)
+    order = Order.objects.filter(pk=order_id).first()
+    partner = DeliveryPartner.objects.filter(pk=partner_id, is_available=True).first()
+    if not order or not partner:
+        return JsonResponse({"success": False, "message": "Order or available partner not found."}, status=404)
+    assignment, _ = DeliveryAssignment.objects.update_or_create(order=order, defaults={"partner": partner, "status": "assigned"})
+    order.status = "out_for_delivery"
+    order.save(update_fields=["status"])
+    partner.is_available = False
+    partner.save(update_fields=["is_available"])
+    return JsonResponse({"success": True, "message": "Delivery partner assigned.", "order_id": order.id, "partner_id": partner.id})
+
+
+@require_GET
+def admin_delivery_partners(request):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({"success": False, "message": "Administrator access required."}, status=403)
+    rows = []
+    for p in DeliveryPartner.objects.select_related("user").prefetch_related("assignments"):
+        active = p.assignments.filter(order__status="out_for_delivery").first()
+        rows.append({
+            "id": p.id, "name": p.user.first_name or p.user.username, "email": p.user.email,
+            "phone": p.phone, "vehicle_type": p.vehicle_type, "vehicle_number": p.vehicle_number,
+            "is_available": p.is_available, "active_order_id": active.order_id if active else None,
+            "current_lat": float(p.current_lat) if p.current_lat is not None else None,
+            "current_lng": float(p.current_lng) if p.current_lng is not None else None,
+        })
+    return JsonResponse({"success": True, "partners": rows})
+
+
+@require_GET
+def order_tracking(request, order_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Login required."}, status=401)
+    order = Order.objects.filter(pk=order_id).select_related("delivery_assignment__partner__user").first()
+    if not order:
+        return JsonResponse({"success": False, "message": "Order not found."}, status=404)
+    if not (request.user.is_staff or order.user_id == request.user.id):
+        return JsonResponse({"success": False, "message": "You cannot track this order."}, status=403)
+    assignment = getattr(order, "delivery_assignment", None)
+    partner = assignment.partner if assignment else None
+    return JsonResponse({
+        "success": True,
+        "order": {
+            "id": order.id, "status": order.status, "address": order.address, "city": order.city,
+            "pincode": order.pincode, "delivery_lat": float(order.delivery_lat) if order.delivery_lat is not None else None,
+            "delivery_lng": float(order.delivery_lng) if order.delivery_lng is not None else None,
+            "total": float(order.total),
+        },
+        "partner": ({
+            "id": partner.id, "name": partner.user.first_name or partner.user.username,
+            "phone": partner.phone, "vehicle_type": partner.vehicle_type,
+            "current_lat": float(partner.current_lat) if partner.current_lat is not None else None,
+            "current_lng": float(partner.current_lng) if partner.current_lng is not None else None,
+            "last_location_at": partner.last_location_at.isoformat() if partner.last_location_at else None,
+        } if partner else None),
+        "assignment": {"status": assignment.status} if assignment else None,
+    })
+
+
+@require_GET
+def admin_orders(request):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({"success": False, "message": "Administrator access required."}, status=403)
+    rows = []
+    for o in Order.objects.prefetch_related("items").select_related("delivery_assignment__partner__user").order_by("-created_at"):
+        assignment = getattr(o, "delivery_assignment", None)
+        rows.append({
+            "id": o.id, "name": o.name, "phone": o.phone, "address": o.address,
+            "city": o.city, "pincode": o.pincode, "total": float(o.total), "status": o.status,
+            "created_at": o.created_at.isoformat(),
+            "partner_id": assignment.partner_id if assignment else None,
+            "partner_name": (assignment.partner.user.first_name or assignment.partner.user.username) if assignment and assignment.partner else None,
+            "items": [{"name": i.name, "quantity": i.quantity} for i in o.items.all()],
+        })
+    return JsonResponse({"success": True, "orders": rows})
+
+
+@csrf_exempt
+@require_POST
+def delivery_toggle_availability(request):
+    partner, error = _delivery_partner(request)
+    if error:
+        return error
+    active = DeliveryAssignment.objects.filter(partner=partner, order__status="out_for_delivery").exists()
+    if active:
+        return JsonResponse({"success": False, "message": "Finish your active delivery before changing availability."}, status=400)
+    value = _data(request).get("is_available")
+    partner.is_available = value is True or str(value).lower() in ("true", "1", "yes")
+    partner.save(update_fields=["is_available"])
+    return JsonResponse({"success": True, "is_available": partner.is_available})

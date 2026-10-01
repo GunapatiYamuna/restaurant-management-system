@@ -560,7 +560,7 @@ if (loginForm) {
         setTimeout(() => {
 
           window.location.href =
-            "profile.html";
+            "../../user_portal/dashboard.html";
 
         }, 700);
 

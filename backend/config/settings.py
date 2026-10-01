@@ -10,6 +10,7 @@ FRONTEND_BASE_URL = os.getenv(
     "FRONTEND_BASE_URL",
     "http://127.0.0.1:8000"
 )
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
 DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"

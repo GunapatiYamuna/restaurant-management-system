@@ -34,6 +34,9 @@ document.addEventListener("DOMContentLoaded", async function () {
             bindPrebook(items);
         }
 
+        document.getElementById("orderNowButton")?.addEventListener("click", function(){
+            window.location.href = "menu.html?restaurant_id=" + encodeURIComponent(r.id);
+        });
         document.getElementById("prebookButton")?.addEventListener("click", function(){
             const selected=readSelectedItems(items);
             if (!selected.length) { alert("Please select at least one item to pre-book."); return; }

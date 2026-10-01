@@ -20,7 +20,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         userSection.onclick=function(){
             if(user.role==="admin") location.href="ad_login/pages/profile.html";
             else if(user.role==="restaurant") location.href="restaurant_portal/dashboard.html";
-            else location.href="login/pages/profile.html";
+            else location.href="user_portal/dashboard.html";
         };
     } catch(e) {
         console.error("Navbar authentication check failed",e);

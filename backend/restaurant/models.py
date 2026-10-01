@@ -6,6 +6,7 @@ class Profile(models.Model):
     phone = models.CharField(max_length=15, blank=True)
     city = models.CharField(max_length=100, blank=True)
     address = models.TextField(blank=True)
+    google_sub = models.CharField(max_length=255, blank=True, unique=True, null=True)
 
     def __str__(self):
         return self.user.email or self.user.username
@@ -71,6 +72,8 @@ class Order(models.Model):
     payment_method = models.CharField(max_length=50, default="Cash on Delivery")
     total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     status = models.CharField(max_length=30, default="placed")
+    delivery_lat = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    delivery_lng = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
 class OrderItem(models.Model):
@@ -87,3 +90,29 @@ class InventoryItem(models.Model):
     unit = models.CharField(max_length=30, default="units")
     reorder_level = models.DecimalField(max_digits=10, decimal_places=2, default=0)
     updated_at = models.DateTimeField(auto_now=True)
+
+
+class DeliveryPartner(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="delivery_partner")
+    phone = models.CharField(max_length=15, blank=True)
+    vehicle_type = models.CharField(max_length=50, default="Bike")
+    vehicle_number = models.CharField(max_length=30, blank=True)
+    is_available = models.BooleanField(default=True)
+    current_lat = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    current_lng = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True)
+    last_location_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return self.user.first_name or self.user.username
+
+
+class DeliveryAssignment(models.Model):
+    order = models.OneToOneField(Order, on_delete=models.CASCADE, related_name="delivery_assignment")
+    partner = models.ForeignKey(DeliveryPartner, on_delete=models.SET_NULL, null=True, blank=True, related_name="assignments")
+    status = models.CharField(max_length=30, default="assigned")
+    assigned_at = models.DateTimeField(auto_now_add=True)
+    picked_up_at = models.DateTimeField(null=True, blank=True)
+    delivered_at = models.DateTimeField(null=True, blank=True)
+
+    def __str__(self):
+        return f"Order #{self.order_id} delivery"
