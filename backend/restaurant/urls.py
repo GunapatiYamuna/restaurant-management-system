@@ -42,4 +42,5 @@ urlpatterns = [
     path("delivery/available/", views.delivery_available_partners),
     path("admin/delivery/partners/", views.admin_delivery_partners),
     path("admin/delivery/assign/", views.admin_assign_delivery),
+    path("admin/orders/", views.admin_orders),
 ]
