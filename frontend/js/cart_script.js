@@ -767,87 +767,14 @@ function updateCheckoutTotals(cart) {
 ========================================================= */
 
 function setupPaymentMethods() {
-
-    const cod =
-        document.getElementById("cod");
-
-    const upi =
-        document.getElementById("upi");
-
-    const card =
-        document.getElementById("card");
-
-    const upiDetails =
-        document.getElementById(
-            "upiDetails"
-        );
-
-    const cardDetails =
-        document.getElementById(
-            "cardDetails"
-        );
-
-
-    if (
-        !cod ||
-        !upi ||
-        !card ||
-        !upiDetails ||
-        !cardDetails
-    ) {
-
-        return;
-
-    }
-
-
-    function updatePaymentDetails() {
-
-        upiDetails.style.display =
-            "none";
-
-        cardDetails.style.display =
-            "none";
-
-
-        if (upi.checked) {
-
-            upiDetails.style.display =
-                "block";
-
-        }
-
-
-        if (card.checked) {
-
-            cardDetails.style.display =
-                "block";
-
-        }
-
-    }
-
-
-    cod.addEventListener(
-        "change",
-        updatePaymentDetails
-    );
-
-
-    upi.addEventListener(
-        "change",
-        updatePaymentDetails
-    );
-
-
-    card.addEventListener(
-        "change",
-        updatePaymentDetails
-    );
-
-
-    updatePaymentDetails();
-
+    const cod = document.getElementById("cod");
+    const razorpay = document.getElementById("razorpay");
+    const details = document.getElementById("razorpayDetails");
+    if (!cod || !razorpay || !details) return;
+    function update() { details.style.display = razorpay.checked ? "block" : "none"; }
+    cod.addEventListener("change", update);
+    razorpay.addEventListener("change", update);
+    update();
 }
 
 
@@ -855,31 +782,19 @@ function setupPaymentMethods() {
    PLACE ORDER
 ========================================================= */
 function setupPlaceOrder() {
-
     const form = document.getElementById("checkout-form");
-
-    if (!form) {
-        return;
-    }
-
-    // Prevent duplicate event listeners
-    if (form.dataset.orderHandler === "true") {
-        return;
-    }
-
+    if (!form || form.dataset.orderHandler === "true") return;
     form.dataset.orderHandler = "true";
 
     form.addEventListener("submit", async function (event) {
-
         event.preventDefault();
         const cart = getCart();
-        if (cart.length === 0) return;
+        if (!cart.length) { alert("Your cart is empty."); return; }
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
-        const selectedPayment = document.querySelector('input[name="payment"]:checked');
-        const paymentMethod = selectedPayment ? selectedPayment.value : "Cash on Delivery";
+        const selected = document.querySelector('input[name="payment"]:checked');
+        const paymentMethod = selected ? selected.value : "Cash on Delivery";
         const totals = calculateTotals(cart);
-
         const payload = {
             name: document.getElementById("full-name").value.trim(),
             phone: document.getElementById("phone").value.trim(),
@@ -888,7 +803,6 @@ function setupPlaceOrder() {
             pincode: document.getElementById("pincode").value.trim(),
             delivery_lat: document.getElementById("deliveryLat")?.value || null,
             delivery_lng: document.getElementById("deliveryLng")?.value || null,
-            payment_method: paymentMethod,
             items: cart
         };
 
@@ -896,41 +810,125 @@ function setupPlaceOrder() {
         if (button) button.disabled = true;
 
         try {
-            const response = await fetch("/api/orders/", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload)
-            });
-            const data = await response.json();
-            if (!response.ok || !data.success) {
-                throw new Error(data.message || "Unable to place order.");
+            if (paymentMethod === "Razorpay") {
+                await startRazorpayPayment(payload, cart, totals);
+            } else {
+                const response = await fetch("/api/orders/", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({...payload, payment_method: "Cash on Delivery"})
+                });
+                const data = await response.json();
+                if (!response.ok || !data.success) throw new Error(data.message || "Unable to place order.");
+                saveCompletedOrder({
+                    orderId: data.order_id,
+                    date: new Date().toLocaleString(),
+                    payment: "Cash on Delivery",
+                    paymentStatus: data.payment_status || "cod_pending",
+                    customer: payload, cart: cart,
+                    subtotal: totals.subtotal, delivery: totals.delivery,
+                    discount: totals.discount, gst: totals.gst, total: data.total
+                });
             }
-
-            const order = {
-                orderId: data.order_id,
-                date: new Date().toLocaleString(),
-                payment: paymentMethod,
-                customer: payload,
-                cart: cart,
-                subtotal: totals.subtotal,
-                delivery: totals.delivery,
-                discount: totals.discount,
-                gst: totals.gst,
-                total: data.total
-            };
-            localStorage.setItem("foodieOrder", JSON.stringify(order));
-            let history = [];
-            try { history = JSON.parse(localStorage.getItem("foodieOrderHistory")) || []; } catch (_) {}
-            history.push(order);
-            localStorage.setItem("foodieOrderHistory", JSON.stringify(history));
             localStorage.removeItem("foodieCart");
             updateCartCount();
             window.location.href = "order-confirmation.html";
         } catch (error) {
-            console.error("Order API error:", error);
-            alert(error.message || "Unable to connect to the server. Please make sure Django is running.");
+            console.error("Checkout error:", error);
+            alert(error.message || "Unable to complete the order.");
             if (button) button.disabled = false;
         }
+    });
+}
+
+function saveCompletedOrder(order) {
+    localStorage.setItem("foodieOrder", JSON.stringify(order));
+    let history = [];
+    try { history = JSON.parse(localStorage.getItem("foodieOrderHistory")) || []; } catch (_) {}
+    history.push(order);
+    localStorage.setItem("foodieOrderHistory", JSON.stringify(history));
+}
+
+async function startRazorpayPayment(payload, cart, totals) {
+    if (typeof Razorpay === "undefined") throw new Error("Razorpay Checkout could not be loaded.");
+
+    const createResponse = await fetch("/api/payments/razorpay/create-order/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        body: JSON.stringify(payload)
+    });
+    const createData = await createResponse.json();
+    if (!createResponse.ok || !createData.success) throw new Error(createData.message || "Unable to start Razorpay payment.");
+
+    return new Promise(function (resolve, reject) {
+        let settled = false;
+        const fail = function (error) {
+            if (settled) return;
+            settled = true;
+            reject(error);
+        };
+        const succeed = function (data) {
+            if (settled) return;
+            settled = true;
+            resolve(data);
+        };
+
+        const options = {
+            key: createData.key_id,
+            amount: createData.amount,
+            currency: createData.currency,
+            name: "FoodieHub",
+            description: "FoodieHub Order #" + createData.order_id,
+            order_id: createData.razorpay_order_id,
+            prefill: {name: payload.name, contact: payload.phone},
+            notes: {foodiehub_order_id: String(createData.order_id)},
+            theme: {color: "#ff6b00"},
+            handler: async function (response) {
+                try {
+                    const verifyResponse = await fetch("/api/payments/razorpay/verify/", {
+                        method: "POST",
+                        headers: {"Content-Type": "application/json"},
+                        body: JSON.stringify({
+                            order_id: createData.order_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_signature: response.razorpay_signature
+                        })
+                    });
+                    const verifyData = await verifyResponse.json();
+                    if (!verifyResponse.ok || !verifyData.success) throw new Error(verifyData.message || "Payment verification failed.");
+
+                    saveCompletedOrder({
+                        orderId: verifyData.order_id,
+                        date: new Date().toLocaleString(),
+                        payment: "Razorpay",
+                        paymentStatus: verifyData.payment_status,
+                        customer: payload, cart: cart,
+                        subtotal: totals.subtotal, delivery: totals.delivery,
+                        discount: totals.discount, gst: totals.gst, total: verifyData.total
+                    });
+                    succeed(verifyData);
+                } catch (error) {
+                    fail(error);
+                }
+            },
+            modal: {ondismiss: function () {
+                fail(new Error("Payment window closed. The order remains unpaid; you can retry payment."));
+            }}
+        };
+
+        const checkout = new Razorpay(options);
+        checkout.on("payment.failed", async function (response) {
+            try {
+                await fetch("/api/payments/razorpay/failed/", {
+                    method: "POST",
+                    headers: {"Content-Type": "application/json"},
+                    body: JSON.stringify({order_id: createData.order_id})
+                });
+            } catch (_) {}
+            fail(new Error(response?.error?.description || "Razorpay payment failed."));
+        });
+        checkout.open();
     });
 }
 
