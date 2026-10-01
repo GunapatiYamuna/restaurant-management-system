@@ -886,10 +886,22 @@ async function startDemoPayment(payload, cart, totals) {
     const button = document.getElementById("place-order-btn");
     const response = await fetch("/api/payments/demo/", {
         method: "POST",
+        credentials: "same-origin",
         headers: {"Content-Type": "application/json"},
         body: JSON.stringify(payload)
     });
-    const data = await response.json();
+
+    const responseText = await response.text();
+    let data;
+    try {
+        data = JSON.parse(responseText);
+    } catch (_) {
+        throw new Error(
+            response.status === 403
+                ? "Demo payment was blocked by Django. Restart the backend server and try again."
+                : "Demo payment returned an unexpected server response."
+        );
+    }
 
     if (!response.ok || !data.success) {
         throw new Error(data.message || "Demo payment failed.");
