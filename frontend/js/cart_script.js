@@ -767,13 +767,21 @@ function updateCheckoutTotals(cart) {
 ========================================================= */
 
 function setupPaymentMethods() {
-    const cod = document.getElementById("cod");
-    const razorpay = document.getElementById("razorpay");
-    const details = document.getElementById("razorpayDetails");
-    if (!cod || !razorpay || !details) return;
-    function update() { details.style.display = razorpay.checked ? "block" : "none"; }
-    cod.addEventListener("change", update);
-    razorpay.addEventListener("change", update);
+    const paymentInputs = document.querySelectorAll('input[name="payment"]');
+    const upiDetails = document.getElementById("upiDetails");
+    const cardDetails = document.getElementById("cardDetails");
+    if (!paymentInputs.length) return;
+
+    function update() {
+        const selected = document.querySelector('input[name="payment"]:checked');
+        const value = selected ? selected.value : "Cash on Delivery";
+        if (upiDetails) upiDetails.style.display = value === "UPI Payment" ? "block" : "none";
+        if (cardDetails) cardDetails.style.display = value === "Credit/Debit Card" ? "block" : "none";
+    }
+
+    paymentInputs.forEach(function (input) {
+        input.addEventListener("change", update);
+    });
     update();
 }
 
