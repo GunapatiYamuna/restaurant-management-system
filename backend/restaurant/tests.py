@@ -166,6 +166,35 @@ class DeliveryTrackingTests(TestCase):
         self.assertIn(available_order.id, available_ids)
 
 
+
+
+    def test_out_for_delivery_unassigned_order_appears_in_available_orders(self):
+        unassigned_order = Order.objects.create(
+            user=self.customer,
+            name="Out For Delivery Customer",
+            phone="9777777777",
+            address="Out For Delivery Street",
+            city="Ongole",
+            pincode="523001",
+            payment_method="Cash on Delivery",
+            payment_status="cod_pending",
+            total=Decimal("325.00"),
+            status="out_for_delivery",
+        )
+
+        self.client.force_login(self.partner_user)
+        response = self.client.get(
+            reverse("delivery-dashboard")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        available = response.json()["available_orders"]
+        available_ids = [item["id"] for item in available]
+
+        self.assertIn(unassigned_order.id, available_ids)
+        shown = next(item for item in available if item["id"] == unassigned_order.id)
+        self.assertEqual(shown["status"], "out_for_delivery")
+
     def test_payment_config_does_not_expose_secret(self):
         response = self.client.get(reverse("payment-config"))
         self.assertEqual(response.status_code, 200)
