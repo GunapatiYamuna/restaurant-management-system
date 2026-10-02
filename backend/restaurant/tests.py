@@ -100,7 +100,7 @@ class DeliveryTrackingTests(TestCase):
         self.client.force_login(self.partner_user)
 
         response = self.client.get(
-            reverse("delivery_dashboard")
+            reverse("delivery-dashboard")
         )
         self.assertEqual(response.status_code, 200)
         payload = response.json()
@@ -122,7 +122,7 @@ class DeliveryTrackingTests(TestCase):
         self.assertEqual(response.status_code, 200)
 
         response = self.client.get(
-            reverse("delivery_dashboard")
+            reverse("delivery-dashboard")
         )
         self.assertEqual(response.status_code, 200)
         payload = response.json()
@@ -156,7 +156,7 @@ class DeliveryTrackingTests(TestCase):
 
         self.client.force_login(self.partner_user)
         response = self.client.get(
-            reverse("delivery_dashboard")
+            reverse("delivery-dashboard")
         )
         self.assertEqual(response.status_code, 200)
 
