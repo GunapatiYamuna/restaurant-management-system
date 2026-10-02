@@ -1,0 +1,14 @@
+.foodie-shared-navbar{background:#15191e;border-bottom:1px solid #263746;padding:13px 0}
+.foodie-shared-navbar .navbar-brand{color:#fff!important;font-size:21px;font-weight:700}
+.foodie-shared-navbar .navbar-brand i{color:#ff6b00;margin-right:6px}.foodie-shared-navbar .navbar-brand span{color:#ff6b00}
+.foodie-shared-navbar .navbar-nav{gap:8px}.foodie-shared-navbar .nav-link{color:#dce2e7!important;font-size:13px;padding:8px 12px!important;transition:.3s}
+.foodie-shared-navbar .nav-link:hover,.foodie-shared-navbar .nav-link.active{color:#ff6b00!important}
+.foodie-shared-navbar .navbar-toggler{border-color:#52616b}.foodie-shared-navbar .navbar-toggler:focus{box-shadow:0 0 0 .15rem rgba(255,107,0,.25)}
+.shared-navbar-actions{display:flex;align-items:center;gap:0}.foodie-shared-navbar .nav-cart{color:#fff;font-size:18px;position:relative;text-decoration:none;margin-left:12px}
+.foodie-shared-navbar .nav-cart:hover{color:#ff6b00}.foodie-shared-navbar .cart-count{position:absolute;top:-10px;right:-11px;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:#ff6b00;color:#fff;font-size:9px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.shared-auth-buttons{display:flex;align-items:center;margin-left:18px}.shared-auth-buttons .login-btn{display:inline-block;padding:10px 20px;background:#ff7a00;color:#fff;text-decoration:none;border:none;border-radius:6px;font-size:15px;font-weight:600;cursor:pointer;transition:.2s}
+.shared-auth-buttons .login-btn:hover{background:#e66a00;color:#fff;transform:translateY(-1px)}.foodie-shared-navbar .navbar-user{align-items:center;gap:10px;cursor:pointer;margin-left:18px;text-decoration:none}
+.foodie-shared-navbar .navbar-avatar{width:42px;height:42px;min-width:42px;border-radius:50%;background:#ff7a00;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px;font-weight:700}
+.foodie-shared-navbar .navbar-greeting{display:flex;flex-direction:column;line-height:1.1;color:#fff}.foodie-shared-navbar .navbar-greeting span{font-size:12px;opacity:.8}
+.foodie-shared-navbar .navbar-greeting strong{font-size:15px}.foodie-shared-navbar .navbar-greeting small{font-size:9px;opacity:.7;margin-top:3px}
+@media(max-width:991px){.shared-navbar-actions{width:100%;padding:10px 0 3px}.shared-auth-buttons{margin-left:0;margin-top:10px}.foodie-shared-navbar .navbar-user{margin-left:0;margin-top:10px}.foodie-shared-navbar .nav-cart{margin-left:0}}
