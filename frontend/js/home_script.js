@@ -4,12 +4,7 @@
 
 let cart = JSON.parse(localStorage.getItem("restaurantCart")) || [];
 
-let cartCount = document.getElementById("cart-count") || document.querySelector(".cart-count");
-
-document.addEventListener("foodiehub:navbar-ready", function () {
-    cartCount = document.getElementById("cart-count") || document.querySelector(".cart-count");
-    updateCartCount();
-});
+const cartCount = document.getElementById("cart-count");
 
 
 // Update cart count
