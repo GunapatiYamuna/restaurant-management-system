@@ -188,30 +188,99 @@ function renderAvailableOrders(orders) {
     renderCustomerMaps(orders);
 }
 
-function renderCustomerMaps(orders) {
-    if (typeof L === "undefined") return;
+function clearCustomerMaps() {
+    customerMaps.forEach(function (map) {
+        try {
+            map.remove();
+        } catch (_) {
+            // Ignore already-detached Leaflet maps.
+        }
+    });
+    customerMaps.clear();
+}
 
+function renderCustomerMaps(orders) {
     orders.forEach(function (order) {
         if (order.delivery_lat == null || order.delivery_lng == null) return;
 
         const element = document.getElementById("customer-map-" + order.id);
         if (!element) return;
-        if (customerMaps.has(order.id)) {
-            customerMaps.get(order.id).invalidateSize();
-            return;
-        }
 
         const lat = Number(order.delivery_lat);
         const lng = Number(order.delivery_lng);
-        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
-        const map = L.map(element, { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 16);
-        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
-            attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            element.innerHTML =
+                '<div class="location-note" style="padding:12px;">Invalid customer location coordinates.</div>';
+            return;
+        }
+
+        // Leaflet may not load when the browser is offline or a CDN request
+        // is blocked. Keep a useful fallback so the customer location is
+        // still visible/clickable.
+        if (typeof L === "undefined") {
+            const delta = 0.01;
+            const bbox = [
+                lng - delta,
+                lat - delta,
+                lng + delta,
+                lat + delta
+            ].join(",");
+
+            element.innerHTML = `
+                <iframe
+                    title="Customer delivery location"
+                    src="https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(lat + "," + lng)}"
+                    style="width:100%;height:100%;border:0;"
+                    loading="lazy">
+                </iframe>
+                <div style="position:absolute;left:-9999px;">
+                    Customer coordinates: ${lat}, ${lng}
+                </div>
+            `;
+            return;
+        }
+
+        const existing = customerMaps.get(order.id);
+
+        if (existing && existing.getContainer() === element) {
+            existing.setView([lat, lng], 16);
+            setTimeout(function () {
+                existing.invalidateSize();
+            }, 100);
+            return;
+        }
+
+        if (existing) {
+            try {
+                existing.remove();
+            } catch (_) {
+                // Ignore stale map instances.
+            }
+            customerMaps.delete(order.id);
+        }
+
+        const map = L.map(element, {
+            zoomControl: true,
+            scrollWheelZoom: false,
+            attributionControl: true
+        }).setView([lat, lng], 16);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            maxZoom: 19,
+            attribution: "&copy; OpenStreetMap contributors"
         }).addTo(map);
-        L.marker([lat, lng]).addTo(map).bindPopup("Customer delivery location").openPopup();
+
+        L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup("Customer delivery location")
+            .openPopup();
+
         customerMaps.set(order.id, map);
-        setTimeout(function () { map.invalidateSize(); }, 100);
+
+        setTimeout(function () {
+            map.invalidateSize();
+        }, 150);
     });
 }
 
@@ -270,6 +339,10 @@ async function load() {
     loading = true;
 
     try {
+        // The order cards are rebuilt on every refresh, so old Leaflet
+        // instances must be removed before those DOM nodes are replaced.
+        clearCustomerMaps();
+
         const me = await api("/api/delivery/me/");
         const availability = document.getElementById("availability");
 
