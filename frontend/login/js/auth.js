@@ -1083,7 +1083,6 @@ function loadProfile() {
   const avatar = document.getElementById("profileAvatar");
   if (avatar) avatar.textContent = initials;
 
-  loadProfileActivity();
 }
 
 
