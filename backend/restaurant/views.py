@@ -964,7 +964,10 @@ def delivery_dashboard(request):
             "items": [{"name": i.name, "quantity": i.quantity} for i in a.order.items.all()],
         })
     available = []
-    for o in Order.objects.filter(status="ready", delivery_assignment__isnull=True).prefetch_related("items").order_by("created_at"):
+    for o in Order.objects.filter(
+        status__in=["ready", "out_for_delivery"],
+        delivery_assignment__isnull=True,
+    ).prefetch_related("items").order_by("created_at"):
         available.append({
             "id": o.id, "name": o.name, "address": o.address, "city": o.city,
             "pincode": o.pincode, "total": float(o.total), "created_at": o.created_at.isoformat(),
@@ -982,7 +985,11 @@ def delivery_accept_order(request, order_id):
     if not partner.is_available:
         return JsonResponse({"success": False, "message": "Set yourself available before accepting orders."}, status=400)
     with transaction.atomic():
-        order = Order.objects.select_for_update().filter(pk=order_id, status="ready", delivery_assignment__isnull=True).first()
+        order = Order.objects.select_for_update().filter(
+            pk=order_id,
+            status__in=["ready", "out_for_delivery"],
+            delivery_assignment__isnull=True,
+        ).first()
         if not order:
             return JsonResponse({"success": False, "message": "This order is no longer available."}, status=409)
         DeliveryAssignment.objects.create(order=order, partner=partner, status="accepted")
