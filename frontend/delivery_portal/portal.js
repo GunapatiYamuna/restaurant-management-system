@@ -47,9 +47,7 @@ function statusLabel(status) {
 function renderActiveOrders(orders) {
     const active = document.getElementById("active");
 
-    if (!active) {
-        return;
-    }
+    if (!active) return;
 
     if (!orders.length) {
         active.innerHTML = '<div class="card empty">No active delivery.</div>';
@@ -57,28 +55,45 @@ function renderActiveOrders(orders) {
     }
 
     active.innerHTML = orders.map(function (order) {
+        const isDelivered = order.status === "delivered";
         const assignmentStatus = order.assignment_status || "assigned";
         const isPickedUp =
             assignmentStatus === "picked_up" ||
             assignmentStatus === "out_for_delivery";
 
-        const isDelivered = order.status === "delivered";
-        const canUseGps = order.status === "out_for_delivery" && !isDelivered;
-        const gpsButton = !canUseGps
-            ? ""
-            : activeOrderId === order.id
-                ? '<button type="button" class="btn" data-action="stop-gps" data-order-id="' + order.id + '">Stop GPS</button>'
-                : '<button type="button" class="btn orange" data-action="start-gps" data-order-id="' + order.id + '">Start / Resume GPS</button>';
+        const canUseGps =
+            !isDelivered && order.status === "out_for_delivery";
 
-        const pickupButton = isPickedUp
-            ? '<button type="button" class="btn" disabled>Picked up ✓</button>'
-            : '<button type="button" class="btn" data-action="picked-up" data-order-id="' + order.id + '">Picked up</button>';
+        const gpsButton = canUseGps
+            ? activeOrderId === order.id
+                ? '<button type="button" class="btn" data-action="stop-gps" data-order-id="' + order.id + '">Stop GPS</button>'
+                : '<button type="button" class="btn orange" data-action="start-gps" data-order-id="' + order.id + '">Start / Resume GPS</button>'
+            : "";
+
+        const pickupButton = !isDelivered
+            ? isPickedUp
+                ? '<button type="button" class="btn" disabled>Picked up ✓</button>'
+                : '<button type="button" class="btn" data-action="picked-up" data-order-id="' + order.id + '">Picked up</button>'
+            : "";
 
         const deliveredButton = isDelivered
-            ? ""
+            ? '<button type="button" class="btn" disabled>Delivered ✓</button>'
             : '<button type="button" class="btn" data-action="delivered" data-order-id="' + order.id + '">Delivered</button>';
 
         const phone = String(order.phone || "").trim();
+
+        const customerDetails = isDelivered
+            ? ""
+            : `
+                <p>
+                    <b>Customer address:</b>
+                    ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
+                </p>
+
+                ${order.delivery_lat != null && order.delivery_lng != null
+                    ? '<div class="customer-location"><div class="customer-location-title">📍 Customer location</div><div class="delivery-map" id="customer-map-' + order.id + '"></div><div class="location-note">Exact delivery point selected by the customer.</div></div>'
+                    : '<div class="location-note customer-location">📍 Customer map location was not saved for this order.</div>'}
+            `;
 
         return `
             <article class="card delivery-order-card">
@@ -90,14 +105,7 @@ function renderActiveOrders(orders) {
                     <span class="badge orange">${esc(statusLabel(order.status))}</span>
                 </div>
 
-                <p>
-                    <b>Customer address:</b>
-                    ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
-                </p>
-
-                ${order.delivery_lat != null && order.delivery_lng != null
-                    ? '<div class="customer-location"><div class="customer-location-title">📍 Customer location</div><div class="delivery-map" id="customer-map-' + order.id + '"></div><div class="location-note">Exact delivery point selected by the customer.</div></div>'
-                    : '<div class="location-note customer-location">📍 Customer map location was not saved for this order.</div>'}
+                ${customerDetails}
 
                 <p>
                     ${order.items.map(function (item) {
@@ -106,7 +114,7 @@ function renderActiveOrders(orders) {
                 </p>
 
                 <div class="top-actions">
-                    ${phone
+                    ${!isDelivered && phone
                         ? '<a class="btn" href="tel:' + encodeURIComponent(phone) + '">Call customer</a>'
                         : ""}
 
@@ -123,56 +131,7 @@ function renderActiveOrders(orders) {
     renderCustomerMaps(orders);
 }
 
-function renderAvailableOrders(orders) {
-    const available = document.getElementById("available");
-
-    if (!available) {
-        return;
-    }
-
-    if (!orders.length) {
-        available.innerHTML =
-            '<div class="card empty">No ready orders waiting.</div>';
-        return;
-    }
-
-    available.innerHTML = orders.map(function (order) {
-        return `
-            <article class="card">
-                <div class="cardhead">
-                    <div>
-                        <h2>Order #${order.id}</h2>
-                        <div class="small">${esc(order.name)}</div>
-                    </div>
-                    <b>${money(order.total)}</b>
-                </div>
-
-                <p>
-                    <b>Deliver to:</b>
-                    ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
-                </p>
-
-                <p>
-                    ${order.items.map(function (item) {
-                        return esc(item.name) + " × " + Number(item.quantity || 0);
-                    }).join(" · ")}
-                </p>
-
-                <button
-                    type="button"
-                    class="btn orange"
-                    data-action="accept"
-                    data-order-id="${order.id}">
-                    Accept delivery
-                </button>
-
-                <div class="small delivery-action-message" id="availableMessage-${order.id}"></div>
-            </article>
-        `;
-    }).join("");
-}
-
-function renderCustomerMaps(orders) {
+function renderAvailableOrdersders) {
     if (typeof L === "undefined") return;
 
     orders.forEach(function (order) {
@@ -190,8 +149,8 @@ function renderCustomerMaps(orders) {
         if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
 
         const map = L.map(element, { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 16);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "&copy; OpenStreetMap contributors"
+        L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+            attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
         }).addTo(map);
         L.marker([lat, lng]).addTo(map).bindPopup("Customer delivery location").openPopup();
         customerMaps.set(order.id, map);
