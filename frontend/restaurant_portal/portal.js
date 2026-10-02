@@ -16,7 +16,10 @@ async function loadDashboard(){
   const me = await requireRestaurant();
   const d = await api('/api/restaurant/dashboard/');
 
-  document.getElementById('restaurantName').textContent = d.restaurant.name;
+  const restaurantNameEl = document.getElementById('restaurantName');
+  if (restaurantNameEl) {
+    restaurantNameEl.textContent = d.restaurant.name;
+  }
   document.getElementById('menu').textContent = Number(d.stats?.menu_items ?? 0);
   document.getElementById('orders').textContent = Number(d.stats?.orders ?? 0);
   document.getElementById('pendingOrders').textContent = Number(d.stats?.pending_orders ?? 0);
