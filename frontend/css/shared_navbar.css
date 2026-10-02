@@ -46,3 +46,90 @@ body > .foodie-shared-navbar{
 @media (min-width:1400px){
   .foodie-shared-navbar > .container{max-width:1320px !important}
 }
+
+/* Self-contained layout rules so pages without Bootstrap render the navbar
+   exactly like index.html instead of stacking the menu vertically. */
+.foodie-shared-navbar > .container{
+  display:flex !important;
+  align-items:center !important;
+  flex-wrap:nowrap !important;
+}
+.foodie-shared-navbar .navbar-brand{
+  display:flex !important;
+  align-items:center !important;
+  flex:0 0 auto !important;
+  text-decoration:none !important;
+  white-space:nowrap !important;
+}
+.foodie-shared-navbar .navbar-toggler{
+  margin-left:auto !important;
+}
+.foodie-shared-navbar .navbar-collapse{
+  display:flex !important;
+  align-items:center !important;
+  flex:1 1 auto !important;
+  min-width:0 !important;
+}
+.foodie-shared-navbar .navbar-nav{
+  display:flex !important;
+  flex-direction:row !important;
+  align-items:center !important;
+  justify-content:center !important;
+  list-style:none !important;
+  margin:0 auto !important;
+  padding:0 !important;
+}
+.foodie-shared-navbar .navbar-nav .nav-item{
+  display:block !important;
+  list-style:none !important;
+}
+.foodie-shared-navbar .navbar-nav .nav-link{
+  display:block !important;
+  white-space:nowrap !important;
+  text-decoration:none !important;
+}
+.foodie-shared-navbar .shared-navbar-actions{
+  flex:0 0 auto !important;
+  margin-left:auto !important;
+}
+.foodie-shared-navbar .nav-cart,
+.foodie-shared-navbar .login-btn,
+.foodie-shared-navbar .navbar-user{
+  display:flex !important;
+  align-items:center !important;
+}
+.foodie-shared-navbar .navbar-user{
+  flex:0 0 auto !important;
+}
+@media(max-width:991px){
+  .foodie-shared-navbar > .container{
+    flex-wrap:wrap !important;
+  }
+  .foodie-shared-navbar .navbar-collapse{
+    display:none !important;
+    width:100% !important;
+    flex-basis:100% !important;
+    flex-direction:column !important;
+    align-items:stretch !important;
+  }
+  .foodie-shared-navbar .navbar-collapse.is-open{
+    display:flex !important;
+  }
+  .foodie-shared-navbar .navbar-nav{
+    width:100% !important;
+    flex-direction:column !important;
+    align-items:flex-start !important;
+    justify-content:flex-start !important;
+    gap:0 !important;
+    margin:8px 0 !important;
+  }
+  .foodie-shared-navbar .navbar-nav .nav-item,
+  .foodie-shared-navbar .navbar-nav .nav-link{
+    width:100% !important;
+  }
+  .foodie-shared-navbar .shared-navbar-actions{
+    width:100% !important;
+    margin-left:0 !important;
+    justify-content:flex-start !important;
+  }
+}
