@@ -2,7 +2,7 @@ from decimal import Decimal
 from django.contrib.auth.models import User
 from django.test import TestCase
 
-from restaurant.models import DeliveryAssignment, DeliveryPartner, Order
+from restaurant.models import DeliveryAssignment, DeliveryPartner, Order, ContactMessage
 from django.urls import reverse
 
 
@@ -218,6 +218,58 @@ class DeliveryTrackingTests(TestCase):
         self.assertEqual(
             payload["active_orders"][0]["partner_current_lng"],
             80.051,
+        )
+
+    def test_contact_message_is_saved_and_visible_to_admin(self):
+        response = self.client.post(
+            "/api/contact/",
+            data={
+                "name": "Test Customer",
+                "email": "customer@example.com",
+                "phone": "9876543210",
+                "subject": "Test message",
+                "message": "Hello FoodieHub",
+            },
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.json()["success"])
+
+        self.assertTrue(
+            ContactMessage.objects.filter(
+                email="customer@example.com",
+                subject="Test message",
+                message="Hello FoodieHub",
+            ).exists()
+        )
+
+        self.client.force_login(self.partner_user)
+        response = self.client.get("/api/admin/contact-messages/")
+        self.assertEqual(response.status_code, 403)
+
+        admin = User.objects.create_user(
+            username="admin@example.com",
+            email="admin@example.com",
+            password="TestPass!123",
+            first_name="Admin",
+            is_staff=True,
+        )
+        self.client.force_login(admin)
+        response = self.client.get("/api/admin/contact-messages/")
+        self.assertEqual(response.status_code, 200)
+        messages = response.json()["messages"]
+        self.assertEqual(len(messages), 1)
+        self.assertEqual(messages[0]["subject"], "Test message")
+        self.assertEqual(messages[0]["status"], "unread")
+
+        response = self.client.post(
+            f"/api/admin/contact-messages/{messages[0]['id']}/read/"
+        )
+        self.assertEqual(response.status_code, 200)
+
+        self.assertEqual(
+            ContactMessage.objects.get(pk=messages[0]["id"]).status,
+            "read",
         )
 
     def test_payment_config_does_not_expose_secret(self):
