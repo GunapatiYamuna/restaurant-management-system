@@ -240,9 +240,6 @@ function renderCustomerMaps(orders) {
             return;
         }
 
-            return;
-        }
-
         const existing = customerMaps.get(order.id);
 
         if (existing && existing.getContainer() === element) {
@@ -268,9 +265,9 @@ function renderCustomerMaps(orders) {
             attributionControl: true
         }).setView([lat, lng], 16);
 
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
             maxZoom: 19,
-            attribution: "&copy; OpenStreetMap contributors"
+            attribution: "Tiles &copy; Esri"
         }).addTo(map);
 
         L.marker([lat, lng])
