@@ -61,7 +61,8 @@ document.addEventListener("DOMContentLoaded", async function () {
 
     fill(data.user);
 
-    document.getElementById("profileForm")?.addEventListener("submit", async function (event) {
+    if (body?.dataset?.profileApi === "true") {
+      document.getElementById("profileForm")?.addEventListener("submit", async function (event) {
       event.preventDefault();
       try {
         const data = await api("/api/profile/update/", {
@@ -82,7 +83,8 @@ document.addEventListener("DOMContentLoaded", async function () {
       } catch (error) {
         show("profileAlert", error.message, "danger");
       }
-    });
+      });
+    }
 
     document.getElementById("passwordForm")?.addEventListener("submit", async function (event) {
       event.preventDefault();
