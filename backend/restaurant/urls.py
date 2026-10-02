@@ -31,6 +31,7 @@ urlpatterns = [
     path("orders/history/", views.order_history),
     path("orders/<int:order_id>/tracking/", views.order_tracking, name="order-tracking"),
     path("payments/config/", views.payment_config, name="payment-config"),
+    path("payments/demo/", views.create_demo_payment, name="demo-payment"),
     path("payments/razorpay/create-order/", views.create_razorpay_order),
     path("payments/razorpay/verify/", views.verify_razorpay_payment),
     path("payments/razorpay/failed/", views.mark_razorpay_payment_failed),

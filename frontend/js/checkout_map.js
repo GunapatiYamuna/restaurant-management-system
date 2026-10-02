@@ -1,88 +1,607 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const el = document.getElementById("deliveryMap");
-    if (!el || typeof L === "undefined" || typeof L.maplibreGL !== "function") return;
 
-    const latInput = document.getElementById("deliveryLat");
-    const lngInput = document.getElementById("deliveryLng");
+    const mapElement =
+        document.getElementById("deliveryMap");
 
-    const map = L.map(el, {
-        minZoom: 1,
-        maxZoom: 18,
-        maxBounds: [[85, -180], [-85, 180]],
-        maxBoundsViscosity: 1
-    }).setView([15.5057, 80.0499], 13);
-
-    // OpenFreeMap provides OSM-based vector tiles without requiring an API key.
-    // Leaflet still handles clicks/markers while MapLibre renders the basemap.
-    L.maplibreGL({
-        style: "https://tiles.openfreemap.org/styles/liberty"
-    }).addTo(map);
-
-    let marker;
-
-    function setPoint(lat, lng) {
-        latInput.value = lat;
-        lngInput.value = lng;
-
-        if (marker) {
-            marker.setLatLng([lat, lng]);
-        } else {
-            marker = L.marker([lat, lng], { draggable: true })
-                .addTo(map)
-                .bindPopup("Delivery location")
-                .openPopup();
-
-            marker.on("dragend", function () {
-                const point = marker.getLatLng();
-                setPoint(point.lat, point.lng);
-            });
-        }
-
-        map.setView([lat, lng], Math.max(map.getZoom(), 16));
+    if (
+        !mapElement ||
+        typeof L === "undefined" ||
+        typeof L.maplibreGL !== "function"
+    ) {
+        return;
     }
 
-    map.on("click", function (event) {
-        setPoint(event.latlng.lat, event.latlng.lng);
-    });
 
-    document.getElementById("useLocation")?.addEventListener("click", function () {
-        if (!navigator.geolocation) {
-            alert("Location access is not supported by this browser. You can select the delivery point on the map.");
+    // =====================================================
+    // ELEMENTS
+    // =====================================================
+
+    const latInput =
+        document.getElementById("deliveryLat");
+
+    const lngInput =
+        document.getElementById("deliveryLng");
+
+    const addressInput =
+        document.getElementById("address");
+
+    const cityInput =
+        document.getElementById("city");
+
+    const pincodeInput =
+        document.getElementById("pincode");
+
+    const findAddressButton =
+        document.getElementById("findAddress");
+
+    const useLocationButton =
+        document.getElementById("useLocation");
+
+
+    // =====================================================
+    // DEFAULT LOCATION
+    // =====================================================
+
+    const DEFAULT_LAT = 15.5057;
+    const DEFAULT_LNG = 80.0499;
+
+
+    // =====================================================
+    // CREATE MAP
+    // =====================================================
+
+    const map = L.map(
+        mapElement,
+        {
+            minZoom: 5,
+            maxZoom: 18,
+
+            maxBounds: [
+                [6, 68],
+                [36, 98]
+            ],
+
+            maxBoundsViscosity: 1
+        }
+    ).setView(
+        [
+            DEFAULT_LAT,
+            DEFAULT_LNG
+        ],
+        13
+    );
+
+
+    // =====================================================
+    // MAP STYLE
+    // =====================================================
+
+    L.maplibreGL({
+        style:
+            "https://tiles.openfreemap.org/styles/liberty"
+    }).addTo(map);
+
+
+    let marker = null;
+
+
+    // =====================================================
+    // SET MARKER
+    // =====================================================
+
+    function setPoint(
+        lat,
+        lng,
+        zoom = 16
+    ) {
+
+        lat = Number(lat);
+        lng = Number(lng);
+
+
+        if (
+            !Number.isFinite(lat) ||
+            !Number.isFinite(lng)
+        ) {
             return;
         }
 
-        navigator.geolocation.getCurrentPosition(
-            function (position) {
-                setPoint(position.coords.latitude, position.coords.longitude);
-            },
-            function () {
-                alert("Unable to access your location. You can select the delivery point on the map.");
-            },
-            {
-                enableHighAccuracy: true,
-                timeout: 10000
-            }
-        );
-    });
 
-    try {
-        const saved = JSON.parse(localStorage.getItem("foodieDeliveryLocation") || "null");
-        if (saved && Number.isFinite(Number(saved.lat)) && Number.isFinite(Number(saved.lng))) {
-            setPoint(Number(saved.lat), Number(saved.lng));
+        // Save coordinates
+        latInput.value =
+            lat.toFixed(6);
+
+        lngInput.value =
+            lng.toFixed(6);
+
+
+        // Create marker
+        if (!marker) {
+
+            marker =
+                L.marker(
+                    [
+                        lat,
+                        lng
+                    ],
+                    {
+                        draggable: true
+                    }
+                )
+                .addTo(map)
+                .bindPopup(
+                    "Delivery location"
+                );
+
+
+            // Marker drag
+            marker.on(
+                "dragend",
+                function () {
+
+                    const point =
+                        marker.getLatLng();
+
+
+                    latInput.value =
+                        point.lat.toFixed(6);
+
+                    lngInput.value =
+                        point.lng.toFixed(6);
+
+                }
+            );
+
+        } else {
+
+            marker.setLatLng(
+                [
+                    lat,
+                    lng
+                ]
+            );
+
         }
-    } catch (error) {
-        console.warn("Unable to restore saved delivery location.", error);
+
+
+        // Move map
+        map.setView(
+            [
+                lat,
+                lng
+            ],
+            zoom
+        );
+
     }
 
-    document.getElementById("checkout-form")?.addEventListener("submit", function () {
-        if (latInput.value && lngInput.value) {
-            localStorage.setItem(
-                "foodieDeliveryLocation",
-                JSON.stringify({
-                    lat: Number(latInput.value),
-                    lng: Number(lngInput.value)
-                })
+
+    // =====================================================
+    // MAP CLICK
+    // =====================================================
+
+    map.on(
+        "click",
+        function (event) {
+
+            setPoint(
+                event.latlng.lat,
+                event.latlng.lng
             );
+
         }
-    }, { capture: true });
+    );
+
+
+    // =====================================================
+    // BUILD ADDRESS
+    // =====================================================
+
+    function getDeliveryAddress() {
+
+        const address =
+            addressInput
+                ? addressInput.value.trim()
+                : "";
+
+        const city =
+            cityInput
+                ? cityInput.value.trim()
+                : "";
+
+        const pincode =
+            pincodeInput
+                ? pincodeInput.value.trim()
+                : "";
+
+
+        const parts = [];
+
+
+        if (address) {
+            parts.push(address);
+        }
+
+        if (city) {
+            parts.push(city);
+        }
+
+        if (pincode) {
+            parts.push(pincode);
+        }
+
+
+        parts.push("Andhra Pradesh");
+        parts.push("India");
+
+
+        return parts.join(", ");
+
+    }
+
+
+    // =====================================================
+    // FIND ADDRESS
+    // =====================================================
+
+    async function findAddress() {
+
+        const query =
+            getDeliveryAddress();
+
+
+        if (
+            !addressInput.value.trim() &&
+            !cityInput.value.trim() &&
+            !pincodeInput.value.trim()
+        ) {
+
+            alert(
+                "Please enter your delivery address, city, or PIN code first."
+            );
+
+            return;
+
+        }
+
+
+        if (findAddressButton) {
+
+            findAddressButton.disabled = true;
+
+            findAddressButton.innerHTML =
+                '<i class="bi bi-hourglass-split"></i> Searching...';
+
+        }
+
+
+        try {
+
+            const url =
+                "https://nominatim.openstreetmap.org/search" +
+                "?format=jsonv2" +
+                "&limit=1" +
+                "&countrycodes=in" +
+                "&q=" +
+                encodeURIComponent(query);
+
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+
+            if (!response.ok) {
+
+                throw new Error(
+                    "Address search failed."
+                );
+
+            }
+
+
+            const results =
+                await response.json();
+
+
+            if (
+                !results ||
+                results.length === 0
+            ) {
+
+                alert(
+                    "Address not found. Please check the address, city, and PIN code."
+                );
+
+                return;
+
+            }
+
+
+            const result =
+                results[0];
+
+
+            const lat =
+                Number(result.lat);
+
+            const lng =
+                Number(result.lon);
+
+
+            if (
+                !Number.isFinite(lat) ||
+                !Number.isFinite(lng)
+            ) {
+
+                alert(
+                    "The address returned an invalid map location."
+                );
+
+                return;
+
+            }
+
+
+            // Move marker and map
+            setPoint(
+                lat,
+                lng,
+                17
+            );
+
+
+            // Open popup
+            if (marker) {
+
+                marker
+                    .setPopupContent(
+                        "Delivery location"
+                    )
+                    .openPopup();
+
+            }
+
+
+            console.log(
+                "Delivery address found:",
+                result.display_name
+            );
+
+
+        } catch (error) {
+
+            console.error(
+                "Address search error:",
+                error
+            );
+
+
+            alert(
+                "Unable to find the address right now. Please try again or select the location manually on the map."
+            );
+
+        } finally {
+
+            if (findAddressButton) {
+
+                findAddressButton.disabled = false;
+
+                findAddressButton.innerHTML =
+                    '<i class="bi bi-search"></i> Find Address';
+
+            }
+
+        }
+
+    }
+
+
+    // =====================================================
+    // FIND ADDRESS BUTTON
+    // =====================================================
+
+    if (findAddressButton) {
+
+        findAddressButton.addEventListener(
+            "click",
+            findAddress
+        );
+
+    }
+
+
+    // =====================================================
+    // USE MY LOCATION
+    // =====================================================
+
+    if (useLocationButton) {
+
+        useLocationButton.addEventListener(
+            "click",
+            function () {
+
+                if (!navigator.geolocation) {
+
+                    alert(
+                        "Location access is not supported by this browser."
+                    );
+
+                    return;
+
+                }
+
+
+                useLocationButton.disabled =
+                    true;
+
+                useLocationButton.innerHTML =
+                    '<i class="bi bi-hourglass-split"></i> Finding...';
+
+
+                navigator.geolocation.getCurrentPosition(
+
+                    function (position) {
+
+                        setPoint(
+                            position.coords.latitude,
+                            position.coords.longitude,
+                            17
+                        );
+
+
+                        if (marker) {
+
+                            marker
+                                .setPopupContent(
+                                    "Your current location"
+                                )
+                                .openPopup();
+
+                        }
+
+
+                        useLocationButton.disabled =
+                            false;
+
+                        useLocationButton.innerHTML =
+                            '<i class="bi bi-crosshair"></i> Use my location';
+
+                    },
+
+
+                    function () {
+
+                        alert(
+                            "Unable to access your location. Please allow location permission or use Find Address."
+                        );
+
+
+                        useLocationButton.disabled =
+                            false;
+
+                        useLocationButton.innerHTML =
+                            '<i class="bi bi-crosshair"></i> Use my location';
+
+                    },
+
+
+                    {
+                        enableHighAccuracy: true,
+                        timeout: 10000,
+                        maximumAge: 0
+                    }
+
+                );
+
+            }
+        );
+
+    }
+
+
+    // =====================================================
+    // RESTORE SAVED DELIVERY LOCATION
+    // =====================================================
+
+    try {
+
+        const saved =
+            JSON.parse(
+                localStorage.getItem(
+                    "foodieDeliveryLocation"
+                ) || "null"
+            );
+
+
+        if (
+            saved &&
+            Number.isFinite(
+                Number(saved.lat)
+            ) &&
+            Number.isFinite(
+                Number(saved.lng)
+            )
+        ) {
+
+            setPoint(
+                Number(saved.lat),
+                Number(saved.lng),
+                16
+            );
+
+        } else {
+
+            setPoint(
+                DEFAULT_LAT,
+                DEFAULT_LNG,
+                13
+            );
+
+        }
+
+    } catch (error) {
+
+        console.warn(
+            "Unable to restore saved delivery location.",
+            error
+        );
+
+
+        setPoint(
+            DEFAULT_LAT,
+            DEFAULT_LNG,
+            13
+        );
+
+    }
+
+
+    // =====================================================
+    // SAVE DELIVERY LOCATION
+    // =====================================================
+
+    document
+        .getElementById("checkout-form")
+        ?.addEventListener(
+            "submit",
+            function () {
+
+                if (
+                    latInput.value &&
+                    lngInput.value
+                ) {
+
+                    localStorage.setItem(
+                        "foodieDeliveryLocation",
+                        JSON.stringify(
+                            {
+                                lat:
+                                    Number(
+                                        latInput.value
+                                    ),
+
+                                lng:
+                                    Number(
+                                        lngInput.value
+                                    )
+                            }
+                        )
+                    );
+
+                }
+
+            },
+            {
+                capture: true
+            }
+        );
+
 });
