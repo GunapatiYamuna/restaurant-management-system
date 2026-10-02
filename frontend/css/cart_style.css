@@ -345,6 +345,58 @@ h5{
 }
 
 /* =========================================================
+   CHECKOUT PAYMENT APP BUTTON FIX
+   Keep UPI app buttons inside the payment box.
+   ========================================================= */
+
+.payment-details .demo-upi-app {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 2px !important;
+
+    width: 100% !important;
+    min-width: 0 !important;
+    min-height: 62px !important;
+    height: auto !important;
+
+    padding: 8px 6px !important;
+    margin: 0 !important;
+
+    border-radius: 6px !important;
+    box-sizing: border-box !important;
+
+    white-space: normal !important;
+    overflow: hidden !important;
+}
+
+.payment-details .demo-upi-app i {
+    display: inline-block !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+}
+
+.payment-details .demo-upi-app span {
+    display: inline-block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+}
+
+.payment-details .row.g-2 > [class*="col-"] {
+    min-width: 0 !important;
+}
+
+/* Stack the UPI app buttons on very small screens. */
+@media (max-width: 400px) {
+    .payment-details .row.g-2 > [class*="col-"] {
+        width: 100% !important;
+    }
+}
+
+/* =========================================================
    QUANTITY +/- BUTTON FIX
    ========================================================= */
 
