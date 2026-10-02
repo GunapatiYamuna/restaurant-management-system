@@ -910,7 +910,7 @@ async function startDemoPayment(payload, cart, totals) {
     saveCompletedOrder({
         orderId: data.order_id,
         date: new Date().toLocaleString(),
-        payment: data.payment_method + " (Demo)",
+        payment: data.payment_method + "",
         paymentStatus: data.payment_status,
         transactionId: data.transaction_id,
         customer: payload,
