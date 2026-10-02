@@ -121,3 +121,23 @@ class DeliveryAssignment(models.Model):
 
     def __str__(self):
         return f"Order #{self.order_id} delivery"
+
+
+class ContactMessage(models.Model):
+    STATUS_UNREAD = "unread"
+    STATUS_READ = "read"
+
+    name = models.CharField(max_length=150)
+    email = models.EmailField()
+    phone = models.CharField(max_length=20, blank=True)
+    subject = models.CharField(max_length=200)
+    message = models.TextField()
+    status = models.CharField(max_length=20, default=STATUS_UNREAD)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+    def __str__(self):
+        return f"{self.subject} — {self.name}"
