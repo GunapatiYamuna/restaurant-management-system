@@ -1007,3 +1007,61 @@ a.btn-warning:hover {
     background: #e85f00;
     transform: translateY(-2px);
 }
+/* =========================================================
+   CHECKOUT DELIVERY LOCATION HEADER
+   Keep Find Address and Use my location inside the card.
+   ========================================================= */
+
+.checkout-location-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.checkout-location-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    flex-wrap: wrap;
+    max-width: 100%;
+}
+
+.checkout-location-actions button {
+    flex: 0 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: 100% !important;
+    height: auto !important;
+    min-height: 38px !important;
+    margin: 0 !important;
+    padding: 8px 12px !important;
+    white-space: normal !important;
+    box-sizing: border-box !important;
+}
+
+#findAddress,
+#useLocation {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+}
+
+@media (max-width: 576px) {
+    .checkout-location-header {
+        align-items: stretch;
+    }
+
+    .checkout-location-actions {
+        width: 100%;
+        justify-content: stretch;
+    }
+
+    .checkout-location-actions button {
+        flex: 1 1 0 !important;
+    }
+}
