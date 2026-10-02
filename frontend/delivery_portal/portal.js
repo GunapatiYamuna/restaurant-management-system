@@ -197,6 +197,13 @@ function clearCustomerMaps() {
         }
     });
     customerMaps.clear();
+
+    activeRouteMaps.forEach(function (map) {
+        try { map.remove(); } catch (_) {}
+    });
+    activeRouteMaps.clear();
+    routeLines.clear();
+    partnerMarkers.clear();
 }
 
 function renderCustomerMaps(orders) {
@@ -283,7 +290,113 @@ function renderCustomerMaps(orders) {
     });
 }
 
-const activeRouteMaps = new Map();\nconst routeLines = new Map();\nconst partnerMarkers = new Map();\n\nasync function drawLiveRoute(order) {\n    const map = activeRouteMaps.get(order.id);\n    if (!map) return;\n\n    const fromLat = Number(order.partner_current_lat);\n    const fromLng = Number(order.partner_current_lng);\n    const toLat = Number(order.delivery_lat);\n    const toLng = Number(order.delivery_lng);\n\n    if (![fromLat, fromLng, toLat, toLng].every(Number.isFinite)) return;\n\n    const oldLine = routeLines.get(order.id);\n    if (oldLine) {\n        try { oldLine.remove(); } catch (_) {}\n        routeLines.delete(order.id);\n    }\n\n    const marker = partnerMarkers.get(order.id);\n    if (marker) {\n        marker.setLatLng([fromLat, fromLng]);\n    } else {\n        partnerMarkers.set(\n            order.id,\n            L.marker([fromLat, fromLng]).addTo(map).bindPopup("Delivery partner")\n        );\n    }\n\n    try {\n        const url = "https://router.project-osrm.org/route/v1/driving/" +\n            encodeURIComponent(fromLng + "," + fromLat) + ";" +\n            encodeURIComponent(toLng + "," + toLat) +\n            "?overview=full&geometries=geojson";\n\n        const response = await fetch(url, { cache: "no-store" });\n        const data = await response.json();\n\n        if (data.routes && data.routes.length) {\n            const line = L.geoJSON(data.routes[0].geometry, {\n                style: { weight: 6, opacity: 0.9 }\n            }).addTo(map);\n\n            routeLines.set(order.id, line);\n            map.fitBounds(line.getBounds(), { padding: [28, 28] });\n        } else {\n            throw new Error("No route");\n        }\n    } catch (_) {\n        // Keep a visible fallback route if the routing service is unavailable.\n        const fallback = L.polyline(\n            [[fromLat, fromLng], [toLat, toLng]],\n            { dashArray: "10 10", weight: 5, opacity: 0.85 }\n        ).addTo(map);\n\n        routeLines.set(order.id, fallback);\n        map.fitBounds(\n            L.latLngBounds([[fromLat, fromLng], [toLat, toLng]]),\n            { padding: [28, 28] }\n        );\n    }\n\n    const note = document.getElementById("route-note-" + order.id);\n    if (note) {\n        note.textContent = "Live GPS active · route updates with your location.";\n    }\n}\n\nfunction renderActiveDeliveryMaps(orders) {\n    orders.forEach(function (order) {\n        if (order.delivery_lat == null || order.delivery_lng == null) return;\n\n        const element = document.getElementById("delivery-route-map-" + order.id);\n        if (!element) return;\n\n        const customerLat = Number(order.delivery_lat);\n        const customerLng = Number(order.delivery_lng);\n        if (!Number.isFinite(customerLat) || !Number.isFinite(customerLng)) return;\n\n        if (typeof L === "undefined") return;\n\n        let map = activeRouteMaps.get(order.id);\n\n        if (!map) {\n            map = L.map(element, {\n                zoomControl: true,\n                scrollWheelZoom: false,\n                attributionControl: true\n            }).setView([customerLat, customerLng], 16);\n\n            L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {\n                maxZoom: 19,\n                attribution: "Tiles &copy; Esri"\n            }).addTo(map);\n\n            L.marker([customerLat, customerLng])\n                .addTo(map)\n                .bindPopup("Customer delivery location")\n                .openPopup();\n\n            activeRouteMaps.set(order.id, map);\n        }\n\n        setTimeout(function () {\n            map.invalidateSize();\n        }, 100);\n\n        if (order.partner_current_lat != null && order.partner_current_lng != null) {\n            drawLiveRoute(order);\n        } else {\n            const note = document.getElementById("route-note-" + order.id);\n            if (note) {\n                note.textContent = "Start / Resume GPS to show your position and route to the customer.";\n            }\n        }\n    });\n}\n\nfunction formatDate(value) {
+const activeRouteMaps = new Map();
+const routeLines = new Map();
+const partnerMarkers = new Map();
+
+async function drawLiveRoute(order) {
+    const map = activeRouteMaps.get(order.id);
+    if (!map) return;
+
+    const fromLat = Number(order.partner_current_lat);
+    const fromLng = Number(order.partner_current_lng);
+    const toLat = Number(order.delivery_lat);
+    const toLng = Number(order.delivery_lng);
+
+    if (![fromLat, fromLng, toLat, toLng].every(Number.isFinite)) return;
+
+    const oldLine = routeLines.get(order.id);
+    if (oldLine) {
+        try { oldLine.remove(); } catch (_) {}
+        routeLines.delete(order.id);
+    }
+
+    const marker = partnerMarkers.get(order.id);
+    if (marker) {
+        marker.setLatLng([fromLat, fromLng]);
+    } else {
+        partnerMarkers.set(order.id,
+            L.marker([fromLat, fromLng]).addTo(map).bindPopup("Delivery partner")
+        );
+    }
+
+    try {
+        const url = "https://router.project-osrm.org/route/v1/driving/" +
+            encodeURIComponent(fromLng + "," + fromLat) + ";" +
+            encodeURIComponent(toLng + "," + toLat) +
+            "?overview=full&geometries=geojson";
+        const response = await fetch(url, { cache: "no-store" });
+        const data = await response.json();
+
+        if (!data.routes || !data.routes.length) throw new Error("No route");
+
+        const line = L.geoJSON(data.routes[0].geometry, {
+            style: { weight: 6, opacity: 0.9 }
+        }).addTo(map);
+
+        routeLines.set(order.id, line);
+        map.fitBounds(line.getBounds(), { padding: [28, 28] });
+    } catch (_) {
+        const fallback = L.polyline(
+            [[fromLat, fromLng], [toLat, toLng]],
+            { dashArray: "10 10", weight: 5, opacity: 0.85 }
+        ).addTo(map);
+        routeLines.set(order.id, fallback);
+        map.fitBounds(
+            L.latLngBounds([[fromLat, fromLng], [toLat, toLng]]),
+            { padding: [28, 28] }
+        );
+    }
+
+    const note = document.getElementById("route-note-" + order.id);
+    if (note) {
+        note.textContent = "Live GPS active · route updates with your location.";
+    }
+}
+
+function renderActiveDeliveryMaps(orders) {
+    orders.forEach(function (order) {
+        if (order.delivery_lat == null || order.delivery_lng == null) return;
+
+        const element = document.getElementById("delivery-route-map-" + order.id);
+        if (!element || typeof L === "undefined") return;
+
+        const customerLat = Number(order.delivery_lat);
+        const customerLng = Number(order.delivery_lng);
+        if (!Number.isFinite(customerLat) || !Number.isFinite(customerLng)) return;
+
+        let map = activeRouteMaps.get(order.id);
+        if (!map) {
+            map = L.map(element, {
+                zoomControl: true,
+                scrollWheelZoom: false,
+                attributionControl: true
+            }).setView([customerLat, customerLng], 16);
+
+            L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+                maxZoom: 19,
+                attribution: "Tiles &copy; Esri"
+            }).addTo(map);
+
+            L.marker([customerLat, customerLng])
+                .addTo(map)
+                .bindPopup("Customer delivery location")
+                .openPopup();
+
+            activeRouteMaps.set(order.id, map);
+        }
+
+        if (Number.isFinite(Number(order.partner_current_lat)) && Number.isFinite(Number(order.partner_current_lng))) {
+            drawLiveRoute(order);
+        } else {
+            const note = document.getElementById("route-note-" + order.id);
+            if (note) note.textContent = "Start / Resume GPS to show your position and route to the customer.";
+        }
+
+        setTimeout(function () { map.invalidateSize(); }, 100);
+    });
+}
+function formatDate(value) {
     if (!value) return "—";
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("en-IN");
