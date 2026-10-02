@@ -22,6 +22,7 @@
 
       placeholder.innerHTML = await response.text();
       placeholder.dataset.loaded = "true";
+      document.dispatchEvent(new CustomEvent("foodiehub:navbar-ready"));
 
       if (window.initializeFoodieNavbarAuth) {
         window.initializeFoodieNavbarAuth();
