@@ -1,6 +1,737 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Track Order | FoodieHub</title><link rel="stylesheet" href="css/cart_style.css"><link rel="stylesheet" href="css/footer.css"><link rel="stylesheet" href="css/navbar_auth.css"><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"><link rel="stylesheet" href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css"><style>.tracking{padding:45px 0}.tracking-card{background:#fff;border-radius:18px;padding:24px;box-shadow:0 10px 30px rgba(15,23,42,.08)}.tracking-card .tracking-back-btn{display:inline-flex!important;align-items:center!important;justify-content:center!important;width:auto!important;min-width:140px!important;height:auto!important;min-height:44px!important;padding:10px 16px!important;white-space:nowrap!important;overflow:visible!important;box-sizing:border-box!important}.tracking-card .tracking-back-btn i{flex-shrink:0!important;margin-right:6px!important}#trackingMap{height:430px;border-radius:14px;overflow:hidden}.steps{display:flex;gap:8px;flex-wrap:wrap;margin:15px 0}.step{padding:9px 12px;border-radius:999px;background:#f1f5f9;font-size:12px;font-weight:700}.step.active{background:#fff1e7;color:#d95500}.driver{display:flex;justify-content:space-between;gap:15px;align-items:center;padding:14px;background:#fafafa;border-radius:12px;margin-bottom:15px}</style></head><body><nav class="navbar navbar-expand-lg foodie-navbar"><div class="container"><a class="navbar-brand" href="index.html"><i class="bi bi-egg-fried"></i>Foodie<span>Hub</span></a><a class="nav-login" href="user_portal/dashboard.html">My Portal</a></div></nav><main class="container tracking"><div class="tracking-card"><div class="d-flex justify-content-between align-items-center flex-wrap gap-2"><div><h2 class="fw-bold mb-1">Track Order <span id="orderId"></span></h2><div id="orderMeta" class="text-muted small">Loading...</div></div><a href="user_portal/dashboard.html" class="btn btn-outline-dark tracking-back-btn"><i class="bi bi-arrow-left"></i> Back to portal</a></div><div class="steps" id="steps"></div><div class="driver" id="driver"><span>Delivery partner not assigned yet.</span></div><div id="trackingMap"></div><p id="mapNote" class="text-muted small mt-2">The map refreshes automatically while your order is active.</p></div></main><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script><script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl.js"></script><script>
-const id=new URLSearchParams(location.search).get("id");let map,destination,driverMarker;
-const labels=["placed","confirmed","preparing","ready","out_for_delivery","delivered"];
-function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]))}
-async function load(){if(!id){document.getElementById("orderMeta").textContent="Order ID missing.";return}try{const r=await fetch("/api/orders/"+id+"/tracking/",{credentials:"same-origin",cache:"no-store"});const d=await r.json();if(!r.ok||!d.success)throw new Error(d.message||"Unable to load tracking.");const o=d.order;document.getElementById("orderId").textContent="#"+o.id;document.getElementById("orderMeta").textContent="Status: "+o.status+" · Payment: "+o.payment_status+" · Delivery: "+o.address+", "+o.city+" - "+o.pincode;const index=labels.indexOf(o.status);document.getElementById("steps").innerHTML=labels.map((x,i)=>'<span class="step '+(i<=index?'active':'')+'">'+x.replaceAll("_"," ")+'</span>').join("");const driver=document.getElementById("driver");driver.innerHTML=d.partner?'<div><strong>'+esc(d.partner.name)+'</strong><div class="small">'+esc(d.partner.vehicle_type)+' · '+esc(d.partner.phone)+'</div></div><a class="btn btn-sm btn-success" href="tel:'+esc(d.partner.phone)+'">Call</a>':'<span>Waiting for a delivery partner to be assigned.</span>';if(o.delivery_lat&&o.delivery_lng){if(!map){map=L.map("trackingMap").setView([o.delivery_lat,o.delivery_lng],14);L.maplibreGL({style:"https://tiles.openfreemap.org/styles/liberty"}).addTo(map);destination=L.marker([o.delivery_lat,o.delivery_lng]).addTo(map).bindPopup("Delivery location").openPopup()}else destination.setLatLng([o.delivery_lat,o.delivery_lng]);if(d.partner?.current_lat&&d.partner?.current_lng){if(!driverMarker)driverMarker=L.marker([d.partner.current_lat,d.partner.current_lng]).addTo(map).bindPopup("Delivery partner");else driverMarker.setLatLng([d.partner.current_lat,d.partner.current_lng]);map.fitBounds(L.latLngBounds([[o.delivery_lat,o.delivery_lng],[d.partner.current_lat,d.partner.current_lng]]).pad(.2))}}else document.getElementById("mapNote").textContent="No map location was saved for this order.";if(o.status!=="delivered"&&o.status!=="cancelled")setTimeout(load,5000)}catch(e){document.getElementById("orderMeta").textContent=e.message}}load();
-</script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Track Order | FoodieHub</title>
+
+<link rel="stylesheet" href="css/cart_style.css">
+<link rel="stylesheet" href="css/footer.css">
+<link rel="stylesheet" href="css/navbar_auth.css">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.css">
+
+<style>
+.tracking {
+    padding: 42px 0 60px;
+}
+
+.tracking-card {
+    background: #fff;
+    border-radius: 22px;
+    padding: 28px;
+    box-shadow: 0 14px 38px rgba(15, 23, 42, .10);
+    border: 1px solid #eef1f4;
+}
+
+.tracking-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+    flex-wrap: wrap;
+}
+
+.tracking-title {
+    margin: 0 0 5px;
+    font-size: 30px;
+    line-height: 1.2;
+}
+
+.tracking-subtitle {
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.6;
+}
+
+.tracking-back-btn {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: auto !important;
+    min-width: 150px !important;
+    min-height: 44px !important;
+    padding: 10px 16px !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+}
+
+.tracking-back-btn i {
+    margin-right: 7px;
+}
+
+.steps {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 8px;
+    margin: 25px 0 20px;
+}
+
+.step {
+    padding: 10px 8px;
+    border-radius: 999px;
+    background: #f1f5f9;
+    color: #64748b;
+    font-size: 11px;
+    font-weight: 800;
+    text-align: center;
+    text-transform: capitalize;
+}
+
+.step.active {
+    background: #fff1e7;
+    color: #d95500;
+}
+
+.step.current {
+    background: #ff6b00;
+    color: #fff;
+}
+
+.driver {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    padding: 17px 18px;
+    background: #f8fafc;
+    border: 1px solid #e7edf2;
+    border-radius: 15px;
+    margin-bottom: 18px;
+}
+
+.driver-info {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+}
+
+.driver-avatar {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: #fff1e7;
+    color: #ff6b00;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex: 0 0 44px;
+}
+
+.driver-name {
+    font-weight: 800;
+    color: #172033;
+}
+
+.driver-meta {
+    color: #64748b;
+    font-size: 12px;
+    margin-top: 2px;
+}
+
+.tracking-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 11px;
+    border-radius: 999px;
+    background: #fff1e7;
+    color: #d95500;
+    font-size: 11px;
+    font-weight: 800;
+    white-space: nowrap;
+}
+
+.tracking-status-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.delivery-complete {
+    display: none;
+    align-items: center;
+    gap: 16px;
+    padding: 22px;
+    margin: 8px 0 20px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 17px;
+}
+
+.delivery-complete.show {
+    display: flex;
+}
+
+.delivery-complete-icon {
+    width: 48px;
+    height: 48px;
+    flex: 0 0 48px;
+    border-radius: 50%;
+    background: #16a34a;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 23px;
+}
+
+.delivery-complete h3 {
+    margin: 0 0 4px;
+    font-size: 19px;
+    color: #166534;
+}
+
+.delivery-complete p {
+    margin: 0;
+    color: #3f6212;
+    font-size: 13px;
+}
+
+.map-section {
+    margin-top: 20px;
+}
+
+.map-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 10px;
+}
+
+.map-heading h3 {
+    margin: 0;
+    font-size: 17px;
+}
+
+.map-heading span {
+    color: #64748b;
+    font-size: 12px;
+}
+
+#trackingMap {
+    height: 460px;
+    border-radius: 17px;
+    overflow: hidden;
+    border: 1px solid #e4e9ee;
+}
+
+.map-legend {
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+.legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.legend-customer {
+    background: #ff6b00;
+}
+
+.legend-driver {
+    background: #2563eb;
+}
+
+.route-note {
+    padding: 12px 14px;
+    margin-top: 10px;
+    background: #f8fafc;
+    border-radius: 10px;
+    color: #64748b;
+    font-size: 12px;
+}
+
+@media (max-width: 700px) {
+    .tracking {
+        padding: 20px 0 35px;
+    }
+
+    .tracking-card {
+        padding: 18px;
+        border-radius: 17px;
+    }
+
+    .tracking-title {
+        font-size: 24px;
+    }
+
+    .steps {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .driver {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .tracking-status {
+        align-self: flex-start;
+    }
+
+    #trackingMap {
+        height: 380px;
+    }
+}
+</style>
+</head>
+
+<body>
+<nav class="navbar navbar-expand-lg foodie-navbar">
+    <div class="container">
+        <a class="navbar-brand" href="index.html">
+            <i class="bi bi-egg-fried"></i>Foodie<span>Hub</span>
+        </a>
+        <a class="nav-login" href="user_portal/dashboard.html">My Portal</a>
+    </div>
+</nav>
+
+<main class="container tracking">
+    <section class="tracking-card">
+
+        <div class="tracking-header">
+            <div>
+                <h1 class="tracking-title">
+                    Track Order <span id="orderId"></span>
+                </h1>
+                <div id="orderMeta" class="tracking-subtitle">
+                    Loading your order...
+                </div>
+            </div>
+
+            <a href="user_portal/dashboard.html"
+               class="btn btn-outline-dark tracking-back-btn">
+                <i class="bi bi-arrow-left"></i>
+                Back to portal
+            </a>
+        </div>
+
+        <div class="steps" id="steps"></div>
+
+        <div id="deliveryComplete" class="delivery-complete">
+            <div class="delivery-complete-icon">
+                <i class="bi bi-check-lg"></i>
+            </div>
+            <div>
+                <h3>Order delivered successfully</h3>
+                <p>Your order has been delivered. Thank you for ordering with FoodieHub.</p>
+            </div>
+        </div>
+
+        <div class="driver" id="driver">
+            <span>Waiting for a delivery partner to be assigned.</span>
+        </div>
+
+        <section class="map-section" id="mapSection">
+            <div class="map-heading">
+                <h3>Live delivery tracking</h3>
+                <span id="mapHeadingStatus">Waiting for delivery partner</span>
+            </div>
+
+            <div id="trackingMap"></div>
+
+            <div class="map-legend" id="mapLegend">
+                <span class="legend-item">
+                    <span class="legend-dot legend-customer"></span>
+                    Customer location
+                </span>
+                <span class="legend-item">
+                    <span class="legend-dot legend-driver"></span>
+                    Delivery partner
+                </span>
+            </div>
+
+            <div class="route-note" id="mapNote">
+                The route updates automatically while the delivery is active.
+            </div>
+        </section>
+
+    </section>
+</main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/maplibre-gl@2.4.0/dist/maplibre-gl.js"></script>
+<script src="https://unpkg.com/@maplibre/maplibre-gl-leaflet@0.0.22/leaflet-maplibre-gl-leaflet.js"></script>
+
+<script>
+const orderIdParam = new URLSearchParams(location.search).get("id");
+
+let map = null;
+let destinationMarker = null;
+let driverMarker = null;
+let routeLine = null;
+let refreshTimer = null;
+
+const labels = [
+    "placed",
+    "confirmed",
+    "preparing",
+    "ready",
+    "out_for_delivery",
+    "delivered"
+];
+
+function esc(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, function (char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "'": "&#39;",
+            '"': "&quot;"
+        }[char];
+    });
+}
+
+function validCoordinate(value) {
+    return value !== null &&
+        value !== undefined &&
+        Number.isFinite(Number(value));
+}
+
+function setSteps(status) {
+    const index = labels.indexOf(status);
+
+    document.getElementById("steps").innerHTML =
+        labels.map(function (label, i) {
+            const classes = [
+                "step",
+                i <= index ? "active" : "",
+                i === index ? "current" : ""
+            ].filter(Boolean).join(" ");
+
+            return '<span class="' + classes + '">' +
+                label.replaceAll("_", " ") +
+                "</span>";
+        }).join("");
+}
+
+function createMap(lat, lng) {
+    if (map) {
+        return;
+    }
+
+    map = L.map("trackingMap", {
+        minZoom: 5,
+        maxZoom: 18,
+        maxBounds: [[6, 68], [36, 98]],
+        maxBoundsViscosity: 1
+    }).setView([lat, lng], 15);
+
+    L.maplibreGL({
+        style: "https://tiles.openfreemap.org/styles/liberty"
+    }).addTo(map);
+}
+
+function updateDestination(lat, lng) {
+    if (!map) {
+        createMap(lat, lng);
+    }
+
+    if (!destinationMarker) {
+        destinationMarker = L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup("Customer delivery location");
+    } else {
+        destinationMarker.setLatLng([lat, lng]);
+    }
+}
+
+function updateDriver(lat, lng) {
+    if (!map) {
+        createMap(lat, lng);
+    }
+
+    if (!driverMarker) {
+        driverMarker = L.marker([lat, lng])
+            .addTo(map)
+            .bindPopup("Delivery partner");
+    } else {
+        driverMarker.setLatLng([lat, lng]);
+    }
+}
+
+function clearDriverAndRoute() {
+    if (driverMarker && map) {
+        map.removeLayer(driverMarker);
+    }
+
+    if (routeLine && map) {
+        map.removeLayer(routeLine);
+    }
+
+    driverMarker = null;
+    routeLine = null;
+}
+
+async function drawRoute(driverLat, driverLng, customerLat, customerLng) {
+    if (!map) {
+        return;
+    }
+
+    const url =
+        "https://router.project-osrm.org/route/v1/driving/" +
+        encodeURIComponent(driverLng) + "," +
+        encodeURIComponent(driverLat) + ";" +
+        encodeURIComponent(customerLng) + "," +
+        encodeURIComponent(customerLat) +
+        "?overview=full&geometries=geojson";
+
+    try {
+        const response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error("Route service unavailable.");
+        }
+
+        const data = await response.json();
+
+        if (!data.routes || !data.routes.length) {
+            throw new Error("No driving route found.");
+        }
+
+        const geometry = data.routes[0].geometry;
+
+        if (routeLine) {
+            map.removeLayer(routeLine);
+        }
+
+        routeLine = L.geoJSON(geometry, {
+            style: {
+                color: "#ff6b00",
+                weight: 6,
+                opacity: 0.85
+            }
+        }).addTo(map);
+
+        const bounds = L.latLngBounds([
+            [driverLat, driverLng],
+            [customerLat, customerLng]
+        ]);
+
+        routeLine.getBounds().extend(bounds);
+        map.fitBounds(routeLine.getBounds(), {
+            padding: [35, 35]
+        });
+
+        document.getElementById("mapHeadingStatus").textContent =
+            "Live route to customer";
+
+        document.getElementById("mapNote").textContent =
+            "Orange line shows the current driving route from the delivery partner to your location.";
+
+    } catch (error) {
+        console.warn("Unable to draw driving route:", error);
+
+        const bounds = L.latLngBounds([
+            [driverLat, driverLng],
+            [customerLat, customerLng]
+        ]);
+
+        map.fitBounds(bounds, {
+            padding: [35, 35]
+        });
+
+        document.getElementById("mapHeadingStatus").textContent =
+            "Delivery partner location";
+
+        document.getElementById("mapNote").textContent =
+            "The delivery partner location is updating automatically.";
+    }
+}
+
+function showDeliveredState() {
+    document.getElementById("deliveryComplete").classList.add("show");
+
+    document.getElementById("mapSection").style.display = "none";
+    document.getElementById("driver").style.display = "none";
+
+    document.getElementById("mapHeadingStatus").textContent =
+        "Delivered";
+}
+
+function showActiveTrackingState() {
+    document.getElementById("deliveryComplete").classList.remove("show");
+    document.getElementById("mapSection").style.display = "";
+    document.getElementById("driver").style.display = "";
+}
+
+async function load() {
+    if (!orderIdParam) {
+        document.getElementById("orderMeta").textContent =
+            "Order ID is missing.";
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            "/api/orders/" + encodeURIComponent(orderIdParam) + "/tracking/",
+            {
+                credentials: "same-origin",
+                cache: "no-store"
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok || !data.success) {
+            throw new Error(
+                data.message || "Unable to load order tracking."
+            );
+        }
+
+        const order = data.order;
+        const partner = data.partner;
+
+        document.getElementById("orderId").textContent =
+            "#" + order.id;
+
+        document.getElementById("orderMeta").textContent =
+            "Status: " +
+            order.status.replaceAll("_", " ") +
+            " · Payment: " +
+            order.payment_status +
+            " · Delivery: " +
+            order.address +
+            ", " +
+            order.city +
+            " - " +
+            order.pincode;
+
+        setSteps(order.status);
+
+        if (order.status === "delivered") {
+            clearDriverAndRoute();
+            showDeliveredState();
+
+            document.getElementById("mapNote").textContent =
+                "Your order has been delivered.";
+
+            return;
+        }
+
+        showActiveTrackingState();
+
+        const driver = document.getElementById("driver");
+
+        if (partner) {
+            driver.innerHTML =
+                '<div class="driver-info">' +
+                    '<div class="driver-avatar">' +
+                        '<i class="bi bi-bicycle"></i>' +
+                    '</div>' +
+                    '<div>' +
+                        '<div class="driver-name">' +
+                            esc(partner.name) +
+                        '</div>' +
+                        '<div class="driver-meta">' +
+                            esc(partner.vehicle_type) +
+                            " · " +
+                            esc(partner.phone) +
+                        '</div>' +
+                    '</div>' +
+                '</div>' +
+                '<div class="tracking-status">' +
+                    '<span class="tracking-status-dot"></span>' +
+                    (order.status === "out_for_delivery"
+                        ? "Out for delivery"
+                        : "Delivery partner assigned") +
+                '</div>';
+        } else {
+            driver.innerHTML =
+                '<div class="driver-info">' +
+                    '<div class="driver-avatar">' +
+                        '<i class="bi bi-person"></i>' +
+                    '</div>' +
+                    '<div>' +
+                        '<div class="driver-name">Delivery partner pending</div>' +
+                        '<div class="driver-meta">We will show live tracking once a partner accepts the delivery.</div>' +
+                    '</div>' +
+                '</div>';
+        }
+
+        if (
+            validCoordinate(order.delivery_lat) &&
+            validCoordinate(order.delivery_lng)
+        ) {
+            const customerLat = Number(order.delivery_lat);
+            const customerLng = Number(order.delivery_lng);
+
+            updateDestination(customerLat, customerLng);
+
+            if (
+                order.status === "out_for_delivery" &&
+                partner &&
+                validCoordinate(partner.current_lat) &&
+                validCoordinate(partner.current_lng)
+            ) {
+                const driverLat = Number(partner.current_lat);
+                const driverLng = Number(partner.current_lng);
+
+                updateDriver(driverLat, driverLng);
+
+                await drawRoute(
+                    driverLat,
+                    driverLng,
+                    customerLat,
+                    customerLng
+                );
+            } else {
+                clearDriverAndRoute();
+
+                map.setView(
+                    [customerLat, customerLng],
+                    16
+                );
+
+                document.getElementById("mapHeadingStatus").textContent =
+                    partner
+                        ? "Waiting for live GPS"
+                        : "Waiting for delivery partner";
+
+                document.getElementById("mapNote").textContent =
+                    partner
+                        ? "The route will appear when the delivery partner starts GPS sharing."
+                        : "Your delivery location is saved. Live route tracking will start after a delivery partner accepts the order.";
+            }
+        } else {
+            document.getElementById("mapHeadingStatus").textContent =
+                "Location unavailable";
+
+            document.getElementById("mapNote").textContent =
+                "No delivery map location was saved for this order.";
+        }
+
+        if (
+            order.status !== "delivered" &&
+            order.status !== "cancelled"
+        ) {
+            clearTimeout(refreshTimer);
+            refreshTimer = setTimeout(load, 5000);
+        }
+
+    } catch (error) {
+        document.getElementById("orderMeta").textContent =
+            error.message;
+    }
+}
+
+load();
+</script>
+</body>
+</html>
