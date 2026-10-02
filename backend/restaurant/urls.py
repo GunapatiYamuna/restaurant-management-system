@@ -20,6 +20,8 @@ urlpatterns = [
     path("admin-login/", views.admin_login),
     path("logout/", views.logout_user),
     path("me/", views.current_user),
+    path("profile/update/", views.update_profile),
+    path("profile/change-password/", views.change_password),
     path("forgot-password/", views.forgot_password),
     path("reset-password/", views.reset_password),
     path("restaurants/", views.restaurants),
