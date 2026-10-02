@@ -18,7 +18,7 @@ from django.http import JsonResponse, Http404, FileResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
-from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, InventoryItem, Order, OrderItem, DeliveryPartner, DeliveryAssignment
+from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, InventoryItem, Order, OrderItem, DeliveryPartner, DeliveryAssignment, ContactMessage
 
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
@@ -128,6 +128,98 @@ def _restaurant_owner(request):
 def _restaurant_payload(r):
     return {"id": r.id, "name": r.name, "cuisine": r.cuisine, "rating": float(r.rating), "reviews": r.reviews,
             "price": r.price, "location": r.location, "description": r.description, "image": r.image}
+
+@csrf_exempt
+@require_POST
+def submit_contact_message(request):
+    data = _data(request)
+
+    name = str(data.get("name", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    phone = str(data.get("phone", "")).strip()
+    subject = str(data.get("subject", "")).strip()
+    message = str(data.get("message", "")).strip()
+
+    if not name or not email or not subject or not message:
+        return JsonResponse({
+            "success": False,
+            "message": "Name, email, subject and message are required."
+        }, status=400)
+
+    if not re.fullmatch(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
+        return JsonResponse({
+            "success": False,
+            "message": "Please enter a valid email address."
+        }, status=400)
+
+    contact = ContactMessage.objects.create(
+        name=name,
+        email=email,
+        phone=phone,
+        subject=subject,
+        message=message,
+    )
+
+    return JsonResponse({
+        "success": True,
+        "message": "Your message has been sent successfully. Our team will get back to you soon.",
+        "id": contact.id,
+    })
+
+
+@require_GET
+def admin_contact_messages(request):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({
+            "success": False,
+            "message": "Administrator access required."
+        }, status=403)
+
+    messages = ContactMessage.objects.all()
+    return JsonResponse({
+        "success": True,
+        "messages": [
+            {
+                "id": item.id,
+                "name": item.name,
+                "email": item.email,
+                "phone": item.phone,
+                "subject": item.subject,
+                "message": item.message,
+                "status": item.status,
+                "created_at": item.created_at.isoformat(),
+                "read_at": item.read_at.isoformat() if item.read_at else None,
+            }
+            for item in messages
+        ]
+    })
+
+
+@csrf_exempt
+@require_POST
+def admin_mark_contact_message_read(request, message_id):
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return JsonResponse({
+            "success": False,
+            "message": "Administrator access required."
+        }, status=403)
+
+    contact = ContactMessage.objects.filter(pk=message_id).first()
+    if not contact:
+        return JsonResponse({
+            "success": False,
+            "message": "Message not found."
+        }, status=404)
+
+    contact.status = ContactMessage.STATUS_READ
+    contact.read_at = timezone.now()
+    contact.save(update_fields=["status", "read_at"])
+
+    return JsonResponse({
+        "success": True,
+        "message": "Message marked as read."
+    })
+
 
 @csrf_exempt
 @require_POST

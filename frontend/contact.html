@@ -152,21 +152,21 @@
 
                     <h3>Send us a Message</h3>
 
-                    <form>
+                    <form id="contactForm">
 
                         <div class="row">
 
                             <div class="col-md-6 mb-3">
                                 <label>Your Name</label>
                                 <input type="text"
-                                       class="form-control"
+                                       id="name" class="form-control"
                                        placeholder="Enter your name">
                             </div>
 
                             <div class="col-md-6 mb-3">
                                 <label>Your Email</label>
                                 <input type="email"
-                                       class="form-control"
+                                       id="email" class="form-control"
                                        placeholder="Enter your email">
                             </div>
 
@@ -175,23 +175,25 @@
                         <div class="mb-3">
                             <label>Phone Number</label>
                             <input type="tel"
-                                   class="form-control"
+                                   id="phone" class="form-control"
                                    placeholder="Enter your phone number">
                         </div>
 
                         <div class="mb-3">
                             <label>Subject</label>
                             <input type="text"
-                                   class="form-control"
+                                   id="subject" class="form-control"
                                    placeholder="Enter subject">
                         </div>
 
                         <div class="mb-3">
                             <label>Message</label>
-                            <textarea class="form-control"
+                            <textarea id="message" class="form-control"
                                       rows="5"
                                       placeholder="Write your message"></textarea>
                         </div>
+
+                        <div id="contactMessage" class="mt-2"></div>
 
                         <button type="submit" class="btn-orange">
                             Send Message
