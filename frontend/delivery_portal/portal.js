@@ -91,7 +91,7 @@ function renderActiveOrders(orders) {
                 </p>
 
                 ${order.delivery_lat != null && order.delivery_lng != null
-                    ? '<div class="customer-location"><div class="customer-location-title">📍 Customer location</div><div class="delivery-map" id="customer-map-' + order.id + '"></div><div class="location-note">Exact delivery point selected by the customer.</div></div>'
+                    ? '<div class="customer-location"><div class="customer-location-title">🛵 Live route to customer</div><div class="delivery-map" id="delivery-route-map-' + order.id + '"></div><div class="location-note" id="route-note-' + order.id + '">Start / Resume GPS to show your position and route to the customer.</div></div>'
                     : '<div class="location-note customer-location">📍 Customer map location was not saved for this order.</div>'}
             `;
 
