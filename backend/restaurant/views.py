@@ -973,6 +973,9 @@ def delivery_dashboard(request):
             "assignment_status": a.status,
             "delivery_lat": float(a.order.delivery_lat) if a.order.delivery_lat is not None else None,
             "delivery_lng": float(a.order.delivery_lng) if a.order.delivery_lng is not None else None,
+            "partner_current_lat": float(partner.current_lat) if partner.current_lat is not None else None,
+            "partner_current_lng": float(partner.current_lng) if partner.current_lng is not None else None,
+            "partner_last_location_at": partner.last_location_at.isoformat() if partner.last_location_at else None,
             "created_at": a.order.created_at.isoformat(),
             "delivered_at": a.delivered_at.isoformat() if a.delivered_at else None,
             "items": [

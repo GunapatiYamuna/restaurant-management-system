@@ -91,7 +91,7 @@ function renderActiveOrders(orders) {
                 </p>
 
                 ${order.delivery_lat != null && order.delivery_lng != null
-                    ? '<div class="customer-location"><div class="customer-location-title">📍 Customer location</div><div class="delivery-map" id="customer-map-' + order.id + '"></div><div class="location-note">Exact delivery point selected by the customer.</div></div>'
+                    ? '<div class="customer-location"><div class="customer-location-title">🛵 Live route to customer</div><div class="delivery-map" id="delivery-route-map-' + order.id + '"></div><div class="location-note" id="route-note-' + order.id + '">Start / Resume GPS to show your position and route to the customer.</div></div>'
                     : '<div class="location-note customer-location">📍 Customer map location was not saved for this order.</div>'}
             `;
 
@@ -128,7 +128,7 @@ function renderActiveOrders(orders) {
         `;
     }).join("");
 
-    renderCustomerMaps(orders);
+    renderActiveDeliveryMaps(orders);
 }
 
 function renderAvailableOrders(orders) {
@@ -197,6 +197,13 @@ function clearCustomerMaps() {
         }
     });
     customerMaps.clear();
+
+    activeRouteMaps.forEach(function (map) {
+        try { map.remove(); } catch (_) {}
+    });
+    activeRouteMaps.clear();
+    routeLines.clear();
+    partnerMarkers.clear();
 }
 
 function renderCustomerMaps(orders) {
@@ -283,6 +290,112 @@ function renderCustomerMaps(orders) {
     });
 }
 
+const activeRouteMaps = new Map();
+const routeLines = new Map();
+const partnerMarkers = new Map();
+
+async function drawLiveRoute(order) {
+    const map = activeRouteMaps.get(order.id);
+    if (!map) return;
+
+    const fromLat = Number(order.partner_current_lat);
+    const fromLng = Number(order.partner_current_lng);
+    const toLat = Number(order.delivery_lat);
+    const toLng = Number(order.delivery_lng);
+
+    if (![fromLat, fromLng, toLat, toLng].every(Number.isFinite)) return;
+
+    const oldLine = routeLines.get(order.id);
+    if (oldLine) {
+        try { oldLine.remove(); } catch (_) {}
+        routeLines.delete(order.id);
+    }
+
+    const marker = partnerMarkers.get(order.id);
+    if (marker) {
+        marker.setLatLng([fromLat, fromLng]);
+    } else {
+        partnerMarkers.set(order.id,
+            L.marker([fromLat, fromLng]).addTo(map).bindPopup("Delivery partner")
+        );
+    }
+
+    try {
+        const url = "https://router.project-osrm.org/route/v1/driving/" +
+            encodeURIComponent(fromLng + "," + fromLat) + ";" +
+            encodeURIComponent(toLng + "," + toLat) +
+            "?overview=full&geometries=geojson";
+        const response = await fetch(url, { cache: "no-store" });
+        const data = await response.json();
+
+        if (!data.routes || !data.routes.length) throw new Error("No route");
+
+        const line = L.geoJSON(data.routes[0].geometry, {
+            style: { weight: 6, opacity: 0.9 }
+        }).addTo(map);
+
+        routeLines.set(order.id, line);
+        map.fitBounds(line.getBounds(), { padding: [28, 28] });
+    } catch (_) {
+        const fallback = L.polyline(
+            [[fromLat, fromLng], [toLat, toLng]],
+            { dashArray: "10 10", weight: 5, opacity: 0.85 }
+        ).addTo(map);
+        routeLines.set(order.id, fallback);
+        map.fitBounds(
+            L.latLngBounds([[fromLat, fromLng], [toLat, toLng]]),
+            { padding: [28, 28] }
+        );
+    }
+
+    const note = document.getElementById("route-note-" + order.id);
+    if (note) {
+        note.textContent = "Live GPS active · route updates with your location.";
+    }
+}
+
+function renderActiveDeliveryMaps(orders) {
+    orders.forEach(function (order) {
+        if (order.delivery_lat == null || order.delivery_lng == null) return;
+
+        const element = document.getElementById("delivery-route-map-" + order.id);
+        if (!element || typeof L === "undefined") return;
+
+        const customerLat = Number(order.delivery_lat);
+        const customerLng = Number(order.delivery_lng);
+        if (!Number.isFinite(customerLat) || !Number.isFinite(customerLng)) return;
+
+        let map = activeRouteMaps.get(order.id);
+        if (!map) {
+            map = L.map(element, {
+                zoomControl: true,
+                scrollWheelZoom: false,
+                attributionControl: true
+            }).setView([customerLat, customerLng], 16);
+
+            L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}", {
+                maxZoom: 19,
+                attribution: "Tiles &copy; Esri"
+            }).addTo(map);
+
+            L.marker([customerLat, customerLng])
+                .addTo(map)
+                .bindPopup("Customer delivery location")
+                .openPopup();
+
+            activeRouteMaps.set(order.id, map);
+        }
+
+        if (Number.isFinite(Number(order.partner_current_lat)) && Number.isFinite(Number(order.partner_current_lng))) {
+            drawLiveRoute(order);
+        } else {
+            const note = document.getElementById("route-note-" + order.id);
+            if (note) note.textContent = "Start / Resume GPS to show your position and route to the customer.";
+        }
+
+        setTimeout(function () { map.invalidateSize(); }, 100);
+    });
+}
 function formatDate(value) {
     if (!value) return "—";
     const date = new Date(value);

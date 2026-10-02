@@ -195,6 +195,31 @@ class DeliveryTrackingTests(TestCase):
         shown = next(item for item in available if item["id"] == unassigned_order.id)
         self.assertEqual(shown["status"], "out_for_delivery")
 
+
+
+    def test_delivery_dashboard_exposes_partner_live_location(self):
+        self.partner.current_lat = Decimal("15.5061000")
+        self.partner.current_lng = Decimal("80.0510000")
+        from django.utils import timezone
+        self.partner.last_location_at = timezone.now()
+        self.partner.save(update_fields=["current_lat", "current_lng", "last_location_at"])
+
+        self.client.force_login(self.partner_user)
+        response = self.client.get(
+            reverse("delivery-dashboard")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+        self.assertEqual(
+            payload["active_orders"][0]["partner_current_lat"],
+            15.5061,
+        )
+        self.assertEqual(
+            payload["active_orders"][0]["partner_current_lng"],
+            80.051,
+        )
+
     def test_payment_config_does_not_expose_secret(self):
         response = self.client.get(reverse("payment-config"))
         self.assertEqual(response.status_code, 200)
