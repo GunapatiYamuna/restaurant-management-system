@@ -91,9 +91,13 @@ function renderActiveOrders(orders) {
                 </div>
 
                 <p>
-                    <b>Deliver to:</b>
+                    <b>Customer address:</b>
                     ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
                 </p>
+
+                ${order.delivery_lat != null && order.delivery_lng != null
+                    ? '<div class="customer-location"><div class="customer-location-title">📍 Customer location</div><div class="delivery-map" id="customer-map-' + order.id + '"></div><div class="location-note">Exact delivery point selected by the customer.</div></div>'
+                    : '<div class="location-note customer-location">📍 Customer map location was not saved for this order.</div>'}
 
                 <p>
                     ${order.items.map(function (item) {
