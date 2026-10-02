@@ -94,6 +94,78 @@ class DeliveryTrackingTests(TestCase):
         self.assertEqual(self.order.status, "delivered")
         self.assertTrue(self.partner.is_available)
 
+
+
+    def test_delivery_dashboard_separates_delivered_history(self):
+        self.client.force_login(self.partner_user)
+
+        response = self.client.get(
+            reverse("delivery_dashboard")
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+
+        self.assertEqual(
+            [item["id"] for item in payload["active_orders"]],
+            [self.order.id],
+        )
+        self.assertEqual(payload["delivered_orders"], [])
+
+        response = self.client.post(
+            reverse(
+                "delivery-status",
+                kwargs={"order_id": self.order.id},
+            ),
+            data={"status": "delivered"},
+            content_type="application/json",
+        )
+        self.assertEqual(response.status_code, 200)
+
+        response = self.client.get(
+            reverse("delivery_dashboard")
+        )
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+
+        self.assertEqual(payload["active_orders"], [])
+        self.assertEqual(
+            [item["id"] for item in payload["delivered_orders"]],
+            [self.order.id],
+        )
+        self.assertEqual(
+            payload["delivered_orders"][0]["assignment_status"],
+            "delivered",
+        )
+        self.assertIsNotNone(
+            payload["delivered_orders"][0]["delivered_at"]
+        )
+
+    def test_ready_order_appears_in_available_orders(self):
+        available_order = Order.objects.create(
+            user=self.customer,
+            name="Second Customer",
+            phone="9888888888",
+            address="Second Street",
+            city="Ongole",
+            pincode="523001",
+            payment_method="Cash on Delivery",
+            payment_status="cod_pending",
+            total=Decimal("300.00"),
+            status="ready",
+        )
+
+        self.client.force_login(self.partner_user)
+        response = self.client.get(
+            reverse("delivery_dashboard")
+        )
+        self.assertEqual(response.status_code, 200)
+
+        available_ids = [
+            item["id"] for item in response.json()["available_orders"]
+        ]
+        self.assertIn(available_order.id, available_ids)
+
+
     def test_payment_config_does_not_expose_secret(self):
         response = self.client.get(reverse("payment-config"))
         self.assertEqual(response.status_code, 200)
