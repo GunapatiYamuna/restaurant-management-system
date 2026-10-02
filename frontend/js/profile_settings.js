@@ -5,7 +5,9 @@ document.addEventListener("DOMContentLoaded", async function () {
   function show(targetId, message, type) {
     const box = document.getElementById(targetId);
     if (!box) return;
-    box.innerHTML = '<div class="profile-alert profile-alert-' + type + '">' + message + '</div>';
+    box.innerHTML = '<div style="padding:10px 12px;border-radius:10px;margin-top:8px;font-size:12px;background:' +
+      (type === "success" ? "#ecfdf3;color:#027a48" : "#fff1f1;color:#b42318") +
+      '">' + message + '</div>';
   }
 
   function fill(user) {
