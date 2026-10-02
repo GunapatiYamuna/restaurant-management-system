@@ -1108,10 +1108,16 @@ def order_tracking(request, order_id):
     order = Order.objects.filter(pk=order_id).select_related("delivery_assignment__partner__user").first()
     if not order:
         return JsonResponse({"success": False, "message": "Order not found."}, status=404)
-    if not (request.user.is_staff or order.user_id == request.user.id):
-        return JsonResponse({"success": False, "message": "You cannot track this order."}, status=403)
     assignment = getattr(order, "delivery_assignment", None)
     partner = assignment.partner if assignment else None
+    is_customer = order.user_id == request.user.id
+    is_assigned_partner = bool(assignment and partner and partner.user_id == request.user.id)
+    if not (request.user.is_staff or is_customer or is_assigned_partner):
+        return JsonResponse({"success": False, "message": "You cannot track this order."}, status=403)
+    restaurant = None
+    restaurant_ids = list(OrderItem.objects.filter(order=order, menu_item__isnull=False).values_list("menu_item__restaurant_id", flat=True).distinct())
+    if restaurant_ids:
+        restaurant = Restaurant.objects.filter(pk=restaurant_ids[0]).first()
     return JsonResponse({
         "success": True,
         "order": {
@@ -1120,6 +1126,12 @@ def order_tracking(request, order_id):
             "delivery_lng": float(order.delivery_lng) if order.delivery_lng is not None else None,
             "total": float(order.total),
         },
+        "restaurant": ({
+            "id": restaurant.id,
+            "name": restaurant.name,
+            "location": restaurant.location,
+            "image": restaurant.image,
+        } if restaurant else None),
         "partner": ({
             "id": partner.id, "name": partner.user.first_name or partner.user.username,
             "phone": partner.phone, "vehicle_type": partner.vehicle_type,
