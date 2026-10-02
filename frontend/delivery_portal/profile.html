@@ -69,6 +69,9 @@
     </section>
   </main>
 </div>
+<script>
+document.getElementById("logout")?.addEventListener("click",async function(){try{await fetch("/api/logout/",{method:"POST",credentials:"same-origin"})}catch(_){}localStorage.removeItem("foodiehub_session");location.href="login.html";});
+</script>
 <script src="portal.js"></script>
 <script src="../js/profile_settings.js"></script>
 </body>
