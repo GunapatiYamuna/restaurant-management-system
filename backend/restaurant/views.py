@@ -950,31 +950,81 @@ def delivery_dashboard(request):
     partner, error = _delivery_partner(request)
     if error:
         return error
-    assigned = DeliveryAssignment.objects.filter(partner=partner).select_related("order").prefetch_related("order__items").order_by("-assigned_at")
-    active = []
+
+    assigned = (
+        DeliveryAssignment.objects
+        .filter(partner=partner)
+        .select_related("order")
+        .prefetch_related("order__items")
+        .order_by("-assigned_at")
+    )
+
+    assigned_payload = []
     for a in assigned:
-        active.append({
-            "id": a.order_id, "name": a.order.name, "phone": a.order.phone,
-            "address": a.order.address, "city": a.order.city, "pincode": a.order.pincode,
-            "total": float(a.order.total), "status": a.order.status,
+        assigned_payload.append({
+            "id": a.order_id,
+            "name": a.order.name,
+            "phone": a.order.phone,
+            "address": a.order.address,
+            "city": a.order.city,
+            "pincode": a.order.pincode,
+            "total": float(a.order.total),
+            "status": a.order.status,
             "assignment_status": a.status,
             "delivery_lat": float(a.order.delivery_lat) if a.order.delivery_lat is not None else None,
             "delivery_lng": float(a.order.delivery_lng) if a.order.delivery_lng is not None else None,
             "created_at": a.order.created_at.isoformat(),
-            "items": [{"name": i.name, "quantity": i.quantity} for i in a.order.items.all()],
+            "delivered_at": a.delivered_at.isoformat() if a.delivered_at else None,
+            "items": [
+                {"name": i.name, "quantity": i.quantity}
+                for i in a.order.items.all()
+            ],
         })
-    available = []
-    for o in Order.objects.filter(
-        status__in=["ready", "out_for_delivery"],
-        delivery_assignment__isnull=True,
-    ).prefetch_related("items").order_by("created_at"):
-        available.append({
-            "id": o.id, "name": o.name, "address": o.address, "city": o.city,
-            "pincode": o.pincode, "total": float(o.total), "created_at": o.created_at.isoformat(),
-            "items": [{"name": i.name, "quantity": i.quantity} for i in o.items.all()],
-        })
-    return JsonResponse({"success": True, "active_orders": active, "available_orders": available})
 
+    active = [
+        order for order in assigned_payload
+        if order["status"] != "delivered"
+    ]
+
+    delivered = [
+        order for order in assigned_payload
+        if order["status"] == "delivered"
+    ]
+
+    available = []
+    for o in (
+        Order.objects
+        .filter(
+            status="ready",
+            delivery_assignment__isnull=True,
+        )
+        .prefetch_related("items")
+        .order_by("created_at")
+    ):
+        available.append({
+            "id": o.id,
+            "name": o.name,
+            "phone": o.phone,
+            "address": o.address,
+            "city": o.city,
+            "pincode": o.pincode,
+            "total": float(o.total),
+            "status": o.status,
+            "delivery_lat": float(o.delivery_lat) if o.delivery_lat is not None else None,
+            "delivery_lng": float(o.delivery_lng) if o.delivery_lng is not None else None,
+            "created_at": o.created_at.isoformat(),
+            "items": [
+                {"name": i.name, "quantity": i.quantity}
+                for i in o.items.all()
+            ],
+        })
+
+    return JsonResponse({
+        "success": True,
+        "active_orders": active,
+        "delivered_orders": delivered,
+        "available_orders": available,
+    })
 
 @csrf_exempt
 @require_POST

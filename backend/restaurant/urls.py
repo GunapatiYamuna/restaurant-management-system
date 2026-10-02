@@ -40,7 +40,7 @@ urlpatterns = [
     path("delivery/register/", views.delivery_register),
     path("delivery-login/", views.delivery_login),
     path("delivery/me/", views.delivery_me),
-    path("delivery/dashboard/", views.delivery_dashboard),
+    path("delivery/dashboard/", views.delivery_dashboard, name="delivery-dashboard"),
     path("delivery/availability/", views.delivery_toggle_availability),
     path("delivery/orders/<int:order_id>/accept/", views.delivery_accept_order),
     path("delivery/orders/<int:order_id>/status/", views.delivery_update_status, name="delivery-status"),

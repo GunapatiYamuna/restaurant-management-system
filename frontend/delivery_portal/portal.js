@@ -131,7 +131,63 @@ function renderActiveOrders(orders) {
     renderCustomerMaps(orders);
 }
 
-function renderAvailableOrdersders) {
+function renderAvailableOrders(orders) {
+    const available = document.getElementById("available");
+
+    if (!available) return;
+
+    if (!orders.length) {
+        available.innerHTML = '<div class="card empty">No ready orders waiting.</div>';
+        return;
+    }
+
+    available.innerHTML = orders.map(function (order) {
+        const phone = String(order.phone || "").trim();
+
+        return `
+            <article class="card delivery-order-card">
+                <div class="cardhead">
+                    <div>
+                        <h2>Order #${order.id}</h2>
+                        <div class="small">${esc(order.name)} · ${esc(phone)}</div>
+                    </div>
+                    <span class="badge green">${esc(statusLabel(order.status || "ready"))}</span>
+                </div>
+
+                <p>
+                    <b>Delivery address:</b>
+                    ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
+                </p>
+
+                <p>
+                    ${order.items.map(function (item) {
+                        return esc(item.name) + " × " + Number(item.quantity || 0);
+                    }).join(" · ")}
+                </p>
+
+                <div class="small">
+                    <b>Total:</b> ${money(order.total)}
+                </div>
+
+                ${order.delivery_lat != null && order.delivery_lng != null
+                    ? '<div class="customer-location"><div class="customer-location-title">📍 Customer location</div><div class="delivery-map" id="customer-map-' + order.id + '"></div><div class="location-note">Exact delivery point selected by the customer.</div></div>'
+                    : '<div class="location-note customer-location">📍 Customer map location was not saved for this order.</div>'}
+
+                <div class="top-actions">
+                    <button type="button" class="btn orange" data-action="accept" data-order-id="${order.id}">
+                        Accept order
+                    </button>
+                </div>
+
+                <div class="small delivery-action-message" id="availableMessage-${order.id}"></div>
+            </article>
+        `;
+    }).join("");
+
+    renderCustomerMaps(orders);
+}
+
+function renderCustomerMaps(orders) {
     if (typeof L === "undefined") return;
 
     orders.forEach(function (order) {
@@ -156,6 +212,53 @@ function renderAvailableOrdersders) {
         customerMaps.set(order.id, map);
         setTimeout(function () { map.invalidateSize(); }, 100);
     });
+}
+
+function formatDate(value) {
+    if (!value) return "—";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleString("en-IN");
+}
+
+function renderDeliveredOrders(orders) {
+    const delivered = document.getElementById("delivered");
+
+    if (!delivered) return;
+
+    if (!orders.length) {
+        delivered.innerHTML = '<div class="card empty">No delivered orders yet.</div>';
+        return;
+    }
+
+    delivered.innerHTML = orders.map(function (order) {
+        return `
+            <article class="card delivery-order-card">
+                <div class="cardhead">
+                    <div>
+                        <h2>Order #${order.id}</h2>
+                        <div class="small">${esc(order.name)} · ${formatDate(order.delivered_at)}</div>
+                    </div>
+                    <span class="badge green">Delivered</span>
+                </div>
+
+                <p>
+                    <b>Delivery address:</b>
+                    ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
+                </p>
+
+                <p>
+                    ${order.items.map(function (item) {
+                        return esc(item.name) + " × " + Number(item.quantity || 0);
+                    }).join(" · ")}
+                </p>
+
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="small">Delivered at: ${formatDate(order.delivered_at)}</span>
+                    <strong>${money(order.total)}</strong>
+                </div>
+            </article>
+        `;
+    }).join("");
 }
 
 async function load() {
@@ -184,6 +287,7 @@ async function load() {
         const dashboard = await api("/api/delivery/dashboard/");
 
         renderActiveOrders(dashboard.active_orders || []);
+        renderDeliveredOrders(dashboard.delivered_orders || []);
         renderAvailableOrders(dashboard.available_orders || []);
 
         if (activeOrderId) {
@@ -202,6 +306,18 @@ async function load() {
 
         if (active) {
             active.innerHTML =
+                '<div class="card">' + esc(error.message) + "</div>";
+        }
+
+        const delivered = document.getElementById("delivered");
+        if (delivered) {
+            delivered.innerHTML =
+                '<div class="card">' + esc(error.message) + "</div>";
+        }
+
+        const available = document.getElementById("available");
+        if (available) {
+            available.innerHTML =
                 '<div class="card">' + esc(error.message) + "</div>";
         }
 
@@ -462,6 +578,13 @@ document
     ?.addEventListener(
         "click",
         toggleAvailability
+    );
+
+document
+    .getElementById("refreshOrders")
+    ?.addEventListener(
+        "click",
+        load
     );
 
 document
