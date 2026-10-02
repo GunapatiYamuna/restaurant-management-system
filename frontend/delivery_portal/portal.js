@@ -167,6 +167,7 @@ function renderAvailableOrders(orders) {
 
                 <div class="small">
                     <b>Total:</b> ${money(order.total)}
+                    · <b>Received:</b> ${formatDate(order.created_at)}
                 </div>
 
                 ${order.delivery_lat != null && order.delivery_lng != null

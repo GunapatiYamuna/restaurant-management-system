@@ -995,7 +995,7 @@ def delivery_dashboard(request):
     for o in (
         Order.objects
         .filter(
-            status="ready",
+            status__in=["ready", "out_for_delivery"],
             delivery_assignment__isnull=True,
         )
         .prefetch_related("items")
