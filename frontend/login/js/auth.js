@@ -1253,107 +1253,65 @@ function renderProfileReservations(reservations, container) {
   }).join("");
 }
 
-const profileForm =
-  document.getElementById(
-    "profileForm"
-  );
-
+const profileForm = document.getElementById("profileForm");
 
 if (profileForm) {
-
   loadProfile();
 
+  profileForm.addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-  profileForm.addEventListener(
-    "submit",
-    (e) => {
+    const session = getSession();
+    if (!session) {
+      window.location.href = "login.html";
+      return;
+    }
 
-      e.preventDefault();
+    const name = document.getElementById("editName")?.value.trim();
+    const email = document.getElementById("editEmail")?.value.trim().toLowerCase();
+    const phone = document.getElementById("editPhone")?.value.trim();
+    const city = document.getElementById("editCity")?.value.trim();
 
+    if (!name || !email || !/^[0-9]{10}$/.test(phone || "")) {
+      return showAlert(
+        "profileAlert",
+        "Please enter a valid name, email and 10-digit phone number.",
+        "danger"
+      );
+    }
 
-      const session =
-        getSession();
+    try {
+      const response = await fetch("/api/profile/update/", {
+        method: "POST",
+        headers: {"Content-Type": "application/json"},
+        credentials: "same-origin",
+        body: JSON.stringify({name, email, phone, city})
+      });
 
+      const data = await response.json();
 
-      if (!session) return;
-
-
-      const name =
-        document
-          .getElementById("editName")
-          .value
-          .trim();
-
-
-      const email =
-        document
-          .getElementById("editEmail")
-          .value
-          .trim()
-          .toLowerCase();
-
-
-      const phone =
-        document
-          .getElementById("editPhone")
-          .value
-          .trim();
-
-
-      const city =
-        document
-          .getElementById("editCity")
-          .value
-          .trim();
-
-
-      if (
-        !name ||
-        !email ||
-        !/^[0-9]{10}$/.test(phone)
-      ) {
-
-        return showAlert(
-          "profileAlert",
-          "Please enter a valid name, email and 10-digit phone number.",
-          "danger"
-        );
-
+      if (response.status === 401) {
+        localStorage.removeItem(SESSION_KEY);
+        window.location.href = "login.html";
+        return;
       }
 
+      if (!response.ok || !data.success) {
+        throw new Error(data.message || "Unable to update profile.");
+      }
 
-      const updatedUser = {
-
-        ...session,
-
-        name: name,
-
-        email: email,
-
-        phone: phone,
-
-        city: city
-
-      };
-
-
-      setSession(
-        updatedUser
-      );
-
-
+      setSession(data.user);
       loadProfile();
-
 
       showAlert(
         "profileAlert",
-        "Profile updated successfully.",
+        data.message || "Profile updated successfully.",
         "success"
       );
-
+    } catch (error) {
+      showAlert("profileAlert", error.message, "danger");
     }
-  );
-
+  });
 }
 
 
