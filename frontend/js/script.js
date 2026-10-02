@@ -50,63 +50,68 @@ function subscribeNewsletter() {
    CONTACT FORM
    ========================================================= */
 
-const contactForm =
-    document.getElementById("contactForm");
-
+const contactForm = document.getElementById("contactForm");
 
 if (contactForm) {
+    contactForm.addEventListener("submit", async function (event) {
+        event.preventDefault();
 
-    contactForm.addEventListener(
-        "submit",
-        function(event) {
+        const messageBox = document.getElementById("contactMessage");
+        const submitButton = contactForm.querySelector('button[type="submit"]');
 
-            event.preventDefault();
+        const payload = {
+            name: document.getElementById("name")?.value.trim() || "",
+            email: document.getElementById("email")?.value.trim() || "",
+            phone: document.getElementById("phone")?.value.trim() || "",
+            subject: document.getElementById("subject")?.value.trim() || "",
+            message: document.getElementById("message")?.value.trim() || ""
+        };
 
+        if (!payload.name || !payload.email || !payload.subject || !payload.message) {
+            if (messageBox) {
+                messageBox.innerHTML = '<div class="alert alert-danger">Please fill in all required fields.</div>';
+            }
+            return;
+        }
 
-            const name =
-                document.getElementById("name").value.trim();
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.textContent = "Sending...";
+        }
 
-            const email =
-                document.getElementById("email").value.trim();
+        try {
+            const response = await fetch("/api/contact/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload)
+            });
 
-            const subject =
-                document.getElementById("subject").value.trim();
+            const data = await response.json().catch(() => ({}));
 
-            const message =
-                document.getElementById("message").value.trim();
-
-
-            const messageBox =
-                document.getElementById("contactMessage");
-
-
-            if (
-                name === "" ||
-                email === "" ||
-                subject === "" ||
-                message === ""
-            ) {
-
-                messageBox.innerHTML = `
-                    <div class="alert alert-danger">
-                        Please fill in all required fields.
-                    </div>
-                `;
-
-                return;
+            if (!response.ok || !data.success) {
+                throw new Error(data.message || "Unable to send your message.");
             }
 
-
-            messageBox.innerHTML = `
-                <div class="alert alert-success">
-                    Your message has been sent successfully!
-                </div>
-            `;
-
+            if (messageBox) {
+                messageBox.innerHTML = '<div class="alert alert-success">' +
+                    (data.message || "Your message has been sent successfully.") +
+                    '</div>';
+            }
 
             contactForm.reset();
-
+        } catch (error) {
+            console.error("Contact form error:", error);
+            if (messageBox) {
+                messageBox.innerHTML = '<div class="alert alert-danger">' +
+                    error.message +
+                    '</div>';
+            }
+        } finally {
+            if (submitButton) {
+                submitButton.disabled = false;
+                submitButton.textContent = "Send Message";
+            }
         }
-    );
-
+    });
 }
