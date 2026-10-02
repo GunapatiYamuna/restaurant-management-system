@@ -1,10 +1,506 @@
-const api=async(u,o={})=>{const r=await fetch(u,{credentials:"same-origin",cache:"no-store",...o});const d=await r.json().catch(()=>({}));if(!r.ok||d.success===false)throw new Error(d.message||"Request failed");return d};
-function esc(v){return String(v??"").replace(/[&<>'"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[c]))}
-function money(v){return "₹"+Number(v||0).toLocaleString("en-IN")}
-let watchId=null, activeOrder=null;
-async function load(){try{const me=await api("/api/delivery/me/");const av=document.getElementById("availability");if(av){av.textContent=me.partner.is_available?"Available for orders":"Offline";av.className="btn "+(me.partner.is_available?"orange":"");av.onclick=async()=>{try{const n=await api("/api/delivery/availability/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({is_available:!me.partner.is_available})});av.textContent=n.is_available?"Available for orders":"Offline";av.className="btn "+(n.is_available?"orange":"")}catch(e){alert(e.message)}}}const d=await api("/api/delivery/dashboard/");const active=document.getElementById("active");const available=document.getElementById("available");active.innerHTML=(d.active_orders||[]).map(o=>`<article class="card"><div class="cardhead"><div><h2>Order #${o.id}</h2><div class="small">${esc(o.name)} · ${esc(o.phone)}</div></div><span class="badge orange">${esc(o.status)}</span></div><p><b>Deliver to:</b> ${esc(o.address)}, ${esc(o.city)} - ${esc(o.pincode)}</p><p>${o.items.map(i=>esc(i.name)+" × "+i.quantity).join(" · ")}</p><div class="top-actions"><button class="btn orange" onclick="startTrip(${o.id})">Start / Resume GPS</button><button class="btn" onclick="setStatus(${o.id},'picked_up')">Picked up</button><button class="btn" onclick="setStatus(${o.id},'delivered')">Delivered</button></div></article>`).join("")||'<div class="card empty">No active delivery.</div>';
-available.innerHTML=(d.available_orders||[]).map(o=>`<article class="card"><div class="cardhead"><div><h2>Order #${o.id}</h2><div class="small">${esc(o.name)}</div></div><b>${money(o.total)}</b></div><p>${esc(o.address)}, ${esc(o.city)} - ${esc(o.pincode)}</p><button class="btn orange" onclick="acceptOrder(${o.id})">Accept delivery</button></article>`).join("")||'<div class="card empty">No ready orders waiting.</div>';if(d.active_orders?.[0]) startTrip(d.active_orders[0].id)}catch(e){document.getElementById("active").innerHTML='<div class="card">'+esc(e.message)+'</div>'}}
-async function acceptOrder(id){try{await api("/api/delivery/orders/"+id+"/accept/",{method:"POST"});load()}catch(e){alert(e.message)}}
-async function setStatus(id,status){try{await api("/api/delivery/orders/"+id+"/status/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({status})});load()}catch(e){alert(e.message)}}
-function startTrip(id){activeOrder=id;if(!navigator.geolocation){alert("GPS is not available in this browser.");return}if(watchId!==null)navigator.geolocation.clearWatch(watchId);watchId=navigator.geolocation.watchPosition(async p=>{try{await api("/api/delivery/orders/"+id+"/location/",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({lat:p.coords.latitude,lng:p.coords.longitude})});document.getElementById("gpsStatus").textContent="GPS sharing active · "+p.coords.latitude.toFixed(5)+", "+p.coords.longitude.toFixed(5)}catch(e){console.error(e)}},e=>document.getElementById("gpsStatus").textContent="GPS error: "+e.message,{enableHighAccuracy:true,maximumAge:5000,timeout:10000})}
-document.getElementById("logout")?.addEventListener("click",async()=>{try{await api("/api/logout/",{method:"POST"})}catch(_){}location.href="login.html"});document.addEventListener("DOMContentLoaded",load);
+const api = async (url, options = {}) => {
+    const response = await fetch(url, {
+        credentials: "same-origin",
+        cache: "no-store",
+        ...options
+    });
+
+    const data = await response.json().catch(() => ({}));
+
+    if (!response.ok || data.success === false) {
+        throw new Error(data.message || "Request failed.");
+    }
+
+    return data;
+};
+
+function esc(value) {
+    return String(value ?? "").replace(/[&<>'"]/g, function (char) {
+        return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            "'": "&#39;",
+            '"': "&quot;"
+        }[char];
+    });
+}
+
+function money(value) {
+    return "₹" + Number(value || 0).toLocaleString("en-IN");
+}
+
+let watchId = null;
+let activeOrderId = null;
+let refreshTimer = null;
+let loading = false;
+
+function statusLabel(status) {
+    return String(status || "")
+        .replaceAll("_", " ")
+        .replace(/\b\w/g, function (letter) {
+            return letter.toUpperCase();
+        });
+}
+
+function renderActiveOrders(orders) {
+    const active = document.getElementById("active");
+
+    if (!active) {
+        return;
+    }
+
+    if (!orders.length) {
+        active.innerHTML = '<div class="card empty">No active delivery.</div>';
+        return;
+    }
+
+    active.innerHTML = orders.map(function (order) {
+        const assignmentStatus = order.assignment_status || "assigned";
+        const isPickedUp =
+            assignmentStatus === "picked_up" ||
+            assignmentStatus === "out_for_delivery";
+
+        const gpsButton =
+            activeOrderId === order.id
+                ? '<button type="button" class="btn" data-action="stop-gps" data-order-id="' + order.id + '">Stop GPS</button>'
+                : '<button type="button" class="btn orange" data-action="start-gps" data-order-id="' + order.id + '">Start / Resume GPS</button>';
+
+        const pickupButton = isPickedUp
+            ? '<button type="button" class="btn" disabled>Picked up ✓</button>'
+            : '<button type="button" class="btn" data-action="picked-up" data-order-id="' + order.id + '">Picked up</button>';
+
+        const deliveredButton =
+            '<button type="button" class="btn" data-action="delivered" data-order-id="' + order.id + '">Delivered</button>';
+
+        const phone = String(order.phone || "").trim();
+
+        return `
+            <article class="card delivery-order-card">
+                <div class="cardhead">
+                    <div>
+                        <h2>Order #${order.id}</h2>
+                        <div class="small">${esc(order.name)} · ${esc(phone)}</div>
+                    </div>
+                    <span class="badge orange">${esc(statusLabel(order.status))}</span>
+                </div>
+
+                <p>
+                    <b>Deliver to:</b>
+                    ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
+                </p>
+
+                <p>
+                    ${order.items.map(function (item) {
+                        return esc(item.name) + " × " + Number(item.quantity || 0);
+                    }).join(" · ")}
+                </p>
+
+                <div class="top-actions">
+                    ${phone
+                        ? '<a class="btn" href="tel:' + encodeURIComponent(phone) + '">Call customer</a>'
+                        : ""}
+
+                    ${gpsButton}
+                    ${pickupButton}
+                    ${deliveredButton}
+                </div>
+
+                <div class="small delivery-action-message" id="deliveryMessage-${order.id}"></div>
+            </article>
+        `;
+    }).join("");
+}
+
+function renderAvailableOrders(orders) {
+    const available = document.getElementById("available");
+
+    if (!available) {
+        return;
+    }
+
+    if (!orders.length) {
+        available.innerHTML =
+            '<div class="card empty">No ready orders waiting.</div>';
+        return;
+    }
+
+    available.innerHTML = orders.map(function (order) {
+        return `
+            <article class="card">
+                <div class="cardhead">
+                    <div>
+                        <h2>Order #${order.id}</h2>
+                        <div class="small">${esc(order.name)}</div>
+                    </div>
+                    <b>${money(order.total)}</b>
+                </div>
+
+                <p>
+                    <b>Deliver to:</b>
+                    ${esc(order.address)}, ${esc(order.city)} - ${esc(order.pincode)}
+                </p>
+
+                <p>
+                    ${order.items.map(function (item) {
+                        return esc(item.name) + " × " + Number(item.quantity || 0);
+                    }).join(" · ")}
+                </p>
+
+                <button
+                    type="button"
+                    class="btn orange"
+                    data-action="accept"
+                    data-order-id="${order.id}">
+                    Accept delivery
+                </button>
+
+                <div class="small delivery-action-message" id="availableMessage-${order.id}"></div>
+            </article>
+        `;
+    }).join("");
+}
+
+async function load() {
+    if (loading) {
+        return;
+    }
+
+    loading = true;
+
+    try {
+        const me = await api("/api/delivery/me/");
+        const availability = document.getElementById("availability");
+
+        if (availability) {
+            const isAvailable = Boolean(me.partner.is_available);
+
+            availability.textContent =
+                isAvailable ? "Available for orders" : "Offline";
+
+            availability.className =
+                "btn " + (isAvailable ? "orange" : "");
+
+            availability.disabled = false;
+        }
+
+        const dashboard = await api("/api/delivery/dashboard/");
+
+        renderActiveOrders(dashboard.active_orders || []);
+        renderAvailableOrders(dashboard.available_orders || []);
+
+        if (activeOrderId) {
+            const stillActive =
+                (dashboard.active_orders || []).some(function (order) {
+                    return Number(order.id) === Number(activeOrderId);
+                });
+
+            if (!stillActive) {
+                stopGps();
+            }
+        }
+
+    } catch (error) {
+        const active = document.getElementById("active");
+
+        if (active) {
+            active.innerHTML =
+                '<div class="card">' + esc(error.message) + "</div>";
+        }
+
+        console.error("Delivery dashboard error:", error);
+
+    } finally {
+        loading = false;
+    }
+}
+
+async function toggleAvailability() {
+    const button = document.getElementById("availability");
+
+    if (!button) {
+        return;
+    }
+
+    try {
+        const me = await api("/api/delivery/me/");
+
+        const result = await api(
+            "/api/delivery/availability/",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    is_available: !Boolean(me.partner.is_available)
+                })
+            }
+        );
+
+        button.textContent =
+            result.is_available
+                ? "Available for orders"
+                : "Offline";
+
+        button.className =
+            "btn " + (result.is_available ? "orange" : "");
+
+        await load();
+
+    } catch (error) {
+        alert(error.message);
+    }
+}
+
+async function acceptOrder(orderId) {
+    const message =
+        document.getElementById("availableMessage-" + orderId);
+
+    try {
+        if (message) {
+            message.textContent = "Accepting delivery...";
+        }
+
+        await api(
+            "/api/delivery/orders/" + orderId + "/accept/",
+            {
+                method: "POST"
+            }
+        );
+
+        await load();
+
+    } catch (error) {
+        if (message) {
+            message.textContent = error.message;
+        } else {
+            alert(error.message);
+        }
+    }
+}
+
+async function updateDeliveryStatus(orderId, status) {
+    const message =
+        document.getElementById("deliveryMessage-" + orderId);
+
+    try {
+        if (message) {
+            message.textContent =
+                "Updating status to " + statusLabel(status) + "...";
+        }
+
+        const result = await api(
+            "/api/delivery/orders/" + orderId + "/status/",
+            {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    status: status
+                })
+            }
+        );
+
+        if (message) {
+            message.textContent =
+                "Order status updated to " +
+                statusLabel(result.status) +
+                ".";
+        }
+
+        if (status === "delivered") {
+            stopGps();
+        }
+
+        await load();
+
+    } catch (error) {
+        if (message) {
+            message.textContent = error.message;
+        } else {
+            alert(error.message);
+        }
+    }
+}
+
+function startGps(orderId) {
+    if (!navigator.geolocation) {
+        alert("GPS is not available in this browser.");
+        return;
+    }
+
+    activeOrderId = Number(orderId);
+
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+
+    const gpsStatus = document.getElementById("gpsStatus");
+
+    if (gpsStatus) {
+        gpsStatus.textContent = "Requesting GPS...";
+    }
+
+    watchId = navigator.geolocation.watchPosition(
+        async function (position) {
+            try {
+                await api(
+                    "/api/delivery/orders/" + orderId + "/location/",
+                    {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify({
+                            lat: position.coords.latitude,
+                            lng: position.coords.longitude
+                        })
+                    }
+                );
+
+                if (gpsStatus) {
+                    gpsStatus.textContent =
+                        "GPS sharing active · " +
+                        position.coords.latitude.toFixed(5) +
+                        ", " +
+                        position.coords.longitude.toFixed(5);
+                }
+
+            } catch (error) {
+                console.error("GPS update failed:", error);
+
+                if (gpsStatus) {
+                    gpsStatus.textContent =
+                        "GPS update failed: " + error.message;
+                }
+            }
+
+            await load();
+        },
+        function (error) {
+            if (gpsStatus) {
+                gpsStatus.textContent =
+                    "GPS error: " + error.message;
+            }
+
+            activeOrderId = null;
+            watchId = null;
+
+            load();
+        },
+        {
+            enableHighAccuracy: true,
+            maximumAge: 5000,
+            timeout: 10000
+        }
+    );
+
+    load();
+}
+
+function stopGps() {
+    if (watchId !== null) {
+        navigator.geolocation.clearWatch(watchId);
+        watchId = null;
+    }
+
+    activeOrderId = null;
+
+    const gpsStatus = document.getElementById("gpsStatus");
+
+    if (gpsStatus) {
+        gpsStatus.textContent = "GPS idle";
+    }
+}
+
+document.addEventListener("click", function (event) {
+    const button =
+        event.target.closest("[data-action]");
+
+    if (!button) {
+        return;
+    }
+
+    const action =
+        button.dataset.action;
+
+    const orderId =
+        Number(button.dataset.orderId);
+
+    if (!orderId) {
+        return;
+    }
+
+    if (action === "accept") {
+        acceptOrder(orderId);
+        return;
+    }
+
+    if (action === "start-gps") {
+        startGps(orderId);
+        return;
+    }
+
+    if (action === "stop-gps") {
+        stopGps();
+        load();
+        return;
+    }
+
+    if (action === "picked-up") {
+        updateDeliveryStatus(orderId, "picked_up");
+        return;
+    }
+
+    if (action === "delivered") {
+        updateDeliveryStatus(orderId, "delivered");
+    }
+});
+
+document
+    .getElementById("availability")
+    ?.addEventListener(
+        "click",
+        toggleAvailability
+    );
+
+document
+    .getElementById("logout")
+    ?.addEventListener(
+        "click",
+        async function () {
+            try {
+                await api(
+                    "/api/logout/",
+                    {
+                        method: "POST"
+                    }
+                );
+            } catch (_) {
+                // Continue to login even if logout request fails.
+            }
+
+            stopGps();
+            location.href = "login.html";
+        }
+    );
+
+document.addEventListener("DOMContentLoaded", function () {
+    load();
+
+    refreshTimer = window.setInterval(
+        load,
+        10000
+    );
+});
+
+window.addEventListener("beforeunload", function () {
+    if (refreshTimer) {
+        clearInterval(refreshTimer);
+    }
+
+    stopGps();
+});
