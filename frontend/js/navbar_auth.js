@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", async function () {
+window.initializeFoodieNavbarAuth = async function () {
   const authButtons = document.getElementById("authButtons");
   const userSection = document.getElementById("userSection");
   const userName = document.getElementById("navbarUserName");
@@ -52,11 +52,15 @@ document.addEventListener("DOMContentLoaded", async function () {
     userSection.href = profileUrls[user.role] || "/login/pages/profile.html";
   } catch (error) {
     console.error("Navbar authentication check failed", error);
-
     const cached = localStorage.getItem("foodiehub_session");
+
     if (!cached) {
       authButtons.style.display = "flex";
       userSection.style.display = "none";
     }
   }
+};
+
+document.addEventListener("DOMContentLoaded", function () {
+  window.initializeFoodieNavbarAuth();
 });
