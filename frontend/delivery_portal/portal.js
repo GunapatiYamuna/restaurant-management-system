@@ -34,6 +34,7 @@ let watchId = null;
 let activeOrderId = null;
 let refreshTimer = null;
 let loading = false;
+const customerMaps = new Map();
 
 function statusLabel(status) {
     return String(status || "")
@@ -61,8 +62,11 @@ function renderActiveOrders(orders) {
             assignmentStatus === "picked_up" ||
             assignmentStatus === "out_for_delivery";
 
-        const gpsButton =
-            activeOrderId === order.id
+        const isDelivered = order.status === "delivered";
+        const canUseGps = order.status === "out_for_delivery" && !isDelivered;
+        const gpsButton = !canUseGps
+            ? ""
+            : activeOrderId === order.id
                 ? '<button type="button" class="btn" data-action="stop-gps" data-order-id="' + order.id + '">Stop GPS</button>'
                 : '<button type="button" class="btn orange" data-action="start-gps" data-order-id="' + order.id + '">Start / Resume GPS</button>';
 
@@ -70,8 +74,9 @@ function renderActiveOrders(orders) {
             ? '<button type="button" class="btn" disabled>Picked up ✓</button>'
             : '<button type="button" class="btn" data-action="picked-up" data-order-id="' + order.id + '">Picked up</button>';
 
-        const deliveredButton =
-            '<button type="button" class="btn" data-action="delivered" data-order-id="' + order.id + '">Delivered</button>';
+        const deliveredButton = isDelivered
+            ? ""
+            : '<button type="button" class="btn" data-action="delivered" data-order-id="' + order.id + '">Delivered</button>';
 
         const phone = String(order.phone || "").trim();
 
@@ -110,6 +115,8 @@ function renderActiveOrders(orders) {
             </article>
         `;
     }).join("");
+
+    renderCustomerMaps(orders);
 }
 
 function renderAvailableOrders(orders) {
@@ -159,6 +166,33 @@ function renderAvailableOrders(orders) {
             </article>
         `;
     }).join("");
+}
+
+function renderCustomerMaps(orders) {
+    if (typeof L === "undefined") return;
+
+    orders.forEach(function (order) {
+        if (order.delivery_lat == null || order.delivery_lng == null) return;
+
+        const element = document.getElementById("customer-map-" + order.id);
+        if (!element) return;
+        if (customerMaps.has(order.id)) {
+            customerMaps.get(order.id).invalidateSize();
+            return;
+        }
+
+        const lat = Number(order.delivery_lat);
+        const lng = Number(order.delivery_lng);
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+
+        const map = L.map(element, { zoomControl: true, scrollWheelZoom: false }).setView([lat, lng], 16);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "&copy; OpenStreetMap contributors"
+        }).addTo(map);
+        L.marker([lat, lng]).addTo(map).bindPopup("Customer delivery location").openPopup();
+        customerMaps.set(order.id, map);
+        setTimeout(function () { map.invalidateSize(); }, 100);
+    });
 }
 
 async function load() {
