@@ -621,39 +621,74 @@ if (resetForm) {
 function loadProfile(){
   const user=getSession();
   if(!user){ window.location.href="login.html"; return; }
+
   const fields={
-    profileName:user.name, profileEmail:user.email, profilePhone:user.phone || "Not added",
-    profileCity:user.city || "Not added", editName:user.name, editEmail:user.email,
-    editPhone:user.phone || "", editCity:user.city || ""
+    profileName:user.name,
+    profileEmail:user.email,
+    profilePhone:user.phone || "Not added",
+    profileCity:user.city || "Not added",
+    editName:user.name,
+    editEmail:user.email,
+    editPhone:user.phone || "",
+    editCity:user.city || ""
   };
+
   Object.entries(fields).forEach(([id,val])=>{
-    const el=document.getElementById(id); if(el) el.value!==undefined ? el.value=val : el.textContent=val;
+    const el=document.getElementById(id);
+    if(!el) return;
+    if("value" in el) el.value=val;
+    else el.textContent=val;
   });
-  const initials=user.name.split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase();
+
+  const initials=(user.name||"Admin").split(/\s+/).map(x=>x[0]).slice(0,2).join("").toUpperCase();
+  document.querySelectorAll("[data-admin-avatar]").forEach(el=>el.textContent=initials);
+  document.querySelectorAll("[data-admin-name],[data-admin-fullname]").forEach(el=>el.textContent=user.name||"Administrator");
+  document.querySelectorAll("[data-admin-email]").forEach(el=>el.textContent=user.email||"");
   const avatar=document.getElementById("profileAvatar");
   if(avatar) avatar.textContent=initials;
 }
+
 const profileForm=document.getElementById("profileForm");
+
 if(profileForm){
   loadProfile();
-  profileForm.addEventListener("submit",(e)=>{
+
+  profileForm.addEventListener("submit",async function(e){
     e.preventDefault();
-    const session=getSession();
-    if(!session) return;
-    const name=document.getElementById("editName").value.trim();
-    const email=document.getElementById("editEmail").value.trim().toLowerCase();
-    const phone=document.getElementById("editPhone").value.trim();
-    const city=document.getElementById("editCity").value.trim();
-    if(!name || !email || !/^[0-9]{10}$/.test(phone)){
+
+    const name=document.getElementById("editName")?.value.trim();
+    const email=document.getElementById("editEmail")?.value.trim().toLowerCase();
+    const phone=document.getElementById("editPhone")?.value.trim();
+    const city=document.getElementById("editCity")?.value.trim();
+
+    if(!name || !email || !/^[0-9]{10}$/.test(phone||"")){
       return showAlert("profileAlert","Please enter a valid name, email and 10-digit phone number.","danger");
     }
-    const users=getUsers();
-    const duplicate=users.find(u=>u.email===email && u.id!==session.id);
-    if(duplicate) return showAlert("profileAlert","That email is already used by another account.","danger");
-    const index=users.findIndex(u=>u.id===session.id);
-    if(index<0) return;
-    users[index]={...users[index],name,email,phone,city};
-    saveUsers(users); setSession(users[index]); loadProfile();
-    showAlert("profileAlert","Profile updated successfully.","success");
+
+    try{
+      const response=await fetch("/api/profile/update/",{
+        method:"POST",
+        credentials:"same-origin",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({name,email,phone,city})
+      });
+      const data=await response.json();
+
+      if(response.status===401){
+        localStorage.removeItem(SESSION_KEY);
+        window.location.href="login.html";
+        return;
+      }
+
+      if(!response.ok || !data.success){
+        throw new Error(data.message||"Unable to update profile.");
+      }
+
+      setSession(data.user);
+      loadProfile();
+      showAlert("profileAlert",data.message||"Profile updated successfully.","success");
+    }catch(error){
+      showAlert("profileAlert",error.message,"danger");
+    }
   });
 }

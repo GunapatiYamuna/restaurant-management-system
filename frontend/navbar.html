@@ -1,0 +1,43 @@
+<nav class="navbar navbar-expand-lg foodie-navbar foodie-shared-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/restaurant.html">
+      <i class="bi bi-egg-fried"></i> Foodie<span>Hub</span>
+    </a>
+
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNavbar"
+      aria-controls="mainNavbar" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="mainNavbar">
+      <ul class="navbar-nav mx-auto">
+        <li class="nav-item"><a class="nav-link" href="/index.html">Home</a></li>
+        <li class="nav-item"><a class="nav-link" href="/restaurant.html">Restaurants</a></li>
+        <li class="nav-item"><a class="nav-link" href="/menu.html">Menu</a></li>
+        <li class="nav-item"><a class="nav-link" href="/about.html">About</a></li>
+        <li class="nav-item"><a class="nav-link" href="/contact.html">Contact</a></li>
+      </ul>
+
+      <div class="navbar-action-group">
+        <a class="nav-cart" href="/cart.html" aria-label="Cart">
+          <i class="bi bi-cart3"></i>
+          <span id="cart-count" class="cart-count">0</span>
+        </a>
+
+        <div id="authButtons" class="navbar-auth-buttons">
+          <a class="nav-login" href="/login/login_register.html">Login</a>
+        </div>
+
+        <a class="navbar-user" id="userSection" href="#" style="display:none;" aria-label="Open profile">
+          <div class="navbar-avatar" id="navbarAvatar">U</div>
+          <div class="navbar-greeting">
+            <span>Hi,</span>
+            <strong id="navbarUserName">User</strong>
+            <small id="navbarUserRole">User</small>
+          </div>
+        </a>
+      </div>
+    </div>
+  </div>
+</nav>
+<script src="/js/navbar_auth.js"></script>

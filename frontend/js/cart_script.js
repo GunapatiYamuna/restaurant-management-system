@@ -1682,3 +1682,8 @@ function filterCurrentPage(value) {
             `${found} Restaurant${found !== 1 ? "s" : ""}`;
     }
 }
+
+
+document.addEventListener("foodiehub:navbar-ready", function () {
+    updateCartCount();
+});

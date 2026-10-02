@@ -5,7 +5,7 @@ from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from django.conf import settings
 from django.core.mail import send_mail
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
@@ -209,6 +209,99 @@ def current_user(request):
     response["Pragma"] = "no-cache"
     response["Expires"] = "0"
     return response
+
+@csrf_exempt
+@require_POST
+def update_profile(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Login required."}, status=401)
+
+    data = _data(request)
+    name = str(data.get("name", "")).strip()
+    email = str(data.get("email", "")).strip().lower()
+    phone = str(data.get("phone", "")).strip()
+    city = str(data.get("city", "")).strip()
+
+    if not name or not email or not re.fullmatch(r"[0-9]{10}", phone):
+        return JsonResponse({
+            "success": False,
+            "message": "Enter a valid name, email and 10-digit phone number."
+        }, status=400)
+
+    if User.objects.filter(email__iexact=email).exclude(pk=request.user.pk).exists():
+        return JsonResponse({
+            "success": False,
+            "message": "That email is already used by another account."
+        }, status=409)
+
+    user = request.user
+    user.first_name = name
+    user.email = email
+    user.username = email
+    user.save(update_fields=["first_name", "email", "username"])
+
+    profile, _ = Profile.objects.get_or_create(user=user)
+    profile.phone = phone
+    profile.city = city
+    profile.save(update_fields=["phone", "city"])
+
+    delivery_partner = getattr(user, "delivery_partner", None)
+    if delivery_partner:
+        delivery_partner.phone = phone
+        delivery_partner.save(update_fields=["phone"])
+
+    return JsonResponse({
+        "success": True,
+        "message": "Profile updated successfully.",
+        "user": _user_payload(user),
+    })
+
+
+@csrf_exempt
+@require_POST
+def change_password(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Login required."}, status=401)
+
+    data = _data(request)
+    current_password = str(data.get("current_password", ""))
+    new_password = str(data.get("new_password", ""))
+    confirm_password = str(data.get("confirm_password", ""))
+
+    if not current_password or not new_password or not confirm_password:
+        return JsonResponse({
+            "success": False,
+            "message": "Current password, new password and confirmation are required."
+        }, status=400)
+
+    if not request.user.check_password(current_password):
+        return JsonResponse({
+            "success": False,
+            "message": "Current password is incorrect."
+        }, status=400)
+
+    if new_password != confirm_password:
+        return JsonResponse({
+            "success": False,
+            "message": "New passwords do not match."
+        }, status=400)
+
+    password_error = _validate_password(new_password, user=request.user)
+    if password_error:
+        return JsonResponse({
+            "success": False,
+            "message": password_error
+        }, status=400)
+
+    request.user.set_password(new_password)
+    request.user.save(update_fields=["password"])
+    update_session_auth_hash(request, request.user)
+
+    return JsonResponse({
+        "success": True,
+        "message": "Password changed successfully."
+    })
+
 
 @require_GET
 def restaurants(request):
