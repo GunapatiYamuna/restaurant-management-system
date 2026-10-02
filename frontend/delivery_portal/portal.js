@@ -219,25 +219,27 @@ function renderCustomerMaps(orders) {
         // is blocked. Keep a useful fallback so the customer location is
         // still visible/clickable.
         if (typeof L === "undefined") {
-            const delta = 0.01;
-            const bbox = [
-                lng - delta,
-                lat - delta,
-                lng + delta,
-                lat + delta
-            ].join(",");
+            const mapUrl =
+                "https://www.google.com/maps/search/?api=1&query=" +
+                encodeURIComponent(lat + "," + lng);
 
             element.innerHTML = `
-                <iframe
-                    title="Customer delivery location"
-                    src="https://www.openstreetmap.org/export/embed.html?bbox=${encodeURIComponent(bbox)}&layer=mapnik&marker=${encodeURIComponent(lat + "," + lng)}"
-                    style="width:100%;height:100%;border:0;"
-                    loading="lazy">
-                </iframe>
-                <div style="position:absolute;left:-9999px;">
-                    Customer coordinates: ${lat}, ${lng}
+                <div style="height:100%;display:flex;align-items:center;justify-content:center;padding:20px;text-align:center;background:#f8fafc;">
+                    <div>
+                        <div style="font-size:28px;margin-bottom:8px;">📍</div>
+                        <strong>Customer location</strong>
+                        <div class="location-note" style="margin:8px 0 14px;">
+                            ${lat.toFixed(6)}, ${lng.toFixed(6)}
+                        </div>
+                        <a class="btn orange" href="${mapUrl}" target="_blank" rel="noopener">
+                            Open in Maps
+                        </a>
+                    </div>
                 </div>
             `;
+            return;
+        }
+
             return;
         }
 
