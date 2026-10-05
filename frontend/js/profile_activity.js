@@ -129,6 +129,11 @@ document.addEventListener("DOMContentLoaded", async function () {
                   <div class="activity-muted">Reservation #${esc(reservation.id)}</div>
                 </div>
                 <span class="activity-status">${esc(reservation.status || "pending")}</span>
+              ${reservation.attendance_response === "pending"
+                ? '<div class="activity-detail mt-2"><strong>Attendance:</strong> Awaiting your confirmation. The SMS reminder contains Coming and Not coming options.</div>'
+                : reservation.attendance_response === "coming"
+                  ? '<div class="activity-detail mt-2"><strong>Attendance:</strong> Coming</div>'
+                  : '<div class="activity-detail mt-2"><strong>Attendance:</strong> Not coming</div>'}
               </div>
               <div class="activity-detail"><strong>Date & time:</strong> ${esc(formatReservationDate(reservation.date, reservation.time))}</div>
               <div class="activity-detail"><strong>Guests:</strong> ${esc(reservation.guests)}</div>
