@@ -548,6 +548,7 @@ def reservation_attendance_response(request, reservation_id, token, response):
     reservation_start = _reservation_start(reservation)
     if now > reservation_start:
         return _reservation_attendance_page(
+            reservation.id,
             "Attendance response received",
             f"Reservation #{reservation.id} at {reservation.restaurant.name} has already reached its scheduled time.",
             reservation.status,
@@ -555,6 +556,7 @@ def reservation_attendance_response(request, reservation_id, token, response):
 
     if reservation.status == "cancelled":
         return _reservation_attendance_page(
+            reservation.id,
             "Reservation cancelled",
             "This reservation was already cancelled and cannot be confirmed.",
             "Cancelled",
@@ -576,23 +578,86 @@ def reservation_attendance_response(request, reservation_id, token, response):
     reservation.attendance_responded_at = now
     reservation.save(update_fields=["attendance_response", "status", "attendance_responded_at"])
 
-    return _reservation_attendance_page(heading, message, status_label)
+    return _reservation_attendance_page(reservation.id, heading, message, status_label, response == "not-coming")
 
 
-def _reservation_attendance_page(title, message, status_label):
+def _reservation_attendance_page(reservation_id, title, message, status_label, show_refund_choices=False):
     safe_title = escape(title)
     safe_message = escape(message)
     safe_status = escape(status_label)
+    refund_html = ""
+    if show_refund_choices:
+        refund_html = f"""
+        <section class="refund-box">
+          <h2>Your 50% Food Payment</h2>
+          <p class="refund-intro">Since you chose <strong>Not Coming</strong>, you can receive the 50% you already paid back. Please choose one option below.</p>
+          <div class="refund-options">
+            <button class="refund-option recommended" data-refund="coupon" type="button">
+              <span class="badge">RECOMMENDED</span>
+              <span class="option-title">FoodieHub Coupon</span>
+              <span class="option-text">Get the full paid amount as a coupon and use it on your next FoodieHub order.</span>
+              <span class="option-valid">Valid for 2 weeks</span>
+            </button>
+            <button class="refund-option" data-refund="upi" type="button">
+              <span class="option-title">Refund to UPI</span>
+              <span class="option-text">Receive the full paid amount as a simulated refund to your UPI account.</span>
+              <span class="option-valid">Refund reference will be generated</span>
+            </button>
+          </div>
+          <div id="refundError" class="refund-error"></div>
+          <div id="refundResult" class="refund-result"></div>
+        </section>
+        <script>
+        (() => {{
+          const buttons = document.querySelectorAll('.refund-option');
+          const error = document.getElementById('refundError');
+          const result = document.getElementById('refundResult');
+          buttons.forEach(button => button.addEventListener('click', async () => {{
+            const type = button.dataset.refund;
+            buttons.forEach(b => b.disabled = true);
+            error.textContent = '';
+            result.className = 'refund-result';
+            result.innerHTML = '<span class="spinner"></span> Processing your choice...';
+            try {{
+              const response = await fetch('/api/reservations/{reservation_id}/refund/', {{
+                method: 'POST',
+                credentials: 'same-origin',
+                headers: {{'Content-Type': 'application/json'}},
+                body: JSON.stringify({{refund_type: type}})
+              }});
+              const data = await response.json().catch(() => ({{}}));
+              if (!response.ok || !data.success) throw new Error(data.message || 'Unable to process your choice.');
+              result.className = 'refund-result success';
+              if (data.refund_type === 'coupon') {{
+                result.innerHTML = '<strong>Coupon issued successfully</strong><br>Use coupon <span class="code">' + String(data.coupon_code || '') + '</span> for ₹' + Number(data.refund_amount || 0).toFixed(2) + '.<br><small>Valid for 2 weeks.</small>'; 
+              }} else {{
+                result.innerHTML = '<strong>Refund initiated</strong><br>' + String(data.message || 'Refund initiated to your UPI account.') + '.<br><small>Reference: ' + String(data.reference || '') + '</small>';
+              }}
+              buttons.forEach(b => b.style.display = 'none');
+            }} catch (e) {{
+              result.innerHTML = '';
+              error.textContent = e.message || 'Unable to process your choice.';
+              buttons.forEach(b => b.disabled = false);
+            }}
+          }}));
+        }})();
+        </script>
+        """
     html = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FoodieHub - {safe_title}</title>
 <style>
-body{{margin:0;font-family:Arial,sans-serif;background:#f7f7f8;display:grid;place-items:center;min-height:100vh;color:#222}}
-.card{{width:min(92%,460px);background:#fff;border-radius:18px;padding:32px;box-shadow:0 12px 35px rgba(0,0,0,.1);text-align:center}}
+body{{margin:0;font-family:Arial,sans-serif;background:#f7f7f8;display:grid;place-items:center;min-height:100vh;color:#222;padding:24px;box-sizing:border-box}}
+.card{{width:min(92%,560px);background:#fff;border-radius:18px;padding:32px;box-shadow:0 12px 35px rgba(0,0,0,.1);text-align:center;box-sizing:border-box}}
 h1{{margin:0 0 12px}} p{{color:#666;line-height:1.55}} .status{{display:inline-block;margin-top:10px;padding:9px 16px;border-radius:999px;background:#fff1e8;color:#e85c00;font-weight:700}}
-</style></head><body><main class="card"><h1>{safe_title}</h1><p>{safe_message}</p><div class="status">{safe_status}</div><p>You can close this page.</p></main></body></html>"""
-    from django.http import HttpResponse
+.refund-box{{margin-top:26px;text-align:left;border-top:1px solid #eee;padding-top:24px}} .refund-box h2{{text-align:center;margin:0 0 8px;font-size:22px}} .refund-intro{{text-align:center;margin-bottom:18px}}
+.refund-options{{display:grid;gap:12px}} .refund-option{{position:relative;width:100%;padding:18px;text-align:left;border:2px solid #e2e2e2;border-radius:14px;background:#fff;cursor:pointer;box-sizing:border-box}} .refund-option:hover{{border-color:#ff6b00;background:#fffaf6}} .refund-option.recommended{{border-color:#ff6b00;background:#fff8f1}} .refund-option:disabled{{opacity:.6;cursor:wait}}
+.badge{{display:inline-block;background:#ff6b00;color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;margin-bottom:8px}} .option-title{{display:block;font-size:17px;font-weight:700;color:#222;margin-bottom:5px}} .option-text{{display:block;color:#666;font-size:14px;line-height:1.45}} .option-valid{{display:block;color:#e85c00;font-size:13px;font-weight:700;margin-top:8px}}
+.refund-error{{color:#b42318;text-align:center;margin-top:12px}} .refund-result{{margin-top:14px;padding:15px;border-radius:12px;background:#f6f6f6;text-align:center;line-height:1.6}} .refund-result.success{{background:#eefaf2;color:#166534}} .code{{font-weight:700;font-size:18px}} .spinner{{display:inline-block;width:13px;height:13px;border:2px solid #ccc;border-top-color:#ff6b00;border-radius:50%;animation:spin .7s linear infinite;margin-right:6px}} @keyframes spin{{to{{transform:rotate(360deg)}}}}
+.close-note{{font-size:13px;color:#888;margin-top:20px}}
+</style></head><body><main class="card"><h1>{safe_title}</h1><p>{safe_message}</p><div class="status">{safe_status}</div>{refund_html}<p class="close-note">You can close this page after choosing your refund option.</p></main></body></html>"""
     return HttpResponse(html)
+
 
 
 @csrf_exempt
@@ -796,11 +861,13 @@ def process_reservation_refund(request, reservation_id):
                 code=f"FOOD{reservation_id}{now.strftime('%m%d')}",
                 amount=amount, expires_at=now + timedelta(days=14)
             )
+    coupon_code = None
     if refund_type == "upi":
         message = f"Refund of ₹{amount:.2f} initiated to your UPI account"
     else:
+        coupon_code = ReservationCoupon.objects.get(reservation=payment.reservation).code
         message = f"Coupon worth ₹{amount:.2f} issued. Valid for 2 weeks."
-    return JsonResponse({"success": True, "refund_amount": float(amount), "refund_type": refund_type, "reference": reference, "message": message})
+    return JsonResponse({"success": True, "refund_amount": float(amount), "refund_type": refund_type, "reference": reference, "message": message, "coupon_code": coupon_code})
 
 
 @require_GET
