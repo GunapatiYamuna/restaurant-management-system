@@ -35,7 +35,6 @@ urlpatterns = [
     path("notifications/push/public-key/", views.push_public_key),
     path("notifications/push/subscribe/", views.push_subscribe),
     path("notifications/push/unsubscribe/", views.push_unsubscribe),
-    path("reservations/attendance/notifications/", views.reservation_attendance_notifications),
     path("reservations/attendance/<int:reservation_id>/<str:token>/coming/", views.reservation_attendance_response, {"response": "coming"}),
     path("reservations/attendance/<int:reservation_id>/<str:token>/not-coming/", views.reservation_attendance_response, {"response": "not-coming"}),
     path("orders/", views.create_order),
