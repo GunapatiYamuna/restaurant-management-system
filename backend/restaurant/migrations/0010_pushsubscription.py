@@ -12,7 +12,8 @@ class Migration(migrations.Migration):
             name="PushSubscription",
             fields=[
                 ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
-                ("endpoint", models.CharField(max_length=2048, unique=True)),
+                ("endpoint", models.TextField()),
+                ("endpoint_hash", models.CharField(editable=False, max_length=64, unique=True)),
                 ("p256dh", models.TextField()),
                 ("auth", models.TextField()),
                 ("created_at", models.DateTimeField(auto_now_add=True)),
