@@ -756,7 +756,7 @@ function setupCoupon() {
 function updateCheckoutTotals(cart) {
 
     const totals =
-        calculateTotals(cart);
+        calculateTotals(cart, appliedCouponDiscount);
 
 
     const subtotal =
@@ -881,7 +881,7 @@ function setupPlaceOrder() {
 
         const selected = document.querySelector('input[name="payment"]:checked');
         const paymentMethod = selected ? selected.value : "Cash on Delivery";
-        const totals = calculateTotals(cart);
+        const totals = calculateTotals(cart, appliedCouponDiscount);
         const payload = {
             name: document.getElementById("full-name").value.trim(),
             phone: document.getElementById("phone").value.trim(),
