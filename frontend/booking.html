@@ -1040,6 +1040,40 @@
 
             try {
 
+                let upfrontPayment = null;
+
+                if (prebookItems.length) {
+                    const upiId = window.prompt(
+                        "Enter your UPI ID to pay 50% of the pre-booked food bill:"
+                    );
+
+                    if (!upiId || !/^[A-Za-z0-9._-]+@[A-Za-z]{2,}$/.test(upiId.trim())) {
+                        alert("Please enter a valid UPI ID.");
+                        return;
+                    }
+
+                    const paymentResponse = await fetch(
+                        "/api/reservations/preorder-payment/",
+                        {
+                            method: "POST",
+                            credentials: "same-origin",
+                            headers: {"Content-Type": "application/json"},
+                            body: JSON.stringify({
+                                restaurant_id: restaurantId,
+                                items: prebookItems,
+                                upi_id: upiId.trim()
+                            })
+                        }
+                    );
+                    const paymentResult = await paymentResponse.json().catch(() => ({}));
+
+                    if (!paymentResponse.ok || !paymentResult.success) {
+                        throw new Error(paymentResult.message || "Unable to complete UPI payment.");
+                    }
+
+                    upfrontPayment = paymentResult;
+                }
+
                 const response = await fetch(
                     "/api/reservations/",
                     {
@@ -1049,7 +1083,11 @@
                             "Content-Type": "application/json"
                         },
 
-                        body: JSON.stringify(reservationData)
+                        body: JSON.stringify({
+                            ...reservationData,
+                            payment_method: prebookItems.length ? "UPI" : null,
+                            upfront_transaction_id: upfrontPayment?.transaction_id || ""
+                        })
                     }
                 );
 
@@ -1078,7 +1116,10 @@
                         name: name, email: email, phone: phone, guests: guestCount,
                         date: date, time: timeValue, message: message,
                         items: result.items || prebookItems,
-                        prebookTotal: result.prebook_total || 0
+                        prebookTotal: result.prebook_total || 0,
+                        upfrontAmount: result.upfront_amount || 0,
+                        remainingAmount: result.remaining_amount || 0,
+                        paymentTransactionId: result.upfront_transaction_id || upfrontPayment?.transaction_id || ""
                     };
                     localStorage.setItem("foodieHubBooking", JSON.stringify(bookingData));
                     localStorage.removeItem("foodiePrebook");
