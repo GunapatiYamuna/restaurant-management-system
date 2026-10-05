@@ -147,6 +147,7 @@ document.addEventListener("DOMContentLoaded", async function () {
         }
 
         await loadAttendanceNotifications();
+        window.setInterval(loadAttendanceNotifications, 60000);
 
         if (!reservations.length) {
           list.innerHTML = '<div class="text-muted">You have not made any reservations yet.</div>';
