@@ -58,7 +58,8 @@ class Reservation(models.Model):
         default="pending",
     )
     attendance_notified_at = models.DateTimeField(null=True, blank=True)
-    attendance_responded_at = models.DateTimeField(null=True, blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)
+    attendance_responded_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
 
 class ReservationItem(models.Model):
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="items")
