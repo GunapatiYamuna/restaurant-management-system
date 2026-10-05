@@ -2,6 +2,7 @@ import json
 import re
 from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
+from datetime import timedelta
 from pathlib import Path
 from django.conf import settings
 from django.core.mail import send_mail
@@ -18,7 +19,7 @@ from django.http import JsonResponse, Http404, FileResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
-from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, InventoryItem, Order, OrderItem, DeliveryPartner, DeliveryAssignment, ContactMessage
+from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, ReservationPayment, ReservationCoupon, InventoryItem, Order, OrderItem, DeliveryPartner, DeliveryAssignment, ContactMessage
 from .attendance_notifications import reservation_attendance_response
 from .push_notifications import push_public_key, push_subscribe, push_unsubscribe
 
@@ -458,6 +459,15 @@ def create_reservation(request):
         validated_items.append((menu_item, qty, price))
         total += price * qty
 
+    if total > 0 and str(data.get("payment_method", "")).strip() != "UPI":
+        return JsonResponse({"success": False, "message": "UPI is required for pre-booked food payment."}, status=400)
+
+    upfront = (total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    remaining = total - upfront
+    upfront_transaction_id = str(data.get("upfront_transaction_id", "")).strip()
+    if total > 0 and not upfront_transaction_id:
+        return JsonResponse({"success": False, "message": "Please complete the UPI payment before confirming the reservation."}, status=400)
+
     with transaction.atomic():
         reservation = Reservation.objects.create(
             user=request.user,
@@ -482,12 +492,27 @@ def create_reservation(request):
             )
             saved_items.append({"name": menu_item.name, "price": float(price), "quantity": qty})
 
+        if total > 0:
+            ReservationPayment.objects.create(
+                reservation=reservation,
+                food_total=total,
+                upfront_amount=upfront,
+                remaining_amount=remaining,
+                payment_method="UPI",
+                upfront_status="paid",
+                upfront_transaction_id=upfront_transaction_id,
+                paid_at=timezone.now(),
+            )
+
     return JsonResponse({
         "success": True,
         "reservation_id": reservation.id,
         "restaurant": restaurant.name,
         "items": saved_items,
         "prebook_total": float(total),
+        "upfront_amount": float(upfront),
+        "remaining_amount": float(remaining),
+        "payment_method": "UPI" if total > 0 else None,
         "message": "Table reserved successfully."
     })
 
@@ -661,6 +686,129 @@ def create_demo_payment(request):
         "transaction_id": transaction_id,
         "message": "Demo payment successful.",
     })
+
+
+@csrf_exempt
+@require_POST
+def create_reservation_upfront_payment(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    data = _data(request)
+    try:
+        restaurant = Restaurant.objects.get(pk=int(data.get("restaurant_id")))
+    except (TypeError, ValueError, Restaurant.DoesNotExist):
+        return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
+    items = data.get("items", [])
+    if isinstance(items, str):
+        try:
+            items = json.loads(items)
+        except json.JSONDecodeError:
+            items = []
+    if not isinstance(items, list) or not items:
+        return JsonResponse({"success": False, "message": "No pre-booked food items found."}, status=400)
+
+    total = Decimal("0.00")
+    validated = []
+    for item in items:
+        try:
+            menu_id, qty = int(item.get("id")), int(item.get("quantity", 1))
+        except (TypeError, ValueError):
+            return JsonResponse({"success": False, "message": "Invalid food item."}, status=400)
+        menu_item = MenuItem.objects.filter(pk=menu_id, restaurant=restaurant, available=True).first()
+        if not menu_item or qty < 1:
+            return JsonResponse({"success": False, "message": "A selected food item is unavailable."}, status=400)
+        total += menu_item.price * qty
+        validated.append((menu_item.name, menu_item.price, qty))
+
+    upfront = (total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    tx = f"UPI-{timezone.now().strftime('%Y%m%d%H%M%S%f')[:20]}"
+    return JsonResponse({
+        "success": True, "payment_method": "UPI", "food_total": float(total),
+        "upfront_amount": float(upfront), "transaction_id": tx,
+        "message": "UPI payment successful."
+    })
+
+
+@csrf_exempt
+@require_POST
+def pay_reservation_remaining(request, reservation_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    payment = ReservationPayment.objects.select_related("reservation").filter(
+        reservation_id=reservation_id, reservation__user=request.user
+    ).first()
+    if not payment:
+        return JsonResponse({"success": False, "message": "Reservation payment not found."}, status=404)
+    reservation = payment.reservation
+    if reservation.attendance_response != "coming":
+        return JsonResponse({"success": False, "message": "Remaining payment is available only after you confirm Coming."}, status=400)
+    if payment.remaining_status == "paid":
+        return JsonResponse({"success": True, "already_paid": True, "transaction_id": payment.remaining_transaction_id, "amount": float(payment.remaining_amount)})
+    tx = f"UPI-{reservation.id}-FINAL-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+    payment.remaining_status = "paid"
+    payment.remaining_transaction_id = tx
+    payment.remaining_paid_at = timezone.now()
+    payment.save(update_fields=["remaining_status", "remaining_transaction_id", "remaining_paid_at"])
+    return JsonResponse({"success": True, "amount": float(payment.remaining_amount), "transaction_id": tx, "message": "Remaining food payment completed."})
+
+
+@csrf_exempt
+@require_POST
+def process_reservation_refund(request, reservation_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    payment = ReservationPayment.objects.select_related("reservation").filter(
+        reservation_id=reservation_id, reservation__user=request.user
+    ).first()
+    if not payment:
+        return JsonResponse({"success": False, "message": "Reservation payment not found."}, status=404)
+    if payment.reservation.attendance_response != "not_coming":
+        return JsonResponse({"success": False, "message": "Refund is available only after choosing Not Coming."}, status=400)
+    if payment.refund_status == "processed":
+        return JsonResponse({"success": True, "refund_amount": float(payment.refund_amount), "refund_type": payment.refund_type, "reference": payment.refund_reference})
+    refund_type = str(_data(request).get("refund_type", "")).strip().lower()
+    if refund_type not in {"coupon", "upi"}:
+        return JsonResponse({"success": False, "message": "Choose coupon or UPI refund."}, status=400)
+
+    amount = payment.upfront_amount
+    reference = f"REF-{reservation_id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
+    now = timezone.now()
+    with transaction.atomic():
+        payment.refund_status = "processed"
+        payment.refund_type = refund_type
+        payment.refund_amount = amount
+        payment.refund_reference = reference
+        payment.refund_processed_at = now
+        payment.save(update_fields=["refund_status", "refund_type", "refund_amount", "refund_reference", "refund_processed_at"])
+        if refund_type == "coupon":
+            ReservationCoupon.objects.create(
+                user=request.user, reservation=payment.reservation,
+                code=f"FOOD{reservation_id}{now.strftime('%m%d')}",
+                amount=amount, expires_at=now + timedelta(days=14)
+            )
+    if refund_type == "upi":
+        message = f"Refund of ₹{amount:.2f} initiated to your UPI account"
+    else:
+        message = f"Coupon worth ₹{amount:.2f} issued. Valid for 2 weeks."
+    return JsonResponse({"success": True, "refund_amount": float(amount), "refund_type": refund_type, "reference": reference, "message": message})
+
+
+@require_GET
+def reservation_payment_status(request, reservation_id):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+    payment = ReservationPayment.objects.filter(reservation_id=reservation_id, reservation__user=request.user).first()
+    if not payment:
+        return JsonResponse({"success": True, "has_payment": False})
+    coupon = getattr(payment.reservation, "refund_coupon", None)
+    return JsonResponse({"success": True, "has_payment": True,
+        "food_total": float(payment.food_total), "upfront_amount": float(payment.upfront_amount),
+        "remaining_amount": float(payment.remaining_amount), "upfront_status": payment.upfront_status,
+        "remaining_status": payment.remaining_status, "refund_status": payment.refund_status,
+        "refund_type": payment.refund_type, "refund_amount": float(payment.refund_amount),
+        "refund_reference": payment.refund_reference,
+        "coupon": {"code": coupon.code, "amount": float(coupon.amount), "expires_at": coupon.expires_at.isoformat()}
+        if coupon else None})
 
 
 @require_GET
