@@ -64,7 +64,8 @@ class Reservation(models.Model):
 
 class PushSubscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="push_subscriptions")
-    endpoint = models.CharField(max_length=2048, unique=True)
+    endpoint = models.TextField()
+    endpoint_hash = models.CharField(max_length=64, unique=True, editable=False)
     p256dh = models.TextField()
     auth = models.TextField()
     created_at = models.DateTimeField(auto_now_add=True)
