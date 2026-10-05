@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FoodieHub - Payment</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.7/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+<link rel="stylesheet" href="css/footer.css">
+<link rel="stylesheet" href="css/navbar_auth.css">
+<style>
+:root{--orange:#ff6b00;--orange-dark:#e85d00;--dark:#07111c;--muted:#68717b}
+body{font-family:Poppins,Arial,sans-serif;background:#f7f8fa;color:#222;min-height:100vh}
+.payment-page{padding:55px 0}
+.payment-card{background:#fff;border-radius:18px;box-shadow:0 8px 28px rgba(0,0,0,.08);overflow:hidden}
+.payment-header{background:var(--dark);color:#fff;padding:26px 30px}
+.payment-header h2{margin:0;font-weight:700}
+.payment-header p{margin:7px 0 0;color:#cbd3da}
+.section-card{border:1px solid #e7e9ec;border-radius:14px;padding:22px}
+.amount-box{background:#fff4ec;border:1px solid #ffd9bf;border-radius:12px;padding:18px}
+.amount-box .amount{font-size:30px;font-weight:700;color:var(--orange)}
+.summary-row{display:flex;justify-content:space-between;padding:8px 0;color:#555}
+.summary-row.total{border-top:1px solid #eee;margin-top:8px;padding-top:15px;color:#222;font-size:18px;font-weight:700}
+.upi-app{height:82px;border:1px solid #dfe3e7;border-radius:10px;background:#fff;transition:.2s;font-weight:600}
+.upi-app:hover,.upi-app.active{border-color:var(--orange);background:#fff5ee;color:var(--orange)}
+.pay-btn{width:100%;padding:14px;border:0;border-radius:9px;background:var(--orange);color:#fff;font-size:17px;font-weight:700}
+.pay-btn:hover{background:var(--orange-dark)}
+.pay-btn:disabled{opacity:.65}
+.secure-note{font-size:13px;color:#777;text-align:center}
+.error-box{display:none;border-radius:9px;padding:12px;background:#fff0f0;color:#b42318;margin-bottom:15px}
+.success-box{display:none;text-align:center;padding:30px}
+.success-icon{font-size:60px;color:#198754}
+.small-label{font-size:13px;font-weight:600;color:#555}
+</style>
+</head>
+<body>
+{% include "navbar.html" %}
+
+<section class="payment-page">
+<div class="container" style="max-width:950px">
+<div class="payment-card">
+<div class="payment-header">
+<h2><i class="bi bi-shield-check me-2"></i>Complete Payment</h2>
+<p>Pay 50% of your pre-booked food bill to confirm your reservation.</p>
+</div>
+
+<div id="paymentContent" class="p-4">
+<div class="row g-4">
+<div class="col-lg-7">
+<div class="section-card">
+<h5 class="fw-bold mb-3"><i class="bi bi-phone me-2"></i>UPI Payment</h5>
+
+<div class="small-label mb-2">Choose your UPI app</div>
+<div class="row g-2 mb-4">
+<div class="col-4"><button type="button" class="upi-app w-100" data-app="PhonePe"><i class="bi bi-phone fs-4 d-block"></i>PhonePe</button></div>
+<div class="col-4"><button type="button" class="upi-app w-100" data-app="Google Pay"><i class="bi bi-google fs-4 d-block"></i>GPay</button></div>
+<div class="col-4"><button type="button" class="upi-app w-100" data-app="Paytm"><i class="bi bi-wallet2 fs-4 d-block"></i>Paytm</button></div>
+</div>
+
+<label class="small-label mb-2" for="upiId">UPI ID</label>
+<input id="upiId" type="text" class="form-control form-control-lg" placeholder="example@upi" autocomplete="off">
+
+<div id="errorBox" class="error-box mt-3"></div>
+
+<button id="payButton" class="pay-btn mt-4" type="button">
+<i class="bi bi-lock-fill me-1"></i> Pay ₹<span id="payAmount">0</span>
+</button>
+
+<div class="secure-note mt-3"><i class="bi bi-shield-lock me-1"></i>Secure UPI payment</div>
+</div>
+</div>
+
+<div class="col-lg-5">
+<div class="section-card h-100">
+<h5 class="fw-bold mb-3">Reservation Summary</h5>
+<div id="restaurantName" class="text-muted mb-3"></div>
+<div id="foodItems"></div>
+<div class="summary-row"><span>Food total</span><strong>₹<span id="foodTotal">0</span></strong></div>
+<div class="summary-row"><span>Pay now (50%)</span><strong>₹<span id="upfrontAmount">0</span></strong></div>
+<div class="summary-row"><span>Pay at restaurant (50%)</span><strong>₹<span id="remainingAmount">0</span></strong></div>
+<div class="summary-row total"><span>Total food bill</span><span>₹<span id="totalAmount">0</span></span></div>
+<p class="small text-muted mt-3 mb-0">After you choose <strong>Coming</strong> in the reservation notification, the remaining 50% can be paid from My Reservations.</p>
+</div>
+</div>
+</div>
+</div>
+
+<div id="successBox" class="success-box">
+<div class="success-icon"><i class="bi bi-check-circle-fill"></i></div>
+<h3 class="fw-bold mt-3">Payment Successful</h3>
+<p id="successMessage" class="text-muted"></p>
+<p class="mb-1">Transaction ID</p>
+<strong id="transactionId"></strong>
+<div class="mt-4">
+<a href="confirmation.html" class="btn btn-warning px-4">Continue <i class="bi bi-arrow-right"></i></a>
+</div>
+</div>
+</div>
+</div>
+</section>
+
+<div id="footer-placeholder"></div>
+<script src="js/footer.js"></script>
+<script src="js/navbar_auth.js"></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    const pending = JSON.parse(localStorage.getItem("foodieHubPendingReservation") || "null");
+    const paymentContent = document.getElementById("paymentContent");
+    const successBox = document.getElementById("successBox");
+    const errorBox = document.getElementById("errorBox");
+    const payButton = document.getElementById("payButton");
+    const upiInput = document.getElementById("upiId");
+    let selectedApp = "";
+
+    if (!pending || !Array.isArray(pending.items) || !pending.items.length) {
+        paymentContent.innerHTML = '<div class="text-center py-5"><h4>No pending reservation payment found.</h4><a href="booking.html" class="btn btn-warning mt-3">Back to Reservation</a></div>';
+        return;
+    }
+
+    const total = pending.items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+    const upfront = Math.round((total / 2) * 100) / 100;
+    const remaining = Math.round((total - upfront) * 100) / 100;
+
+    document.getElementById("restaurantName").textContent = pending.restaurant || "Restaurant";
+    document.getElementById("foodTotal").textContent = total.toFixed(2);
+    document.getElementById("totalAmount").textContent = total.toFixed(2);
+    document.getElementById("upfrontAmount").textContent = upfront.toFixed(2);
+    document.getElementById("remainingAmount").textContent = remaining.toFixed(2);
+    document.getElementById("payAmount").textContent = upfront.toFixed(2);
+
+    const foodItems = document.getElementById("foodItems");
+    foodItems.innerHTML = pending.items.map(item => {
+        const qty = Number(item.quantity) || 1;
+        const price = Number(item.price) || 0;
+        return '<div class="d-flex justify-content-between mb-2"><span>' +
+            String(item.name || "Food item") + ' × ' + qty +
+            '</span><strong>₹' + (price * qty).toFixed(2) + '</strong></div>';
+    }).join("");
+
+    document.querySelectorAll(".upi-app").forEach(button => {
+        button.addEventListener("click", function () {
+            document.querySelectorAll(".upi-app").forEach(b => b.classList.remove("active"));
+            button.classList.add("active");
+            selectedApp = button.dataset.app || "";
+        });
+    });
+
+    function showError(message) {
+        errorBox.textContent = message;
+        errorBox.style.display = "block";
+    }
+
+    payButton.addEventListener("click", async function () {
+        errorBox.style.display = "none";
+
+        const upiId = upiInput.value.trim();
+        if (!selectedApp) {
+            showError("Please select PhonePe, GPay, or Paytm.");
+            return;
+        }
+        if (!/^[A-Za-z0-9._-]+@[A-Za-z]{2,}$/.test(upiId)) {
+            showError("Please enter a valid UPI ID.");
+            upiInput.focus();
+            return;
+        }
+
+        payButton.disabled = true;
+        payButton.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Processing...';
+
+        try {
+            const paymentResponse = await fetch("/api/reservations/preorder-payment/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    restaurant_id: pending.restaurantId,
+                    items: pending.items,
+                    upi_id: upiId
+                })
+            });
+            const paymentResult = await paymentResponse.json().catch(() => ({}));
+
+            if (!paymentResponse.ok || !paymentResult.success) {
+                throw new Error(paymentResult.message || "Unable to complete UPI payment.");
+            }
+
+            const reservationResponse = await fetch("/api/reservations/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    restaurant_id: pending.restaurantId,
+                    name: pending.name,
+                    email: pending.email,
+                    phone: pending.phone,
+                    date: pending.date,
+                    time: pending.time24,
+                    guests: pending.guests,
+                    message: pending.message || "",
+                    items: pending.items,
+                    payment_method: "UPI",
+                    upfront_transaction_id: paymentResult.transaction_id
+                })
+            });
+            const reservationResult = await reservationResponse.json().catch(() => ({}));
+
+            if (!reservationResponse.ok || !reservationResult.success) {
+                throw new Error(reservationResult.message || "Payment completed, but reservation could not be created.");
+            }
+
+            localStorage.setItem("foodieHubBooking", JSON.stringify({
+                reservationId: reservationResult.reservation_id,
+                restaurantId: pending.restaurantId,
+                restaurant: pending.restaurant,
+                name: pending.name,
+                email: pending.email,
+                phone: pending.phone,
+                guests: pending.guests,
+                date: pending.date,
+                time: pending.time,
+                message: pending.message || "",
+                items: reservationResult.items || pending.items,
+                prebookTotal: reservationResult.prebook_total || total,
+                upfrontAmount: reservationResult.upfront_amount || upfront,
+                remainingAmount: reservationResult.remaining_amount || remaining,
+                paymentTransactionId: paymentResult.transaction_id
+            }));
+
+            localStorage.removeItem("foodieHubPendingReservation");
+            localStorage.removeItem("foodiePrebook");
+
+            document.getElementById("successMessage").textContent =
+                "₹" + Number(paymentResult.upfront_amount || upfront).toFixed(2) +
+                " paid using " + selectedApp + ". Your table reservation is ready.";
+            document.getElementById("transactionId").textContent = paymentResult.transaction_id;
+
+            paymentContent.style.display = "none";
+            successBox.style.display = "block";
+        } catch (error) {
+            console.error("Reservation payment error:", error);
+            showError(error.message || "Unable to complete payment.");
+            payButton.disabled = false;
+            payButton.innerHTML = '<i class="bi bi-lock-fill me-1"></i> Pay ₹<span id="payAmount">' + upfront.toFixed(2) + '</span>';
+        }
+    });
+});
+</script>
+</body>
+</html>
