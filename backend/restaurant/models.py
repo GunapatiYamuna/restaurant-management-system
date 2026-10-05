@@ -96,6 +96,14 @@ class ReservationCoupon(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     expires_at = models.DateTimeField()
     used = models.BooleanField(default=False)
+    redeemed_order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="redeemed_coupons",
+    )
+    redeemed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
