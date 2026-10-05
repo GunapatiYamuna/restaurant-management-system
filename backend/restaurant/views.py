@@ -13,7 +13,6 @@ from django.utils.encoding import force_bytes, force_str
 from django.utils import timezone
 from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
 from django.utils.html import escape
-from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -546,6 +545,7 @@ def create_reservation(request):
     })
 
 
+@require_GET
 def reservation_attendance_response(request, reservation_id, token, response):
     if response not in ("coming", "not-coming"):
         return JsonResponse({"success": False, "message": "Invalid attendance response."}, status=400)
