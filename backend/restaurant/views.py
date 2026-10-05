@@ -698,6 +698,9 @@ def create_reservation_upfront_payment(request):
         restaurant = Restaurant.objects.get(pk=int(data.get("restaurant_id")))
     except (TypeError, ValueError, Restaurant.DoesNotExist):
         return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
+    upi_id = str(data.get("upi_id", "")).strip()
+    if not re.fullmatch(r"^[A-Za-z0-9._-]+@[A-Za-z]{2,}$", upi_id):
+        return JsonResponse({"success": False, "message": "Please enter a valid UPI ID."}, status=400)
     items = data.get("items", [])
     if isinstance(items, str):
         try:
