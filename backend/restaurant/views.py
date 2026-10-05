@@ -1139,6 +1139,7 @@ def reservation_history(request):
             "prebook_total": float(sum(item.price * item.quantity for item in r.items.all())),
             "payment": ({
                 "food_total": float(r.payment.food_total),
+                "coupon_discount": float(r.payment.coupon_discount),
                 "upfront_amount": float(r.payment.upfront_amount),
                 "remaining_amount": float(r.payment.remaining_amount),
                 "upfront_status": r.payment.upfront_status,
@@ -1151,6 +1152,10 @@ def reservation_history(request):
                     "code": r.refund_coupon.code,
                     "amount": float(r.refund_coupon.amount),
                     "expires_at": r.refund_coupon.expires_at.isoformat(),
+                    "used": r.refund_coupon.used,
+                    "redeemed_at": r.refund_coupon.redeemed_at.isoformat() if r.refund_coupon.redeemed_at else None,
+                    "redeemed_order_id": r.refund_coupon.redeemed_order_id,
+
                 } if hasattr(r, "refund_coupon") else None),
             } if hasattr(r, "payment") else None),
             "items": [
