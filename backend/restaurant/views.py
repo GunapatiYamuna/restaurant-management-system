@@ -19,7 +19,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, InventoryItem, Order, OrderItem, DeliveryPartner, DeliveryAssignment, ContactMessage
-from .attendance_notifications import reservation_attendance_notifications, reservation_attendance_response
+from .attendance_notifications import reservation_attendance_response
 from .push_notifications import push_public_key, push_subscribe, push_unsubscribe
 
 
