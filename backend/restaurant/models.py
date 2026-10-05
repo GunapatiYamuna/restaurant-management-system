@@ -103,6 +103,13 @@ class ReservationCoupon(models.Model):
         blank=True,
         related_name="redeemed_coupons",
     )
+    reserved_order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reserved_coupons",
+    )
     redeemed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
