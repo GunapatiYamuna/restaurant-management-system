@@ -125,9 +125,12 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
     }
 
-    const total = pending.items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
-    const upfront = Math.round((total / 2) * 100) / 100;
-    const remaining = Math.round((total - upfront) * 100) / 100;
+    const originalTotal = pending.items.reduce((sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1), 0);
+    let couponCode = "";
+    let couponDiscount = 0;
+    let total = originalTotal;
+    let upfront = Math.round((total / 2) * 100) / 100;
+    let remaining = Math.round((total - upfront) * 100) / 100;
 
     document.getElementById("restaurantName").textContent = pending.restaurant || "Restaurant";
     document.getElementById("foodTotal").textContent = total.toFixed(2);
@@ -135,6 +138,60 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("upfrontAmount").textContent = upfront.toFixed(2);
     document.getElementById("remainingAmount").textContent = remaining.toFixed(2);
     document.getElementById("payAmount").textContent = upfront.toFixed(2);
+
+    const couponInput = document.getElementById("reservationCouponCode");
+    const couponButton = document.getElementById("applyReservationCoupon");
+    const couponMessage = document.getElementById("reservationCouponMessage");
+
+    function refreshPaymentAmounts() {
+        total = Math.max(0, originalTotal - couponDiscount);
+        upfront = Math.round((total / 2) * 100) / 100;
+        remaining = Math.round((total - upfront) * 100) / 100;
+        document.getElementById("foodTotal").textContent = total.toFixed(2);
+        document.getElementById("totalAmount").textContent = total.toFixed(2);
+        document.getElementById("upfrontAmount").textContent = upfront.toFixed(2);
+        document.getElementById("remainingAmount").textContent = remaining.toFixed(2);
+        document.getElementById("payAmount").textContent = upfront.toFixed(2);
+    }
+
+    couponButton.addEventListener("click", async function () {
+        const code = couponInput.value.trim().toUpperCase();
+        if (!code) {
+            couponMessage.className = "small mt-2 text-danger";
+            couponMessage.textContent = "Please enter a coupon code.";
+            return;
+        }
+        couponButton.disabled = true;
+        couponMessage.className = "small mt-2 text-muted";
+        couponMessage.textContent = "Checking coupon...";
+        try {
+            const response = await fetch("/api/coupons/validate/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    coupon_code: code,
+                    usage: "preorder",
+                    food_amount: originalTotal
+                })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) throw new Error(data.message || "Unable to apply coupon.");
+            couponCode = data.coupon_code;
+            couponDiscount = Number(data.discount) || 0;
+            couponMessage.className = "small mt-2 text-success";
+            couponMessage.textContent = "Coupon applied. ₹" + couponDiscount.toFixed(2) + " will be used once for this pre-order.";
+            refreshPaymentAmounts();
+        } catch (error) {
+            couponCode = "";
+            couponDiscount = 0;
+            couponMessage.className = "small mt-2 text-danger";
+            couponMessage.textContent = error.message;
+            refreshPaymentAmounts();
+        } finally {
+            couponButton.disabled = false;
+        }
+    });
 
     const foodItems = document.getElementById("foodItems");
     foodItems.innerHTML = pending.items.map(item => {
@@ -183,7 +240,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 body: JSON.stringify({
                     restaurant_id: pending.restaurantId,
                     items: pending.items,
-                    upi_id: upiId
+                    upi_id: upiId,
+                    coupon_code: couponCode
                 })
             });
             const paymentResult = await paymentResponse.json().catch(() => ({}));
@@ -207,6 +265,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     message: pending.message || "",
                     items: pending.items,
                     payment_method: "UPI",
+                    coupon_code: couponCode,
                     upfront_transaction_id: paymentResult.transaction_id
                 })
             });
@@ -229,6 +288,9 @@ document.addEventListener("DOMContentLoaded", function () {
                 message: pending.message || "",
                 items: reservationResult.items || pending.items,
                 prebookTotal: reservationResult.prebook_total || total,
+                originalPrebookTotal: reservationResult.original_prebook_total || originalTotal,
+                couponDiscount: reservationResult.coupon_discount || couponDiscount,
+                couponCode: reservationResult.coupon_code || couponCode,
                 upfrontAmount: reservationResult.upfront_amount || upfront,
                 remainingAmount: reservationResult.remaining_amount || remaining,
                 paymentTransactionId: paymentResult.transaction_id
