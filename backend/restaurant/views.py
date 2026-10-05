@@ -545,6 +545,7 @@ def create_reservation(request):
     })
 
 
+@require_GET
 def reservation_attendance_response(request, reservation_id, token, response):
     if response not in ("coming", "not-coming"):
         return JsonResponse({"success": False, "message": "Invalid attendance response."}, status=400)
