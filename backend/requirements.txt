@@ -5,3 +5,5 @@ python-dotenv>=1.0
 google-auth>=2.40,<3.0
 requests>=2.31,<3.0
 razorpay>=2.0,<3.0
+
+pywebpush>=2.0,<3.0
