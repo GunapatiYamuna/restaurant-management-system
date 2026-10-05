@@ -860,13 +860,25 @@
                 today.setHours(0, 0, 0, 0);
 
 
-                if (selectedDate < today) {
+                const now = new Date();
+                const cutoffReached = now.getHours() >= 22;
+                const minimumDate = new Date(dateInput.min + "T00:00:00");
+
+                if (selectedDate < minimumDate) {
 
                     document.getElementById("dateError").textContent =
-                        "Please select today or a future date.";
+                        cutoffReached
+                            ? "Today is no longer available after 10:00 PM. Please select tomorrow or a future date."
+                            : "Please select today or a future date.";
 
                     isValid = false;
 
+                } else if (
+                    selectedDate.getTime() === today.getTime() &&
+                    dateInput.value === formatLocalDate(now)
+                ) {
+                    const [hours, minutes] = timeValue ? timeValue.replace(" AM","").replace(" PM","").split(":") : [0,0];
+                    // The server performs the authoritative time validation.
                 }
 
             }
@@ -1137,20 +1149,67 @@
 
 
     /* =====================================================
-       SET MINIMUM DATE TO TODAY
+       RESERVATION DATE CUTOFF
+       
+       Reservations are available until 10:00 PM each day.
+       Before 10 PM: today can be selected.
+       At/after 10 PM: today is removed from the calendar and
+       tomorrow becomes the first available date.
     ===================================================== */
 
-    const dateInput =
-        document.getElementById("date");
+    const dateInput = document.getElementById("date");
 
+    function formatLocalDate(date) {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, "0");
+        const day = String(date.getDate()).padStart(2, "0");
+        return year + "-" + month + "-" + day;
+    }
+
+    function applyReservationDateRules() {
+        if (!dateInput) return;
+
+        const now = new Date();
+        const cutoffHour = 22; // 10:00 PM
+
+        const reservationDate = new Date(now);
+        if (now.getHours() >= cutoffHour) {
+            reservationDate.setDate(reservationDate.getDate() + 1);
+        }
+
+        const firstAvailableDate = formatLocalDate(reservationDate);
+
+        dateInput.min = firstAvailableDate;
+
+        // After 10 PM, automatically move the selection to tomorrow.
+        if (now.getHours() >= cutoffHour) {
+            dateInput.value = firstAvailableDate;
+            document.getElementById("dateError").textContent = "";
+        } else if (!dateInput.value || dateInput.value < firstAvailableDate) {
+            dateInput.value = firstAvailableDate;
+        }
+    }
 
     if (dateInput) {
+        applyReservationDateRules();
 
-        const today =
-            new Date().toISOString().split("T")[0];
+        // Re-check when the page remains open across 10 PM.
+        setInterval(applyReservationDateRules, 30000);
 
-        dateInput.min = today;
+        dateInput.addEventListener("change", function () {
+            const now = new Date();
+            const minimumDate = new Date(dateInput.min + "T00:00:00");
 
+            if (dateInput.value < dateInput.min) {
+                dateInput.value = dateInput.min;
+                document.getElementById("dateError").textContent =
+                    now.getHours() >= 22
+                        ? "Today is no longer available after 10:00 PM. Tomorrow is now the earliest reservation date."
+                        : "Please select today or a future date.";
+            } else {
+                document.getElementById("dateError").textContent = "";
+            }
+        });
     }
 
 </script>
