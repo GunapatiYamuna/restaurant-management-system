@@ -6,6 +6,7 @@ from datetime import timedelta
 from pathlib import Path
 from django.conf import settings
 from django.core.mail import send_mail
+from django.core.signing import BadSignature, SignatureExpired, TimestampSigner
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
@@ -25,6 +26,11 @@ from .push_notifications import push_public_key, push_subscribe, push_unsubscrib
 
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
+
+def _reservation_start(reservation):
+    naive = datetime.combine(reservation.date, reservation.time)
+    return timezone.make_aware(naive, timezone.get_current_timezone())
+
 
 def _razorpay_client():
     if not settings.RAZORPAY_KEY_ID or not settings.RAZORPAY_KEY_SECRET:
