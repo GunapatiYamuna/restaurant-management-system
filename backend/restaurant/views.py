@@ -101,14 +101,6 @@ def _get_available_coupon_for_user(user, code, lock=False):
     return queryset.first()
 
 
-def _coupon_error(user, code, lock=False):
-    if not code:
-        return None
-    coupon = _get_available_coupon_for_user(user, code, lock=lock)
-    if not coupon:
-        return "This coupon is invalid, expired, already used, or currently being used in another checkout."
-    return None
-
 
 
 @csrf_exempt
