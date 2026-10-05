@@ -141,6 +141,19 @@ document.addEventListener("DOMContentLoaded", async function () {
               ${Number(reservation.prebook_total || 0) > 0
                 ? '<div class="activity-total">Pre-booked food: ₹' + Number(reservation.prebook_total).toFixed(2) + '</div>'
                 : ""}
+              ${reservation.payment
+                ? '<div class="activity-detail"><strong>Food payment:</strong> 50% paid ₹' + Number(reservation.payment.upfront_amount || 0).toFixed(2) +
+                  ' · Remaining ₹' + Number(reservation.payment.remaining_amount || 0).toFixed(2) + '</div>' +
+                  (reservation.attendance_response === "coming" && reservation.payment.remaining_status !== "paid"
+                    ? '<button class="btn btn-sm btn-primary mt-2" data-pay-remaining="' + reservation.id + '">Pay Remaining ₹' + Number(reservation.payment.remaining_amount || 0).toFixed(2) + ' by UPI</button>'
+                    : '') +
+                  (reservation.attendance_response === "not_coming" && reservation.payment.refund_status !== "processed"
+                    ? '<div class="activity-detail mt-2"><strong>Refund:</strong> Choose coupon or UPI.</div><div class="d-flex gap-2 mt-2"><button class="btn btn-sm btn-outline-primary" data-refund="coupon" data-reservation-id="' + reservation.id + '">2-Week Coupon</button><button class="btn btn-sm btn-outline-secondary" data-refund="upi" data-reservation-id="' + reservation.id + '">UPI Refund</button></div>'
+                    : '') +
+                  (reservation.payment.refund_status === "processed"
+                    ? '<div class="activity-detail mt-2"><strong>Refund:</strong> ₹' + Number(reservation.payment.refund_amount || 0).toFixed(2) + ' · ' + esc(reservation.payment.refund_type) + ' · ' + esc(reservation.payment.refund_reference) + '</div>'
+                    : '')
+                : ''}
               ${reservation.message
                 ? '<div class="activity-muted">Note: ' + esc(reservation.message) + '</div>'
                 : ""}
@@ -153,6 +166,42 @@ document.addEventListener("DOMContentLoaded", async function () {
       list.innerHTML = '<div class="alert alert-danger mb-0">' + esc(error.message) + '</div>';
     }
   }
+
+  list.addEventListener("click", async function (event) {
+    const payButton = event.target.closest("[data-pay-remaining]");
+    const refundButton = event.target.closest("[data-refund]");
+
+    if (payButton) {
+      const reservationId = payButton.dataset.payRemaining;
+      payButton.disabled = true;
+      try {
+        const response = await fetch("/api/reservations/" + reservationId + "/pay-remaining/", {
+          method: "POST", credentials: "same-origin", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({payment_method: "UPI"})
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) throw new Error(data.message || "Unable to complete payment.");
+        alert("Remaining food payment of ₹" + Number(data.amount || 0).toFixed(2) + " completed. Reference: " + data.transaction_id);
+        load();
+      } catch (error) { alert(error.message); payButton.disabled = false; }
+    }
+
+    if (refundButton) {
+      const reservationId = refundButton.dataset.reservationId;
+      const refundType = refundButton.dataset.refund;
+      refundButton.disabled = true;
+      try {
+        const response = await fetch("/api/reservations/" + reservationId + "/refund/", {
+          method: "POST", credentials: "same-origin", headers: {"Content-Type": "application/json"},
+          body: JSON.stringify({refund_type: refundType})
+        });
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) throw new Error(data.message || "Unable to process refund.");
+        alert(data.message + ". Reference: " + data.reference);
+        load();
+      } catch (error) { alert(error.message); refundButton.disabled = false; }
+    }
+  });
 
   load();
 });

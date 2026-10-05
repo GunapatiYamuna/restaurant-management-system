@@ -52,3 +52,17 @@ Do not run the seed repeatedly if you have modified the same restaurant/menu rec
 ## Important
 
 The local images in the restaurant cards are project image assets used as visual fallbacks. They are not claimed to be photographs of each specific restaurant.
+
+
+## Reservation pre-order UPI payment
+
+When a reservation contains pre-booked food:
+
+- The customer pays 50% of the pre-booked food total by UPI before the reservation is confirmed.
+- The confirmation page shows the amount already paid and the remaining 50%.
+- If the customer selects **Coming** from the reservation notification, the reservation is confirmed and the remaining 50% can be paid by UPI from **My Reservations** after arriving.
+- If the customer selects **Not Coming**, the reservation is cancelled and the customer can choose either:
+  - a coupon equal to the 50% upfront amount, valid for 14 days, or
+  - a simulated UPI refund recorded with a refund reference.
+- No real money is transferred by this college-project flow. Payment, settlement, coupon and refund records are stored in Django so the complete workflow can be demonstrated.
+- Reservations without pre-booked food do not require this payment flow.

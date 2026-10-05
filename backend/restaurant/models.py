@@ -62,6 +62,46 @@ class Reservation(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
 
+class ReservationPayment(models.Model):
+    METHOD_UPI = "UPI"
+    REFUND_COUPON = "coupon"
+    REFUND_UPI = "upi"
+
+    reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name="payment")
+    food_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    upfront_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    remaining_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    payment_method = models.CharField(max_length=20, default=METHOD_UPI)
+    upfront_status = models.CharField(max_length=30, default="paid")
+    upfront_transaction_id = models.CharField(max_length=100, blank=True)
+    remaining_status = models.CharField(max_length=30, default="pending")
+    remaining_transaction_id = models.CharField(max_length=100, blank=True)
+    refund_status = models.CharField(max_length=30, default="not_requested")
+    refund_type = models.CharField(max_length=20, blank=True)
+    refund_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    refund_reference = models.CharField(max_length=100, blank=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    remaining_paid_at = models.DateTimeField(null=True, blank=True)
+    refund_processed_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Reservation payment #{self.reservation_id}"
+
+
+class ReservationCoupon(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reservation_coupons")
+    reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name="refund_coupon")
+    code = models.CharField(max_length=40, unique=True)
+    amount = models.DecimalField(max_digits=12, decimal_places=2)
+    expires_at = models.DateTimeField()
+    used = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.code
+
+
 class PushSubscription(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="push_subscriptions")
     endpoint = models.TextField()
