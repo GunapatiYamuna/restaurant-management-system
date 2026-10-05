@@ -21,3 +21,7 @@ backend/staticfiles/
 
 # macOS
 .DS_Store
+
+# Web Push VAPID private key
+backend/vapid_private_key.pem
+backend/vapid_public_key.pem
