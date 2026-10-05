@@ -1,3 +1,4 @@
+import hashlib
 import json
 
 from django.conf import settings
@@ -39,9 +40,11 @@ def push_subscribe(request):
     if not endpoint or not p256dh or not auth:
         return JsonResponse({"success": False, "message": "Incomplete push subscription."}, status=400)
 
+    endpoint_hash = hashlib.sha256(endpoint.encode("utf-8")).hexdigest()
     subscription, _ = PushSubscription.objects.update_or_create(
-        endpoint=endpoint,
+        endpoint_hash=endpoint_hash,
         defaults={
+            "endpoint": endpoint,
             "user": request.user,
             "p256dh": p256dh,
             "auth": auth,
@@ -62,5 +65,6 @@ def push_unsubscribe(request):
     except (ValueError, KeyError, TypeError):
         return JsonResponse({"success": False, "message": "Invalid subscription."}, status=400)
 
-    PushSubscription.objects.filter(user=request.user, endpoint=endpoint).delete()
+    endpoint_hash = hashlib.sha256(endpoint.encode("utf-8")).hexdigest()
+    PushSubscription.objects.filter(user=request.user, endpoint_hash=endpoint_hash).delete()
     return JsonResponse({"success": True})
