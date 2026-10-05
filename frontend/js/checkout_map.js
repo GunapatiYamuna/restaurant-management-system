@@ -465,7 +465,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const resultAddress =
                 result.address || {};
 
-            if (cityInput && !cityInput.value.trim()) {
+            // Always use the city and PIN code from the
+            // location that was actually found.
+            if (cityInput) {
                 cityInput.value =
                     resultAddress.city ||
                     resultAddress.town ||
@@ -474,7 +476,7 @@ document.addEventListener("DOMContentLoaded", function () {
                     "";
             }
 
-            if (pincodeInput && !pincodeInput.value.trim()) {
+            if (pincodeInput) {
                 pincodeInput.value =
                     resultAddress.postcode || "";
             }
