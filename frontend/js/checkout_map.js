@@ -417,26 +417,30 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function findAddress() {
 
-        // Use exactly what the customer typed to search for the
-        // requested address. City/PIN are included when provided.
-        const query =
-            getDeliveryAddress();
+        const address =
+            addressInput
+                ? addressInput.value.trim()
+                : "";
 
+        const city =
+            cityInput
+                ? cityInput.value.trim()
+                : "";
 
-        if (
-            !addressInput.value.trim() &&
-            !cityInput.value.trim() &&
-            !pincodeInput.value.trim()
-        ) {
+        const pincode =
+            pincodeInput
+                ? pincodeInput.value.trim()
+                : "";
+
+        if (!address && !city && !pincode) {
 
             alert(
-                "Please enter your delivery address, city, or PIN code first."
+                "Please enter a delivery address, city, or PIN code first."
             );
 
             return;
 
         }
-
 
         if (findAddressButton) {
 
@@ -447,42 +451,77 @@ document.addEventListener("DOMContentLoaded", function () {
 
         }
 
-
         try {
 
-            const url =
-                "https://nominatim.openstreetmap.org/search" +
-                "?format=jsonv2" +
-                "&limit=1" +
-                "&countrycodes=in" +
-                "&q=" +
-                encodeURIComponent(query);
+            // Search the customer's address first. Do not make an
+            // old/stale city or PIN prevent a valid address search.
+            const queries = [];
 
+            if (address) {
 
-            const response =
-                await fetch(
-                    url,
-                    {
-                        headers: {
-                            "Accept":
-                                "application/json"
-                        }
-                    }
+                queries.push(
+                    address +
+                    (city ? ", " + city : "") +
+                    ", Andhra Pradesh, India"
                 );
 
+                queries.push(
+                    address +
+                    ", Andhra Pradesh, India"
+                );
 
-            if (!response.ok) {
+            } else {
 
-                throw new Error(
-                    "Address search failed."
+                queries.push(
+                    [city, pincode, "Andhra Pradesh", "India"]
+                        .filter(Boolean)
+                        .join(", ")
                 );
 
             }
 
+            let results = [];
 
-            const results =
-                await response.json();
+            for (const query of queries) {
 
+                const url =
+                    "https://nominatim.openstreetmap.org/search" +
+                    "?format=jsonv2" +
+                    "&limit=5" +
+                    "&countrycodes=in" +
+                    "&addressdetails=1" +
+                    "&q=" +
+                    encodeURIComponent(query);
+
+                const response =
+                    await fetch(
+                        url,
+                        {
+                            headers: {
+                                "Accept":
+                                    "application/json"
+                            }
+                        }
+                    );
+
+                if (!response.ok) {
+                    continue;
+                }
+
+                const found =
+                    await response.json();
+
+                if (
+                    Array.isArray(found) &&
+                    found.length > 0
+                ) {
+
+                    results = found;
+                    break;
+
+                }
+
+            }
 
             if (
                 !results ||
@@ -490,24 +529,21 @@ document.addEventListener("DOMContentLoaded", function () {
             ) {
 
                 alert(
-                    "Address not found. Please check the address, city, and PIN code."
+                    "Address not found. Try adding the city or PIN code."
                 );
 
                 return;
 
             }
 
-
             const result =
                 results[0];
-
 
             const lat =
                 Number(result.lat);
 
             const lng =
                 Number(result.lon);
-
 
             if (
                 !Number.isFinite(lat) ||
@@ -522,45 +558,43 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
-
-            // Move marker and map to the manually searched address
+            // Move the marker to the searched location.
             setPoint(
                 lat,
                 lng,
                 17
             );
 
-            // Keep the customer's typed street/address text.
-            // Only fill city and PIN from the geocoding result when available.
+            // Use the address information returned by the search.
             const resultAddress =
                 result.address || {};
 
-            // Always use the city and PIN code from the
-            // location that was actually found.
             if (cityInput) {
+
                 cityInput.value =
                     resultAddress.city ||
                     resultAddress.town ||
                     resultAddress.village ||
                     resultAddress.municipality ||
                     "";
+
             }
 
             if (pincodeInput) {
+
                 pincodeInput.value =
-                    resultAddress.postcode || "";
+                    resultAddress.postcode ||
+                    "";
+
             }
 
-            // Nominatim search results do not always include
-            // complete address details. Reverse-geocode the exact
-            // coordinates too, so City and PIN are fetched from
-            // the location found on the map.
+            // Reverse-geocode the exact coordinates as a second
+            // check so City/PIN are taken from the actual map point.
             await fillCityAndPincodeFromLocation(
                 lat,
                 lng
             );
 
-            // Open popup
             if (marker) {
 
                 marker
@@ -571,12 +605,10 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
-
             console.log(
                 "Delivery address found:",
                 result.display_name
             );
-
 
         } catch (error) {
 
@@ -585,9 +617,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 error
             );
 
-
             alert(
-                "Unable to find the address right now. Please try again or select the location manually on the map."
+                "Unable to find the address right now. Please try again."
             );
 
         } finally {
@@ -604,7 +635,6 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
     }
-
 
     // =====================================================
     // FIND ADDRESS BUTTON
