@@ -50,11 +50,33 @@ The Django command sends reminders for reservations entering the one-hour window
 
     python manage.py send_reservation_push_reminders
 
-For the real system, run this command every minute using your server scheduler/cron.
+For the real system, run this command every minute using your server scheduler/cron. The repository includes `backend/run_push_reminders.sh` so cron can use the project's virtual environment without hard-coded user paths.
 
-Example Linux cron:
+From the repository's `backend` directory, make the script executable:
 
-    * * * * * cd /path/to/restaurant-management-system/backend && /path/to/venv/bin/python manage.py send_reservation_push_reminders >> /path/to/reservation_push.log 2>&1
+    chmod +x run_push_reminders.sh
+
+Find the absolute repository path:
+
+    pwd
+
+Then open your user's crontab:
+
+    crontab -e
+
+Add this line, replacing `/absolute/path/to/restaurant-management-system` with the path printed by `pwd`:
+
+    * * * * * /absolute/path/to/restaurant-management-system/backend/run_push_reminders.sh >> /absolute/path/to/restaurant-management-system/backend/reservation_push.log 2>&1
+
+Check the installed job:
+
+    crontab -l
+
+The cron job runs every minute. The command itself only sends reservations that are within the configured one-hour reminder window and still have a pending attendance response, so it does not repeatedly send the same reminder.
+
+For a quick manual test, run:
+
+    ./run_push_reminders.sh
 
 ## 6. Notification behavior
 
