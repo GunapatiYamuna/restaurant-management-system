@@ -149,6 +149,11 @@ document.addEventListener("DOMContentLoaded", function () {
                     lngInput.value =
                         point.lng.toFixed(6);
 
+                    reverseGeocode(
+                        point.lat,
+                        point.lng
+                    );
+
                 }
             );
 
@@ -177,16 +182,112 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================================
+    // REVERSE GEOCODING
+    // =====================================================
+
+    async function reverseGeocode(lat, lng) {
+
+        try {
+
+            const url =
+                "https://nominatim.openstreetmap.org/reverse" +
+                "?format=jsonv2" +
+                "&lat=" + encodeURIComponent(lat) +
+                "&lon=" + encodeURIComponent(lng) +
+                "&zoom=18" +
+                "&addressdetails=1";
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Reverse geocoding failed."
+                );
+            }
+
+            const result =
+                await response.json();
+
+            const address =
+                result.address || {};
+
+            const addressParts = [
+                address.house_number,
+                address.road,
+                address.neighbourhood ||
+                    address.suburb,
+                address.village ||
+                    address.town ||
+                    address.city_district
+            ].filter(Boolean);
+
+            if (addressInput) {
+                addressInput.value =
+                    addressParts.join(", ");
+            }
+
+            if (cityInput) {
+                cityInput.value =
+                    address.city ||
+                    address.town ||
+                    address.village ||
+                    address.municipality ||
+                    "";
+            }
+
+            if (pincodeInput) {
+                pincodeInput.value =
+                    address.postcode || "";
+            }
+
+            console.log(
+                "Delivery location details:",
+                result
+            );
+
+        } catch (error) {
+
+            console.error(
+                "Reverse geocoding error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    // =====================================================
     // MAP CLICK
     // =====================================================
 
     map.on(
         "click",
-        function (event) {
+        async function (event) {
+
+            const lat =
+                event.latlng.lat;
+
+            const lng =
+                event.latlng.lng;
 
             setPoint(
-                event.latlng.lat,
-                event.latlng.lng
+                lat,
+                lng
+            );
+
+            await reverseGeocode(
+                lat,
+                lng
             );
 
         }
@@ -448,12 +549,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
                 navigator.geolocation.getCurrentPosition(
 
-                    function (position) {
+                    async function (position) {
 
                         setPoint(
                             position.coords.latitude,
                             position.coords.longitude,
                             17
+                        );
+
+                        await reverseGeocode(
+                            position.coords.latitude,
+                            position.coords.longitude
                         );
 
 
