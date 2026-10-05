@@ -71,7 +71,39 @@ def reservation_attendance_response(request, reservation_id, token, response):
     return _attendance_page(title, message, label)
 
 
-def _attendance_page(title, message, status_label):
+def _attendance_page(title, message, status_label, reservation=None, payment_action=None):
+    action_html = ""
+    if reservation and payment_action == "remaining":
+        action_html = '<div class="actions"><a class="action" href="/login/pages/reservations.html">Pay Remaining Food Amount</a></div>'
+    elif reservation and payment_action == "refund":
+        action_html = f'''
+<p><strong>Choose how to receive your 50% food advance back:</strong></p>
+<div class="actions">
+<button onclick="refund('coupon')">Get 2-Week Coupon</button>
+<button class="secondary" onclick="refund('upi')">Refund to UPI</button>
+</div>
+<div id="result"></div>
+<script>
+async function refund(type) {{
+  const result = document.getElementById("result");
+  result.textContent = "Processing...";
+  try {{
+    const response = await fetch("/api/reservations/{reservation.id}/refund/", {{
+      method: "POST",
+      credentials: "same-origin",
+      headers: {{"Content-Type": "application/json"}},
+      body: JSON.stringify({{refund_type: type}})
+    }});
+    const data = await response.json().catch(() => ({{}}));
+    if (!response.ok || !data.success) throw new Error(data.message || "Unable to process refund.");
+    result.textContent = data.message + " | Reference: " + data.reference;
+    document.querySelectorAll("button").forEach(button => button.disabled = true);
+  }} catch (error) {{
+    result.textContent = error.message;
+  }}
+}}
+</script>'''
+
     html = f"""<!doctype html>
 <html lang="en">
 <head>
@@ -89,36 +121,6 @@ button.secondary{{background:#333}}
 #result{{margin-top:14px;font-weight:600}}
 </style>
 </head>
-<body><main class="card"><h1>{escape(title)}</h1><p>{escape(message)}</p><div class="status">{escape(status_label)}</div><p>You can close this page and return to FoodieHub.</p>{% if reservation and payment_action == "remaining" %}
-<div class="actions"><a class="action" href="/login/pages/reservations.html">Pay Remaining Food Amount</a></div>
-{% elif reservation and payment_action == "refund" %}
-<p><strong>Choose how to receive your 50% food advance back:</strong></p>
-<div class="actions">
-<button onclick="refund('coupon')">Get 2-Week Coupon</button>
-<button class="secondary" onclick="refund('upi')">Refund to UPI</button>
-</div>
-<div id="result"></div>
-<script>
-async function refund(type) {
-  const result = document.getElementById("result");
-  result.textContent = "Processing...";
-  try {
-    const response = await fetch("/api/reservations/{{ reservation.id }}/refund/", {
-      method: "POST",
-      credentials: "same-origin",
-      headers: {"Content-Type": "application/json"},
-      body: JSON.stringify({refund_type: type})
-    });
-    const data = await response.json().catch(() => ({}));
-    if (!response.ok || !data.success) throw new Error(data.message || "Unable to process refund.");
-    result.textContent = data.message + " | Reference: " + data.reference;
-    document.querySelectorAll("button").forEach(button => button.disabled = true);
-  } catch (error) {
-    result.textContent = error.message;
-  }
-}
-</script>
-{% endif %}
-</main></body>
+<body><main class="card"><h1>{escape(title)}</h1><p>{escape(message)}</p><div class="status">{escape(status_label)}</div>{action_html}<p>You can close this page and return to FoodieHub.</p></main></body>
 </html>"""
     return HttpResponse(html)
