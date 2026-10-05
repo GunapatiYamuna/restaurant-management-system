@@ -73,11 +73,41 @@ def _validate_order_items(items):
     return validated, subtotal
 
 
-def _checkout_totals(subtotal):
+def _checkout_totals(subtotal, coupon_discount=Decimal("0.00")):
     delivery = Decimal("50.00") if subtotal > 0 else Decimal("0.00")
-    discount = Decimal("0.00")
+    discount = max(Decimal("0.00"), min(coupon_discount, subtotal))
     gst = (subtotal * Decimal("0.05")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-    return delivery, discount, gst, subtotal + delivery + gst
+    total = max(Decimal("0.00"), subtotal + delivery - discount + gst)
+    return delivery, discount, gst, total
+
+
+def _coupon_code(data):
+    return str(data.get("coupon_code", "")).strip().upper()
+
+
+def _get_available_coupon_for_user(user, code, lock=False):
+    if not code:
+        return None
+    queryset = ReservationCoupon.objects.filter(
+        user=user,
+        code=code,
+        used=False,
+        redeemed_order__isnull=True,
+        reserved_order__isnull=True,
+        expires_at__gt=timezone.now(),
+    )
+    if lock:
+        queryset = queryset.select_for_update()
+    return queryset.first()
+
+
+def _coupon_error(user, code, lock=False):
+    if not code:
+        return None
+    coupon = _get_available_coupon_for_user(user, code, lock=lock)
+    if not coupon:
+        return "This coupon is invalid, expired, already used, or currently being used in another checkout."
+    return None
 
 
 
@@ -685,8 +715,13 @@ def create_order(request):
     payment_method = str(data.get("payment_method", "Cash on Delivery")).strip() or "Cash on Delivery"
     if payment_method != "Cash on Delivery":
         return JsonResponse({"success": False, "message": "Online payments must be completed through Razorpay checkout."}, status=400)
-    delivery, discount, gst, total = _checkout_totals(subtotal)
+    coupon_code = _coupon_code(data)
     with transaction.atomic():
+        coupon = _get_available_coupon_for_user(request.user, coupon_code, lock=True) if coupon_code else None
+        if coupon_code and not coupon:
+            return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+        coupon_discount = coupon.amount if coupon else Decimal("0.00")
+        delivery, discount, gst, total = _checkout_totals(subtotal, coupon_discount)
         order = Order.objects.create(
             user=request.user, name=str(data.get("name", "")).strip(), email=str(data.get("email", "")).strip(),
             phone=str(data.get("phone", "")).strip(), address=str(data.get("address", "")).strip(),
@@ -696,7 +731,12 @@ def create_order(request):
         )
         for menu_item, name, price, qty in validated_items:
             OrderItem.objects.create(order=order, menu_item=menu_item, name=name, price=price, quantity=qty)
-    return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "payment_status": order.payment_status, "message": "Order placed successfully."})
+        if coupon:
+            coupon.used = True
+            coupon.redeemed_order = order
+            coupon.redeemed_at = timezone.now()
+            coupon.save(update_fields=["used", "redeemed_order", "redeemed_at"])
+    return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "discount": float(discount), "coupon_code": coupon.code if coupon else None, "payment_status": order.payment_status, "message": "Order placed successfully."})
 
 
 @require_POST
@@ -724,9 +764,14 @@ def create_demo_payment(request):
     except ValueError as error:
         return JsonResponse({"success": False, "message": str(error)}, status=400)
 
-    delivery, discount, gst, total = _checkout_totals(subtotal)
+    coupon_code = _coupon_code(data)
 
     with transaction.atomic():
+        coupon = _get_available_coupon_for_user(request.user, coupon_code, lock=True) if coupon_code else None
+        if coupon_code and not coupon:
+            return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+        coupon_discount = coupon.amount if coupon else Decimal("0.00")
+        delivery, discount, gst, total = _checkout_totals(subtotal, coupon_discount)
         order = Order.objects.create(
             user=request.user,
             name=str(data.get("name", "")).strip(),
@@ -756,11 +801,18 @@ def create_demo_payment(request):
         transaction_id = f"DEMO-{order.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
         order.razorpay_payment_id = transaction_id
         order.save(update_fields=["razorpay_payment_id"])
+        if coupon:
+            coupon.used = True
+            coupon.redeemed_order = order
+            coupon.redeemed_at = timezone.now()
+            coupon.save(update_fields=["used", "redeemed_order", "redeemed_at"])
 
     return JsonResponse({
         "success": True,
         "order_id": order.id,
         "total": float(total),
+        "discount": float(discount),
+        "coupon_code": coupon.code if coupon else None,
         "payment_method": method,
         "payment_status": "paid",
         "transaction_id": transaction_id,
