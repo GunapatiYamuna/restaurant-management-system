@@ -76,6 +76,14 @@ body{font-family:Poppins,Arial,sans-serif;background:#f7f8fa;color:#222;min-heig
 <div id="restaurantName" class="text-muted mb-3"></div>
 <div id="foodItems"></div>
 <div class="summary-row"><span>Food total</span><strong>₹<span id="foodTotal">0</span></strong></div>
+<div class="border rounded-3 p-3 mb-3">
+    <div class="fw-semibold mb-2">FoodieHub Coupon</div>
+    <div class="input-group">
+        <input type="text" id="reservationCouponCode" class="form-control" placeholder="Enter coupon code" maxlength="40">
+        <button type="button" id="applyReservationCoupon" class="btn btn-outline-warning">Apply</button>
+    </div>
+    <div id="reservationCouponMessage" class="small mt-2"></div>
+</div>
 <div class="summary-row"><span>Pay now (50%)</span><strong>₹<span id="upfrontAmount">0</span></strong></div>
 <div class="summary-row"><span>Pay at restaurant (50%)</span><strong>₹<span id="remainingAmount">0</span></strong></div>
 <div class="summary-row total"><span>Total food bill</span><span>₹<span id="totalAmount">0</span></span></div>
