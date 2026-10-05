@@ -111,6 +111,53 @@ def _coupon_error(user, code, lock=False):
 
 
 
+@csrf_exempt
+@require_POST
+def validate_coupon(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+
+    data = _data(request)
+    code = _coupon_code(data)
+    usage = str(data.get("usage", "")).strip().lower()
+
+    try:
+        food_amount = Decimal(str(data.get("food_amount", "0")))
+    except Exception:
+        return JsonResponse({"success": False, "message": "Invalid food amount."}, status=400)
+
+    if food_amount <= 0:
+        return JsonResponse({"success": False, "message": "A coupon can only be used when food is included."}, status=400)
+    if usage not in ("order", "preorder"):
+        return JsonResponse({"success": False, "message": "Coupon can only be used for food orders or pre-order food with a table reservation."}, status=400)
+
+    coupon = _get_available_coupon_for_user(request.user, code)
+    if not coupon:
+        return JsonResponse({"success": False, "message": "This coupon is invalid, expired, or already used."}, status=400)
+
+    discount = min(coupon.amount, food_amount)
+    if usage == "order":
+        delivery, _, gst, total = _checkout_totals(food_amount, discount)
+        payable = total
+        extra = {"delivery": float(delivery), "gst": float(gst)}
+    else:
+        payable = max(Decimal("0.00"), food_amount - discount)
+        extra = {"upfront_amount": float((payable / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+                 "remaining_amount": float(payable - (payable / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))}
+
+    return JsonResponse({
+        "success": True,
+        "coupon_code": coupon.code,
+        "coupon_amount": float(coupon.amount),
+        "discount": float(discount),
+        "food_amount": float(food_amount),
+        "payable_food_amount": float(max(Decimal("0.00"), food_amount - discount)),
+        "expires_at": coupon.expires_at.isoformat(),
+        **extra,
+    })
+
+
+
 def frontend_page(request, path=""):
     clean = path.strip("/") or "index.html"
     if clean.startswith(("api/", "admin/", "static/")):
