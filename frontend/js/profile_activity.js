@@ -108,6 +108,46 @@ document.addEventListener("DOMContentLoaded", async function () {
 
         const reservations = Array.isArray(data.reservations) ? data.reservations : [];
 
+        async function loadAttendanceNotifications() {
+          try {
+            const response = await fetch("/api/reservations/attendance/notifications/", {
+              credentials: "same-origin",
+              cache: "no-store"
+            });
+            const notificationData = await response.json().catch(() => ({}));
+            if (!response.ok || !notificationData.success || !Array.isArray(notificationData.notifications)) return;
+
+            const reminders = notificationData.notifications;
+            if (!reminders.length) return;
+
+            const existing = document.getElementById("attendanceReminderList");
+            if (existing) existing.remove();
+
+            const wrapper = document.createElement("div");
+            wrapper.id = "attendanceReminderList";
+            wrapper.className = "alert alert-warning mb-3";
+            wrapper.innerHTML =
+              '<div class="fw-bold mb-2"><i class="bi bi-bell-fill me-2"></i>Reservation attendance reminder</div>' +
+              reminders.map(item => {
+                const timeText = item.minutes_until <= 1
+                  ? "starting very soon"
+                  : "starts in about " + item.minutes_until + " minutes";
+                return '<div class="border-top pt-3 mt-2">' +
+                  '<div class="mb-2"><strong>' + esc(item.restaurant) + '</strong> — reservation #' + esc(item.id) + ' is ' + timeText + '.</div>' +
+                  '<div class="d-flex gap-2 flex-wrap">' +
+                  '<a class="btn btn-success btn-sm" href="' + esc(item.coming_url) + '"><i class="bi bi-check-circle me-1"></i>Coming</a>' +
+                  '<a class="btn btn-outline-danger btn-sm" href="' + esc(item.not_coming_url) + '"><i class="bi bi-x-circle me-1"></i>Not Coming</a>' +
+                  '</div></div>';
+              }).join("");
+
+            list.parentElement.insertBefore(wrapper, list);
+          } catch (error) {
+            console.error("Attendance notification error:", error);
+          }
+        }
+
+        await loadAttendanceNotifications();
+
         if (!reservations.length) {
           list.innerHTML = '<div class="text-muted">You have not made any reservations yet.</div>';
           return;
