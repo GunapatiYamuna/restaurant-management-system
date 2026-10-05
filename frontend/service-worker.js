@@ -9,14 +9,15 @@ self.addEventListener("push", event => {
   const title = data.title || "FoodieHub";
   const options = {
     body: data.body || "You have a new reservation notification.",
-    icon: "/images/logo.png",
-    badge: "/images/logo.png",
     data: {
-      url: data.url || "/login/pages/reservations.html"
+      url: data.url || "/login/pages/reservations.html",
+      comingUrl: data.coming_url || "",
+      notComingUrl: data.not_coming_url || ""
     },
     requireInteraction: true,
     actions: [
-      {action: "reservations", title: "View Reservation"}
+      {action: "coming", title: "Coming"},
+      {action: "not-coming", title: "Not Coming"}
     ]
   };
 
@@ -25,9 +26,14 @@ self.addEventListener("push", event => {
 
 self.addEventListener("notificationclick", event => {
   event.notification.close();
-  const targetUrl = event.notification.data && event.notification.data.url
-    ? event.notification.data.url
-    : "/login/pages/reservations.html";
+  const data = event.notification.data || {};
+  let targetUrl = data.url || "/login/pages/reservations.html";
+
+  if (event.action === "coming" && data.comingUrl) {
+    targetUrl = data.comingUrl;
+  } else if (event.action === "not-coming" && data.notComingUrl) {
+    targetUrl = data.notComingUrl;
+  }
 
   event.waitUntil(
     clients.matchAll({type: "window", includeUncontrolled: true}).then(clientList => {
