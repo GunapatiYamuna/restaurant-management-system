@@ -1,3 +1,6 @@
+let appliedCouponCode = "";
+let appliedCouponDiscount = 0;
+
 document.addEventListener("DOMContentLoaded", function () {
 
     updateCartCount();
@@ -6,6 +9,7 @@ document.addEventListener("DOMContentLoaded", function () {
     renderCartPage();
     renderCheckoutPage();
     setupPaymentMethods();
+    setupCoupon();
     setupPlaceOrder();
     renderOrderHistory();
 
@@ -441,7 +445,7 @@ function setupCartButtons() {
    CART TOTALS
 ========================================================= */
 
-function calculateTotals(cart) {
+function calculateTotals(cart, couponDiscount = 0) {
 
     let subtotal = 0;
 
@@ -459,7 +463,7 @@ function calculateTotals(cart) {
         cart.length > 0 ? 50 : 0;
 
 
-    const discount = 0;
+    const discount = Math.min(Math.max(Number(couponDiscount) || 0, 0), subtotal);
 
 
     const gst =
@@ -495,7 +499,7 @@ function updateCartTotals() {
     const cart = getCart();
 
     const totals =
-        calculateTotals(cart);
+        calculateTotals(cart, appliedCouponDiscount);
 
 
     const subtotal =
@@ -685,13 +689,74 @@ function renderCheckoutPage() {
 
 
 /* =========================================================
+   COUPON
+========================================================= */
+function setupCoupon() {
+    const input = document.getElementById("coupon-code");
+    const button = document.getElementById("apply-coupon-btn");
+    const message = document.getElementById("coupon-message");
+    if (!input || !button || !message) return;
+
+    button.addEventListener("click", async function () {
+        const code = input.value.trim().toUpperCase();
+        const cart = getCart();
+        const totals = calculateTotals(cart, 0);
+
+        if (!code) {
+            message.className = "small mt-2 text-danger";
+            message.textContent = "Please enter a coupon code.";
+            return;
+        }
+        if (!cart.length || totals.subtotal <= 0) {
+            message.className = "small mt-2 text-danger";
+            message.textContent = "A coupon can only be used with a food order.";
+            return;
+        }
+
+        button.disabled = true;
+        message.className = "small mt-2 text-muted";
+        message.textContent = "Checking coupon...";
+
+        try {
+            const response = await fetch("/api/coupons/validate/", {
+                method: "POST",
+                credentials: "same-origin",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({
+                    coupon_code: code,
+                    usage: "order",
+                    food_amount: totals.subtotal
+                })
+            });
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) throw new Error(data.message || "Unable to apply coupon.");
+
+            appliedCouponCode = data.coupon_code;
+            appliedCouponDiscount = Number(data.discount) || 0;
+            message.className = "small mt-2 text-success";
+            message.textContent = "Coupon applied. ₹" + appliedCouponDiscount.toFixed(2) + " discount will be used once when this order is placed.";
+            updateCheckoutTotals(cart);
+        } catch (error) {
+            appliedCouponCode = "";
+            appliedCouponDiscount = 0;
+            message.className = "small mt-2 text-danger";
+            message.textContent = error.message;
+            updateCheckoutTotals(cart);
+        } finally {
+            button.disabled = false;
+        }
+    });
+}
+
+
+/* =========================================================
    CHECKOUT TOTALS
 ========================================================= */
 
 function updateCheckoutTotals(cart) {
 
     const totals =
-        calculateTotals(cart);
+        calculateTotals(cart, appliedCouponDiscount);
 
 
     const subtotal =
@@ -816,7 +881,7 @@ function setupPlaceOrder() {
 
         const selected = document.querySelector('input[name="payment"]:checked');
         const paymentMethod = selected ? selected.value : "Cash on Delivery";
-        const totals = calculateTotals(cart);
+        const totals = calculateTotals(cart, appliedCouponDiscount);
         const payload = {
             name: document.getElementById("full-name").value.trim(),
             phone: document.getElementById("phone").value.trim(),
@@ -825,7 +890,8 @@ function setupPlaceOrder() {
             pincode: document.getElementById("pincode").value.trim(),
             delivery_lat: document.getElementById("deliveryLat")?.value || null,
             delivery_lng: document.getElementById("deliveryLng")?.value || null,
-            items: cart
+            items: cart,
+            coupon_code: appliedCouponCode
         };
 
         const button = document.getElementById("place-order-btn");

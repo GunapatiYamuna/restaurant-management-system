@@ -69,6 +69,7 @@ class ReservationPayment(models.Model):
 
     reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name="payment")
     food_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    coupon_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     upfront_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     remaining_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=20, default=METHOD_UPI)
@@ -96,6 +97,21 @@ class ReservationCoupon(models.Model):
     amount = models.DecimalField(max_digits=12, decimal_places=2)
     expires_at = models.DateTimeField()
     used = models.BooleanField(default=False)
+    redeemed_order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="redeemed_coupons",
+    )
+    reserved_order = models.ForeignKey(
+        "Order",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="reserved_coupons",
+    )
+    redeemed_at = models.DateTimeField(null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -37,6 +37,7 @@ urlpatterns = [
     path("notifications/push/unsubscribe/", views.push_unsubscribe),
     path("reservations/attendance/<int:reservation_id>/<str:token>/coming/", views.reservation_attendance_response, {"response": "coming"}),
     path("reservations/attendance/<int:reservation_id>/<str:token>/not-coming/", views.reservation_attendance_response, {"response": "not-coming"}),
+    path("coupons/validate/", views.validate_coupon, name="validate-coupon"),
     path("orders/", views.create_order),
     path("orders/history/", views.order_history),
     path("orders/<int:order_id>/tracking/", views.order_tracking, name="order-tracking"),

@@ -73,11 +73,80 @@ def _validate_order_items(items):
     return validated, subtotal
 
 
-def _checkout_totals(subtotal):
+def _checkout_totals(subtotal, coupon_discount=Decimal("0.00")):
     delivery = Decimal("50.00") if subtotal > 0 else Decimal("0.00")
-    discount = Decimal("0.00")
+    discount = max(Decimal("0.00"), min(coupon_discount, subtotal))
     gst = (subtotal * Decimal("0.05")).quantize(Decimal("1"), rounding=ROUND_HALF_UP)
-    return delivery, discount, gst, subtotal + delivery + gst
+    total = max(Decimal("0.00"), subtotal + delivery - discount + gst)
+    return delivery, discount, gst, total
+
+
+def _coupon_code(data):
+    return str(data.get("coupon_code", "")).strip().upper()
+
+
+def _get_available_coupon_for_user(user, code, lock=False):
+    if not code:
+        return None
+    queryset = ReservationCoupon.objects.filter(
+        user=user,
+        code=code,
+        used=False,
+        redeemed_order__isnull=True,
+        reserved_order__isnull=True,
+        expires_at__gt=timezone.now(),
+    )
+    if lock:
+        queryset = queryset.select_for_update()
+    return queryset.first()
+
+
+
+
+@csrf_exempt
+@require_POST
+def validate_coupon(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+
+    data = _data(request)
+    code = _coupon_code(data)
+    usage = str(data.get("usage", "")).strip().lower()
+
+    try:
+        food_amount = Decimal(str(data.get("food_amount", "0")))
+    except Exception:
+        return JsonResponse({"success": False, "message": "Invalid food amount."}, status=400)
+
+    if food_amount <= 0:
+        return JsonResponse({"success": False, "message": "A coupon can only be used when food is included."}, status=400)
+    if usage not in ("order", "preorder"):
+        return JsonResponse({"success": False, "message": "Coupon can only be used for food orders or pre-order food with a table reservation."}, status=400)
+
+    coupon = _get_available_coupon_for_user(request.user, code)
+    if not coupon:
+        return JsonResponse({"success": False, "message": "This coupon is invalid, expired, or already used."}, status=400)
+
+    discount = min(coupon.amount, food_amount)
+    if usage == "order":
+        delivery, _, gst, total = _checkout_totals(food_amount, discount)
+        payable = total
+        extra = {"delivery": float(delivery), "gst": float(gst)}
+    else:
+        payable = max(Decimal("0.00"), food_amount - discount)
+        extra = {"upfront_amount": float((payable / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)),
+                 "remaining_amount": float(payable - (payable / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP))}
+
+    return JsonResponse({
+        "success": True,
+        "coupon_code": coupon.code,
+        "coupon_amount": float(coupon.amount),
+        "discount": float(discount),
+        "food_amount": float(food_amount),
+        "payable_food_amount": float(max(Decimal("0.00"), food_amount - discount)),
+        "expires_at": coupon.expires_at.isoformat(),
+        **extra,
+    })
 
 
 
@@ -443,8 +512,6 @@ def create_reservation(request):
     except Restaurant.DoesNotExist:
         return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
 
-    # Validate all pre-booked items before creating the reservation so a later
-    # validation failure cannot leave a partial reservation in the database.
     validated_items = []
     total = Decimal("0.00")
     for item in items:
@@ -455,27 +522,35 @@ def create_reservation(request):
             return JsonResponse({"success": False, "message": "Invalid pre-booked item."}, status=400)
         if qty < 1:
             return JsonResponse({"success": False, "message": "Invalid pre-booked item quantity."}, status=400)
-
-        menu_item = MenuItem.objects.filter(
-            pk=menu_id, restaurant=restaurant, available=True
-        ).first()
+        menu_item = MenuItem.objects.filter(pk=menu_id, restaurant=restaurant, available=True).first()
         if not menu_item:
             return JsonResponse({"success": False, "message": "One of the selected menu items is unavailable."}, status=400)
-
         price = menu_item.price
         validated_items.append((menu_item, qty, price))
         total += price * qty
 
+    coupon_code = _coupon_code(data)
+    if coupon_code and total <= 0:
+        return JsonResponse({"success": False, "message": "Food coupons can only be used with pre-ordered food."}, status=400)
+
     if total > 0 and str(data.get("payment_method", "")).strip() != "UPI":
         return JsonResponse({"success": False, "message": "UPI is required for pre-booked food payment."}, status=400)
 
-    upfront = (total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    remaining = total - upfront
     upfront_transaction_id = str(data.get("upfront_transaction_id", "")).strip()
-    if total > 0 and not upfront_transaction_id:
-        return JsonResponse({"success": False, "message": "Please complete the UPI payment before confirming the reservation."}, status=400)
 
     with transaction.atomic():
+        coupon = _get_available_coupon_for_user(request.user, coupon_code, lock=True) if coupon_code else None
+        if coupon_code and not coupon:
+            return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+
+        coupon_discount = min(coupon.amount, total) if coupon else Decimal("0.00")
+        discounted_total = max(Decimal("0.00"), total - coupon_discount)
+        upfront = (discounted_total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        remaining = discounted_total - upfront
+
+        if discounted_total > 0 and not upfront_transaction_id:
+            return JsonResponse({"success": False, "message": "Please complete the UPI payment before confirming the reservation."}, status=400)
+
         reservation = Reservation.objects.create(
             user=request.user,
             restaurant=restaurant,
@@ -502,21 +577,29 @@ def create_reservation(request):
         if total > 0:
             ReservationPayment.objects.create(
                 reservation=reservation,
-                food_total=total,
+                food_total=discounted_total,
+                coupon_discount=coupon_discount,
                 upfront_amount=upfront,
                 remaining_amount=remaining,
                 payment_method="UPI",
-                upfront_status="paid",
+                upfront_status="paid" if upfront > 0 else "not_required",
                 upfront_transaction_id=upfront_transaction_id,
-                paid_at=timezone.now(),
+                paid_at=timezone.now() if upfront > 0 else None,
             )
+        if coupon:
+            coupon.used = True
+            coupon.redeemed_at = timezone.now()
+            coupon.save(update_fields=["used", "redeemed_at"])
 
     return JsonResponse({
         "success": True,
         "reservation_id": reservation.id,
         "restaurant": restaurant.name,
         "items": saved_items,
-        "prebook_total": float(total),
+        "prebook_total": float(discounted_total),
+        "original_prebook_total": float(total),
+        "coupon_discount": float(coupon_discount),
+        "coupon_code": coupon.code if coupon else None,
         "upfront_amount": float(upfront),
         "remaining_amount": float(remaining),
         "payment_method": "UPI" if total > 0 else None,
@@ -685,8 +768,13 @@ def create_order(request):
     payment_method = str(data.get("payment_method", "Cash on Delivery")).strip() or "Cash on Delivery"
     if payment_method != "Cash on Delivery":
         return JsonResponse({"success": False, "message": "Online payments must be completed through Razorpay checkout."}, status=400)
-    delivery, discount, gst, total = _checkout_totals(subtotal)
+    coupon_code = _coupon_code(data)
     with transaction.atomic():
+        coupon = _get_available_coupon_for_user(request.user, coupon_code, lock=True) if coupon_code else None
+        if coupon_code and not coupon:
+            return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+        coupon_discount = coupon.amount if coupon else Decimal("0.00")
+        delivery, discount, gst, total = _checkout_totals(subtotal, coupon_discount)
         order = Order.objects.create(
             user=request.user, name=str(data.get("name", "")).strip(), email=str(data.get("email", "")).strip(),
             phone=str(data.get("phone", "")).strip(), address=str(data.get("address", "")).strip(),
@@ -696,7 +784,12 @@ def create_order(request):
         )
         for menu_item, name, price, qty in validated_items:
             OrderItem.objects.create(order=order, menu_item=menu_item, name=name, price=price, quantity=qty)
-    return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "payment_status": order.payment_status, "message": "Order placed successfully."})
+        if coupon:
+            coupon.used = True
+            coupon.redeemed_order = order
+            coupon.redeemed_at = timezone.now()
+            coupon.save(update_fields=["used", "redeemed_order", "redeemed_at"])
+    return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "discount": float(discount), "coupon_code": coupon.code if coupon else None, "payment_status": order.payment_status, "message": "Order placed successfully."})
 
 
 @require_POST
@@ -724,9 +817,14 @@ def create_demo_payment(request):
     except ValueError as error:
         return JsonResponse({"success": False, "message": str(error)}, status=400)
 
-    delivery, discount, gst, total = _checkout_totals(subtotal)
+    coupon_code = _coupon_code(data)
 
     with transaction.atomic():
+        coupon = _get_available_coupon_for_user(request.user, coupon_code, lock=True) if coupon_code else None
+        if coupon_code and not coupon:
+            return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+        coupon_discount = coupon.amount if coupon else Decimal("0.00")
+        delivery, discount, gst, total = _checkout_totals(subtotal, coupon_discount)
         order = Order.objects.create(
             user=request.user,
             name=str(data.get("name", "")).strip(),
@@ -756,11 +854,18 @@ def create_demo_payment(request):
         transaction_id = f"DEMO-{order.id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
         order.razorpay_payment_id = transaction_id
         order.save(update_fields=["razorpay_payment_id"])
+        if coupon:
+            coupon.used = True
+            coupon.redeemed_order = order
+            coupon.redeemed_at = timezone.now()
+            coupon.save(update_fields=["used", "redeemed_order", "redeemed_at"])
 
     return JsonResponse({
         "success": True,
         "order_id": order.id,
         "total": float(total),
+        "discount": float(discount),
+        "coupon_code": coupon.code if coupon else None,
         "payment_method": method,
         "payment_status": "paid",
         "transaction_id": transaction_id,
@@ -791,7 +896,6 @@ def create_reservation_upfront_payment(request):
         return JsonResponse({"success": False, "message": "No pre-booked food items found."}, status=400)
 
     total = Decimal("0.00")
-    validated = []
     for item in items:
         try:
             menu_id, qty = int(item.get("id")), int(item.get("quantity", 1))
@@ -801,13 +905,27 @@ def create_reservation_upfront_payment(request):
         if not menu_item or qty < 1:
             return JsonResponse({"success": False, "message": "A selected food item is unavailable."}, status=400)
         total += menu_item.price * qty
-        validated.append((menu_item.name, menu_item.price, qty))
 
-    upfront = (total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    coupon_code = _coupon_code(data)
+    coupon = _get_available_coupon_for_user(request.user, coupon_code) if coupon_code else None
+    if coupon_code and not coupon:
+        return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+
+    coupon_discount = min(coupon.amount, total) if coupon else Decimal("0.00")
+    discounted_total = max(Decimal("0.00"), total - coupon_discount)
+    upfront = (discounted_total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    remaining = discounted_total - upfront
     tx = f"UPI-{timezone.now().strftime('%Y%m%d%H%M%S%f')[:20]}"
     return JsonResponse({
-        "success": True, "payment_method": "UPI", "food_total": float(total),
-        "upfront_amount": float(upfront), "transaction_id": tx,
+        "success": True,
+        "payment_method": "UPI",
+        "food_total": float(discounted_total),
+        "original_food_total": float(total),
+        "coupon_discount": float(coupon_discount),
+        "coupon_code": coupon.code if coupon else None,
+        "upfront_amount": float(upfront),
+        "remaining_amount": float(remaining),
+        "transaction_id": tx,
         "message": "UPI payment successful."
     })
 
@@ -1016,6 +1134,7 @@ def reservation_history(request):
             "prebook_total": float(sum(item.price * item.quantity for item in r.items.all())),
             "payment": ({
                 "food_total": float(r.payment.food_total),
+                "coupon_discount": float(r.payment.coupon_discount),
                 "upfront_amount": float(r.payment.upfront_amount),
                 "remaining_amount": float(r.payment.remaining_amount),
                 "upfront_status": r.payment.upfront_status,
@@ -1028,6 +1147,10 @@ def reservation_history(request):
                     "code": r.refund_coupon.code,
                     "amount": float(r.refund_coupon.amount),
                     "expires_at": r.refund_coupon.expires_at.isoformat(),
+                    "used": r.refund_coupon.used,
+                    "redeemed_at": r.refund_coupon.redeemed_at.isoformat() if r.refund_coupon.redeemed_at else None,
+                    "redeemed_order_id": r.refund_coupon.redeemed_order_id,
+
                 } if hasattr(r, "refund_coupon") else None),
             } if hasattr(r, "payment") else None),
             "items": [
