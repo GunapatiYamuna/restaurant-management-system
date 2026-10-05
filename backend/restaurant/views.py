@@ -1093,7 +1093,8 @@ def restaurant_reservations(request):
     if error: return error
     rows=[]
     for r in restaurant.reservations.prefetch_related("items").order_by("-date","-time"):
-        rows.append({"id":r.id,"name":r.name,"email":r.email,"phone":r.phone,"date":r.date.isoformat(),"time":r.time.strftime("%H:%M"),"guests":r.guests,"message":r.message,"status":r.status,"attendance_response":r.attendance_response,"attendance_notified_at":r.attendance_notified_at.isoformat() if r.attendance_notified_at else None,"attendance_responded_at":r.attendance_responded_at.isoformat() if r.attendance_responded_at else None,"created_at":r.created_at.isoformat(),"prebook_total":float(sum(i.price*i.quantity for i in r.items.all())),"items":[{"name":i.name,"price":float(i.price),"quantity":i.quantity} for i in r.items.all()]})
+        payment = getattr(r, "payment", None)
+        rows.append({"id":r.id,"name":r.name,"email":r.email,"phone":r.phone,"date":r.date.isoformat(),"time":r.time.strftime("%H:%M"),"guests":r.guests,"message":r.message,"status":r.status,"attendance_response":r.attendance_response,"attendance_notified_at":r.attendance_notified_at.isoformat() if r.attendance_notified_at else None,"attendance_responded_at":r.attendance_responded_at.isoformat() if r.attendance_responded_at else None,"created_at":r.created_at.isoformat(),"prebook_total":float(sum(i.price*i.quantity for i in r.items.all())),"payment":({"upfront_amount":float(payment.upfront_amount),"remaining_amount":float(payment.remaining_amount),"upfront_status":payment.upfront_status,"remaining_status":payment.remaining_status,"refund_status":payment.refund_status,"refund_type":payment.refund_type,"refund_amount":float(payment.refund_amount),"refund_reference":payment.refund_reference} if payment else None),"items":[{"name":i.name,"price":float(i.price),"quantity":i.quantity} for i in r.items.all()]})
     return JsonResponse({"success":True,"reservations":rows})
 
 @csrf_exempt
