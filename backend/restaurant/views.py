@@ -473,8 +473,6 @@ def create_reservation(request):
     except Restaurant.DoesNotExist:
         return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
 
-    # Validate all pre-booked items before creating the reservation so a later
-    # validation failure cannot leave a partial reservation in the database.
     validated_items = []
     total = Decimal("0.00")
     for item in items:
@@ -485,13 +483,9 @@ def create_reservation(request):
             return JsonResponse({"success": False, "message": "Invalid pre-booked item."}, status=400)
         if qty < 1:
             return JsonResponse({"success": False, "message": "Invalid pre-booked item quantity."}, status=400)
-
-        menu_item = MenuItem.objects.filter(
-            pk=menu_id, restaurant=restaurant, available=True
-        ).first()
+        menu_item = MenuItem.objects.filter(pk=menu_id, restaurant=restaurant, available=True).first()
         if not menu_item:
             return JsonResponse({"success": False, "message": "One of the selected menu items is unavailable."}, status=400)
-
         price = menu_item.price
         validated_items.append((menu_item, qty, price))
         total += price * qty
@@ -499,13 +493,22 @@ def create_reservation(request):
     if total > 0 and str(data.get("payment_method", "")).strip() != "UPI":
         return JsonResponse({"success": False, "message": "UPI is required for pre-booked food payment."}, status=400)
 
-    upfront = (total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
-    remaining = total - upfront
+    coupon_code = _coupon_code(data)
     upfront_transaction_id = str(data.get("upfront_transaction_id", "")).strip()
-    if total > 0 and not upfront_transaction_id:
-        return JsonResponse({"success": False, "message": "Please complete the UPI payment before confirming the reservation."}, status=400)
 
     with transaction.atomic():
+        coupon = _get_available_coupon_for_user(request.user, coupon_code, lock=True) if coupon_code else None
+        if coupon_code and not coupon:
+            return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+
+        coupon_discount = min(coupon.amount, total) if coupon else Decimal("0.00")
+        discounted_total = max(Decimal("0.00"), total - coupon_discount)
+        upfront = (discounted_total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+        remaining = discounted_total - upfront
+
+        if discounted_total > 0 and not upfront_transaction_id:
+            return JsonResponse({"success": False, "message": "Please complete the UPI payment before confirming the reservation."}, status=400)
+
         reservation = Reservation.objects.create(
             user=request.user,
             restaurant=restaurant,
@@ -532,21 +535,29 @@ def create_reservation(request):
         if total > 0:
             ReservationPayment.objects.create(
                 reservation=reservation,
-                food_total=total,
+                food_total=discounted_total,
+                coupon_discount=coupon_discount,
                 upfront_amount=upfront,
                 remaining_amount=remaining,
                 payment_method="UPI",
-                upfront_status="paid",
+                upfront_status="paid" if upfront > 0 else "not_required",
                 upfront_transaction_id=upfront_transaction_id,
-                paid_at=timezone.now(),
+                paid_at=timezone.now() if upfront > 0 else None,
             )
+        if coupon:
+            coupon.used = True
+            coupon.redeemed_at = timezone.now()
+            coupon.save(update_fields=["used", "redeemed_at"])
 
     return JsonResponse({
         "success": True,
         "reservation_id": reservation.id,
         "restaurant": restaurant.name,
         "items": saved_items,
-        "prebook_total": float(total),
+        "prebook_total": float(discounted_total),
+        "original_prebook_total": float(total),
+        "coupon_discount": float(coupon_discount),
+        "coupon_code": coupon.code if coupon else None,
         "upfront_amount": float(upfront),
         "remaining_amount": float(remaining),
         "payment_method": "UPI" if total > 0 else None,
@@ -843,7 +854,6 @@ def create_reservation_upfront_payment(request):
         return JsonResponse({"success": False, "message": "No pre-booked food items found."}, status=400)
 
     total = Decimal("0.00")
-    validated = []
     for item in items:
         try:
             menu_id, qty = int(item.get("id")), int(item.get("quantity", 1))
@@ -853,13 +863,27 @@ def create_reservation_upfront_payment(request):
         if not menu_item or qty < 1:
             return JsonResponse({"success": False, "message": "A selected food item is unavailable."}, status=400)
         total += menu_item.price * qty
-        validated.append((menu_item.name, menu_item.price, qty))
 
-    upfront = (total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    coupon_code = _coupon_code(data)
+    coupon = _get_available_coupon_for_user(request.user, coupon_code) if coupon_code else None
+    if coupon_code and not coupon:
+        return JsonResponse({"success": False, "message": "This coupon is invalid, expired, already used, or currently being used in another checkout."}, status=400)
+
+    coupon_discount = min(coupon.amount, total) if coupon else Decimal("0.00")
+    discounted_total = max(Decimal("0.00"), total - coupon_discount)
+    upfront = (discounted_total / Decimal("2")).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
+    remaining = discounted_total - upfront
     tx = f"UPI-{timezone.now().strftime('%Y%m%d%H%M%S%f')[:20]}"
     return JsonResponse({
-        "success": True, "payment_method": "UPI", "food_total": float(total),
-        "upfront_amount": float(upfront), "transaction_id": tx,
+        "success": True,
+        "payment_method": "UPI",
+        "food_total": float(discounted_total),
+        "original_food_total": float(total),
+        "coupon_discount": float(coupon_discount),
+        "coupon_code": coupon.code if coupon else None,
+        "upfront_amount": float(upfront),
+        "remaining_amount": float(remaining),
+        "transaction_id": tx,
         "message": "UPI payment successful."
     })
 
