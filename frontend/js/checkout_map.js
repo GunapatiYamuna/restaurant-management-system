@@ -267,6 +267,76 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================================
+    // FILL CITY / PIN FROM COORDINATES
+    // =====================================================
+
+    async function fillCityAndPincodeFromLocation(lat, lng) {
+
+        try {
+
+            const url =
+                "https://nominatim.openstreetmap.org/reverse" +
+                "?format=jsonv2" +
+                "&lat=" + encodeURIComponent(lat) +
+                "&lon=" + encodeURIComponent(lng) +
+                "&zoom=18" +
+                "&addressdetails=1";
+
+            const response =
+                await fetch(
+                    url,
+                    {
+                        headers: {
+                            "Accept":
+                                "application/json"
+                        }
+                    }
+                );
+
+            if (!response.ok) {
+                throw new Error(
+                    "Unable to fetch location details."
+                );
+            }
+
+            const result =
+                await response.json();
+
+            const address =
+                result.address || {};
+
+            if (cityInput) {
+                cityInput.value =
+                    address.city ||
+                    address.town ||
+                    address.village ||
+                    address.municipality ||
+                    "";
+            }
+
+            if (pincodeInput) {
+                pincodeInput.value =
+                    address.postcode || "";
+            }
+
+            console.log(
+                "City/PIN fetched from found location:",
+                address
+            );
+
+        } catch (error) {
+
+            console.error(
+                "City/PIN lookup error:",
+                error
+            );
+
+        }
+
+    }
+
+
+    // =====================================================
     // MAP CLICK
     // =====================================================
 
@@ -480,6 +550,15 @@ document.addEventListener("DOMContentLoaded", function () {
                 pincodeInput.value =
                     resultAddress.postcode || "";
             }
+
+            // Nominatim search results do not always include
+            // complete address details. Reverse-geocode the exact
+            // coordinates too, so City and PIN are fetched from
+            // the location found on the map.
+            await fillCityAndPincodeFromLocation(
+                lat,
+                lng
+            );
 
             // Open popup
             if (marker) {
