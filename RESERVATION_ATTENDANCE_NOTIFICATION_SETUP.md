@@ -1,24 +1,72 @@
-# Free Reservation Attendance Notifications
+# Free Browser Push Reservation Notifications
 
-The reservation attendance confirmation is completely free and works inside the FoodieHub website.
+FoodieHub now uses **Web Push Notifications** instead of SMS.
 
-## Flow
+This allows the customer to receive a reservation reminder as a normal browser/device notification even when the FoodieHub tab is closed, as long as the customer previously allowed notifications and the browser/device supports Web Push. Persistent notifications are provided by a service worker, and supported browsers can show action buttons such as Coming and Not Coming.
 
-1. Customer books a table.
-2. The reservation remains Pending with attendance response Pending.
-3. When the reservation is within one hour of its start time, the customer's **My Reservations** page shows an attendance reminder.
-4. **Coming** changes the reservation to **Confirmed**.
-5. **Not Coming** changes the reservation to **Cancelled**.
-6. The restaurant portal shows the customer's attendance response.
+## 1. Install dependencies
 
-## No paid service required
+From the `backend` directory:
 
-Twilio, SMS credits, a public SMS callback URL, and a payment account are not required.
+    pip install -r requirements.txt
 
-The customer must be logged in to FoodieHub and have the **My Reservations** page open. That page checks the free Django notification endpoint every minute.
+The project includes `pywebpush`.
 
-## College-project testing
+## 2. Generate VAPID keys
 
-For an easy demo, create a reservation for a time within the next hour, open **My Reservations**, and choose **Coming** or **Not Coming**.
+From the `backend` directory:
 
-The attendance response links are signed by Django and expire after 48 hours. They are tied to the specific reservation and customer account.
+    python manage.py generate_vapid_keys
+
+The command creates local VAPID key files and prints the public key.
+
+Add the printed values to `backend/.env`:
+
+    VAPID_PUBLIC_KEY=PASTE_THE_PRINTED_PUBLIC_KEY_HERE
+    VAPID_CLAIMS_EMAIL=mailto:your-email@example.com
+
+The private key stays in `backend/vapid_private_key.pem` and is ignored by Git. Never commit or share the private key.
+
+## 3. Run migrations
+
+    python manage.py migrate
+
+This creates the PushSubscription table.
+
+## 4. Customer setup
+
+The customer must do this once:
+
+1. Log in to FoodieHub.
+2. Open **My Reservations**.
+3. Allow browser notifications when the browser asks.
+4. The browser registers the FoodieHub service worker and saves the push subscription.
+
+After this one-time setup, the customer does not need to keep FoodieHub open.
+
+## 5. Send reminders automatically
+
+The Django command sends reminders for reservations entering the one-hour window:
+
+    python manage.py send_reservation_push_reminders
+
+For the real system, run this command every minute using your server scheduler/cron.
+
+Example Linux cron:
+
+    * * * * * cd /path/to/restaurant-management-system/backend && /path/to/venv/bin/python manage.py send_reservation_push_reminders >> /path/to/reservation_push.log 2>&1
+
+## 6. Notification behavior
+
+The customer receives a FoodieHub reservation reminder with the reservation time and two actions:
+
+- **Coming** → reservation becomes Confirmed.
+- **Not Coming** → reservation becomes Cancelled.
+
+The buttons open signed Django attendance response URLs, so the customer can respond directly from the notification.
+
+## Important limitation
+
+Web Push is free, but it is not the same as SMS. The customer must first grant browser notification permission and register the device/browser once. Push delivery is handled by the browser's push infrastructure; your project does not pay Twilio or another SMS provider.
+
+Production deployment should use **HTTPS**. Local development can use localhost, but a real customer device needs a publicly reachable HTTPS website for normal Web Push operation.

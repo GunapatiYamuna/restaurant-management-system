@@ -1,0 +1,23 @@
+from django.db import migrations, models
+import django.db.models.deletion
+
+
+class Migration(migrations.Migration):
+    dependencies = [
+        ("restaurant", "0009_reservation_attendance"),
+    ]
+
+    operations = [
+        migrations.CreateModel(
+            name="PushSubscription",
+            fields=[
+                ("id", models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name="ID")),
+                ("endpoint", models.TextField(unique=True)),
+                ("p256dh", models.TextField()),
+                ("auth", models.TextField()),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("updated_at", models.DateTimeField(auto_now=True)),
+                ("user", models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name="push_subscriptions", to="auth.user")),
+            ],
+        ),
+    ]
