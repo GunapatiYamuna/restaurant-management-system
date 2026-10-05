@@ -2,7 +2,7 @@
 
 FoodieHub now uses **Web Push Notifications** instead of SMS.
 
-This allows the customer to receive a reservation reminder as a normal browser/device notification even when the FoodieHub tab is closed, as long as the customer previously allowed notifications and the browser/device supports Web Push. Persistent notifications are provided by a service worker, and supported browsers can show action buttons such as Coming and Not Coming. citeturn1search3turn1search1turn1search0
+This allows the customer to receive a reservation reminder as a normal browser/device notification even when the FoodieHub tab is closed, as long as the customer previously allowed notifications and the browser/device supports Web Push. Persistent notifications are provided by a service worker, and supported browsers can show action buttons such as Coming and Not Coming.
 
 ## 1. Install dependencies
 
@@ -69,4 +69,4 @@ The buttons open signed Django attendance response URLs, so the customer can res
 
 Web Push is free, but it is not the same as SMS. The customer must first grant browser notification permission and register the device/browser once. Push delivery is handled by the browser's push infrastructure; your project does not pay Twilio or another SMS provider.
 
-Production deployment should use **HTTPS**. Local development can use localhost, but a real customer device needs a publicly reachable HTTPS website for normal Web Push operation. citeturn1search1turn1search5
+Production deployment should use **HTTPS**. Local development can use localhost, but a real customer device needs a publicly reachable HTTPS website for normal Web Push operation.
