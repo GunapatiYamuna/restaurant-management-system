@@ -83,8 +83,42 @@ body{{margin:0;font-family:Arial,sans-serif;background:#f7f7f8;display:grid;plac
 .card{{width:min(92%,460px);background:#fff;border-radius:18px;padding:32px;box-shadow:0 12px 35px rgba(0,0,0,.1);text-align:center}}
 h1{{margin:0 0 12px}} p{{color:#666;line-height:1.55}}
 .status{{display:inline-block;margin-top:10px;padding:9px 16px;border-radius:999px;background:#fff1e8;color:#e85c00;font-weight:700}}
+.actions{{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:22px}}
+button,.action{{border:0;border-radius:10px;padding:11px 16px;background:#ff6b00;color:white;font-weight:700;cursor:pointer;text-decoration:none}}
+button.secondary{{background:#333}}
+#result{{margin-top:14px;font-weight:600}}
 </style>
 </head>
-<body><main class="card"><h1>{escape(title)}</h1><p>{escape(message)}</p><div class="status">{escape(status_label)}</div><p>You can close this page and return to FoodieHub.</p></main></body>
+<body><main class="card"><h1>{escape(title)}</h1><p>{escape(message)}</p><div class="status">{escape(status_label)}</div><p>You can close this page and return to FoodieHub.</p>{% if reservation and payment_action == "remaining" %}
+<div class="actions"><a class="action" href="/login/pages/reservations.html">Pay Remaining Food Amount</a></div>
+{% elif reservation and payment_action == "refund" %}
+<p><strong>Choose how to receive your 50% food advance back:</strong></p>
+<div class="actions">
+<button onclick="refund('coupon')">Get 2-Week Coupon</button>
+<button class="secondary" onclick="refund('upi')">Refund to UPI</button>
+</div>
+<div id="result"></div>
+<script>
+async function refund(type) {
+  const result = document.getElementById("result");
+  result.textContent = "Processing...";
+  try {
+    const response = await fetch("/api/reservations/{{ reservation.id }}/refund/", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({refund_type: type})
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || !data.success) throw new Error(data.message || "Unable to process refund.");
+    result.textContent = data.message + " | Reference: " + data.reference;
+    document.querySelectorAll("button").forEach(button => button.disabled = true);
+  } catch (error) {
+    result.textContent = error.message;
+  }
+}
+</script>
+{% endif %}
+</main></body>
 </html>"""
     return HttpResponse(html)
