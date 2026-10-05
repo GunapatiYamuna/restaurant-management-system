@@ -69,6 +69,7 @@ class ReservationPayment(models.Model):
 
     reservation = models.OneToOneField(Reservation, on_delete=models.CASCADE, related_name="payment")
     food_total = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    coupon_discount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     upfront_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     remaining_amount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
     payment_method = models.CharField(max_length=20, default=METHOD_UPI)
