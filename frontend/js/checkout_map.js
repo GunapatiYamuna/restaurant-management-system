@@ -347,6 +347,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function findAddress() {
 
+        // Use exactly what the customer typed to search for the
+        // requested address. City/PIN are included when provided.
         const query =
             getDeliveryAddress();
 
@@ -451,13 +453,31 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
 
-            // Move marker and map
+            // Move marker and map to the manually searched address
             setPoint(
                 lat,
                 lng,
                 17
             );
 
+            // Keep the customer's typed street/address text.
+            // Only fill city and PIN from the geocoding result when available.
+            const resultAddress =
+                result.address || {};
+
+            if (cityInput && !cityInput.value.trim()) {
+                cityInput.value =
+                    resultAddress.city ||
+                    resultAddress.town ||
+                    resultAddress.village ||
+                    resultAddress.municipality ||
+                    "";
+            }
+
+            if (pincodeInput && !pincodeInput.value.trim()) {
+                pincodeInput.value =
+                    resultAddress.postcode || "";
+            }
 
             // Open popup
             if (marker) {
