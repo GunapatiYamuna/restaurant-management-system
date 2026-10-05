@@ -1,6 +1,5 @@
 import json
 import re
-import requests
 from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
@@ -11,8 +10,6 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.utils import timezone
-from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
-from django.utils.html import escape
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -22,6 +19,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST, require_http_methods
 from .models import Profile, Restaurant, MenuItem, Reservation, ReservationItem, InventoryItem, Order, OrderItem, DeliveryPartner, DeliveryAssignment, ContactMessage
+from .attendance_notifications import reservation_attendance_notifications, reservation_attendance_response
 
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
@@ -98,58 +96,6 @@ def _data(request):
         try: return json.loads(request.body or "{}")
         except json.JSONDecodeError: return {}
     return request.POST
-
-def _reservation_start(reservation):
-    naive = datetime.combine(reservation.date, reservation.time)
-    return timezone.make_aware(naive, timezone.get_current_timezone())
-
-
-def _reservation_attendance_token(reservation):
-    signer = TimestampSigner(salt="foodiehub-reservation-attendance")
-    return signer.sign(f"{reservation.id}:{reservation.user_id}")
-
-
-def _normalize_sms_phone(phone):
-    value = str(phone or "").strip().replace(" ", "").replace("-", "")
-    if value.isdigit() and len(value) == 10:
-        return "+91" + value
-    return value
-
-
-def _send_reservation_attendance_sms(reservation):
-    profile = getattr(reservation.user, "profile", None) if reservation.user_id else None
-    phone = _normalize_sms_phone(profile.phone if profile else "")
-    if not phone:
-        raise ValueError("Customer profile does not contain a mobile number.")
-
-    sid = getattr(settings, "TWILIO_ACCOUNT_SID", "")
-    auth_token = getattr(settings, "TWILIO_AUTH_TOKEN", "")
-    from_number = getattr(settings, "TWILIO_PHONE_NUMBER", "")
-    if not all((sid, auth_token, from_number)):
-        raise RuntimeError("Twilio SMS settings are not configured.")
-
-    base_url = str(getattr(settings, "PUBLIC_BASE_URL", settings.FRONTEND_BASE_URL)).rstrip("/")
-    token = _reservation_attendance_token(reservation)
-    coming_url = f"{base_url}/api/reservations/attendance/{reservation.id}/{token}/coming/"
-    not_coming_url = f"{base_url}/api/reservations/attendance/{reservation.id}/{token}/not-coming/"
-
-    start = _reservation_start(reservation)
-    message = (
-        f"FoodieHub: Reservation #{reservation.id} at {reservation.restaurant.name} "
-        f"is scheduled for {start.astimezone(timezone.get_current_timezone()).strftime('%d %b %Y, %I:%M %p')}. "
-        f"Are you coming? Coming: {coming_url} Not coming: {not_coming_url}"
-    )
-
-    response = requests.post(
-        f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
-        auth=(sid, auth_token),
-        data={"From": from_number, "To": phone, "Body": message},
-        timeout=15,
-    )
-    response.raise_for_status()
-    return phone
-
-
 
 def _user_payload(user):
     profile, _ = Profile.objects.get_or_create(user=user)
