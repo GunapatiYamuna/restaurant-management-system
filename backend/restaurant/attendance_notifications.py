@@ -68,7 +68,13 @@ def reservation_attendance_response(request, reservation_id, token, response):
 
     reservation.attendance_responded_at = now
     reservation.save(update_fields=["attendance_response", "status", "attendance_responded_at"])
-    return _attendance_page(title, message, label)
+    return _attendance_page(
+        title,
+        message,
+        label,
+        reservation=reservation,
+        payment_action="remaining" if response == "coming" else "refund" if response == "not-coming" else None,
+    )
 
 
 def _attendance_page(title, message, status_label, reservation=None, payment_action=None):
