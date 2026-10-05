@@ -48,7 +48,17 @@ class Reservation(models.Model):
     guests = models.PositiveIntegerField(default=1)
     message = models.TextField(blank=True)
     status = models.CharField(max_length=30, default="pending")
-    attendance_response = models.CharField(\n        max_length=20,\n        choices=[\n            ("pending", "Pending"),\n            ("coming", "Coming"),\n            ("not_coming", "Not Coming"),\n        ],\n        default="pending",\n    )\n    attendance_notified_at = models.DateTimeField(null=True, blank=True)\n    attendance_responded_at = models.DateTimeField(null=True, blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)
+    attendance_response = models.CharField(
+        max_length=20,
+        choices=[
+            ("pending", "Pending"),
+            ("coming", "Coming"),
+            ("not_coming", "Not Coming"),
+        ],
+        default="pending",
+    )
+    attendance_notified_at = models.DateTimeField(null=True, blank=True)
+    attendance_responded_at = models.DateTimeField(null=True, blank=True)\n    created_at = models.DateTimeField(auto_now_add=True)
 
 class ReservationItem(models.Model):
     reservation = models.ForeignKey(Reservation, on_delete=models.CASCADE, related_name="items")
