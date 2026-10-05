@@ -861,11 +861,13 @@ def process_reservation_refund(request, reservation_id):
                 code=f"FOOD{reservation_id}{now.strftime('%m%d')}",
                 amount=amount, expires_at=now + timedelta(days=14)
             )
+    coupon_code = None
     if refund_type == "upi":
         message = f"Refund of ₹{amount:.2f} initiated to your UPI account"
     else:
+        coupon_code = ReservationCoupon.objects.get(reservation=payment.reservation).code
         message = f"Coupon worth ₹{amount:.2f} issued. Valid for 2 weeks."
-    return JsonResponse({"success": True, "refund_amount": float(amount), "refund_type": refund_type, "reference": reference, "message": message})
+    return JsonResponse({"success": True, "refund_amount": float(amount), "refund_type": refund_type, "reference": reference, "message": message, "coupon_code": coupon_code})
 
 
 @require_GET
