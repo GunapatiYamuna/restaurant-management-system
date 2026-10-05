@@ -225,6 +225,12 @@ def submit_contact_message(request):
             "message": "Name, email, subject and message are required."
         }, status=400)
 
+    if phone and not re.fullmatch(r"[0-9]{10}", phone):
+        return JsonResponse({
+            "success": False,
+            "message": "Please enter a valid 10-digit phone number."
+        }, status=400)
+
     if not re.fullmatch(r"^[^\s@]+@[^\s@]+\.[^\s@]+$", email):
         return JsonResponse({
             "success": False,
@@ -489,6 +495,10 @@ def create_reservation(request):
     required = ("restaurant_id", "name", "email", "phone", "date", "time", "guests")
     if any(not str(data.get(k, "")).strip() for k in required):
         return JsonResponse({"success": False, "message": "All reservation fields are required."}, status=400)
+
+    phone = str(data.get("phone", "")).strip()
+    if not re.fullmatch(r"[0-9]{10}", phone):
+        return JsonResponse({"success": False, "message": "Please enter a valid 10-digit phone number."}, status=400)
 
     try:
         restaurant_id = int(data["restaurant_id"])
@@ -803,6 +813,10 @@ def create_order(request):
         validated_items, subtotal = _validate_order_items(items)
     except ValueError as error:
         return JsonResponse({"success": False, "message": str(error)}, status=400)
+    phone = str(data.get("phone", "")).strip()
+    if not re.fullmatch(r"[0-9]{10}", phone):
+        return JsonResponse({"success": False, "message": "Please enter a valid 10-digit phone number."}, status=400)
+
     payment_method = str(data.get("payment_method", "Cash on Delivery")).strip() or "Cash on Delivery"
     if payment_method != "Cash on Delivery":
         return JsonResponse({"success": False, "message": "Online payments must be completed through Razorpay checkout."}, status=400)
@@ -1550,6 +1564,8 @@ def delivery_register(request):
     vehicle_number = str(data.get("vehicle_number", "")).strip()
     if not all((name, email, phone, password)):
         return JsonResponse({"success": False, "message": "Name, email, phone and password are required."}, status=400)
+    if not re.fullmatch(r"[0-9]{10}", phone):
+        return JsonResponse({"success": False, "message": "Please enter a valid 10-digit phone number."}, status=400)
     if User.objects.filter(email__iexact=email).exists() or User.objects.filter(username=email).exists():
         return JsonResponse({"success": False, "message": "An account with this email already exists."}, status=400)
     password_error = _validate_password(password)
