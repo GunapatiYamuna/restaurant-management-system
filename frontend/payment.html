@@ -76,6 +76,8 @@ body{font-family:Poppins,Arial,sans-serif;background:#f7f8fa;color:#222;min-heig
 <div id="restaurantName" class="text-muted mb-3"></div>
 <div id="foodItems"></div>
 <div class="summary-row"><span>Food total</span><strong>₹<span id="foodTotal">0</span></strong></div>
+<div class="summary-row"><span>Coupon discount</span><strong>-₹<span id="couponDiscountAmount">0</span></strong></div>
+<div class="summary-row"><span>Food payable after coupon</span><strong>₹<span id="payableFoodTotal">0</span></strong></div>
 <div class="border rounded-3 p-3 mb-3">
     <div class="fw-semibold mb-2">FoodieHub Coupon</div>
     <div class="input-group">
@@ -147,7 +149,9 @@ document.addEventListener("DOMContentLoaded", function () {
         total = Math.max(0, originalTotal - couponDiscount);
         upfront = Math.round((total / 2) * 100) / 100;
         remaining = Math.round((total - upfront) * 100) / 100;
-        document.getElementById("foodTotal").textContent = total.toFixed(2);
+        document.getElementById("foodTotal").textContent = originalTotal.toFixed(2);
+        document.getElementById("couponDiscountAmount").textContent = couponDiscount.toFixed(2);
+        document.getElementById("payableFoodTotal").textContent = total.toFixed(2);
         document.getElementById("totalAmount").textContent = total.toFixed(2);
         document.getElementById("upfrontAmount").textContent = upfront.toFixed(2);
         document.getElementById("remainingAmount").textContent = remaining.toFixed(2);
