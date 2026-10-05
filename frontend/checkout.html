@@ -107,7 +107,11 @@
                             type="tel"
                             id="phone"
                             class="form-control"
-                            placeholder="Enter your phone number"
+                            placeholder="Enter 10-digit phone number"
+                            maxlength="10"
+                            minlength="10"
+                            pattern="[0-9]{10}"
+                            inputmode="numeric"
                             required>
 
                     </div>
