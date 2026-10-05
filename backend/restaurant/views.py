@@ -929,6 +929,22 @@ def reservation_history(request):
             "message": r.message,
             "created_at": r.created_at.isoformat(),
             "prebook_total": float(sum(item.price * item.quantity for item in r.items.all())),
+            "payment": ({
+                "food_total": float(r.payment.food_total),
+                "upfront_amount": float(r.payment.upfront_amount),
+                "remaining_amount": float(r.payment.remaining_amount),
+                "upfront_status": r.payment.upfront_status,
+                "remaining_status": r.payment.remaining_status,
+                "refund_status": r.payment.refund_status,
+                "refund_type": r.payment.refund_type,
+                "refund_amount": float(r.payment.refund_amount),
+                "refund_reference": r.payment.refund_reference,
+                "coupon": ({
+                    "code": r.refund_coupon.code,
+                    "amount": float(r.refund_coupon.amount),
+                    "expires_at": r.refund_coupon.expires_at.isoformat(),
+                } if hasattr(r, "refund_coupon") else None),
+            } if hasattr(r, "payment") else None),
             "items": [
                 {"name": item.name, "price": float(item.price), "quantity": item.quantity}
                 for item in r.items.all()
