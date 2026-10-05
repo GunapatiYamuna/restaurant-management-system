@@ -537,10 +537,13 @@ def create_reservation(request):
         validated_items.append((menu_item, qty, price))
         total += price * qty
 
+    coupon_code = _coupon_code(data)
+    if coupon_code and total <= 0:
+        return JsonResponse({"success": False, "message": "Food coupons can only be used with pre-ordered food."}, status=400)
+
     if total > 0 and str(data.get("payment_method", "")).strip() != "UPI":
         return JsonResponse({"success": False, "message": "UPI is required for pre-booked food payment."}, status=400)
 
-    coupon_code = _coupon_code(data)
     upfront_transaction_id = str(data.get("upfront_transaction_id", "")).strip()
 
     with transaction.atomic():
