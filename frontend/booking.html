@@ -638,7 +638,7 @@
 <div class="col-12">
 <button class="book-btn" id="submitButton" type="submit">
 
-                                    Confirm Reservation
+                                    Next
 
                                     <i class="bi bi-arrow-right"></i>
 </button>
@@ -1035,157 +1035,100 @@
 
 
             /* ==========================================
-               SEND DATA TO DJANGO
+               CONTINUE TO PAYMENT / CREATE RESERVATION
             ========================================== */
 
             try {
 
-                let upfrontPayment = null;
-
+                /*
+                 * If food was pre-booked, open the dedicated UPI
+                 * payment page. The reservation is created only after
+                 * the upfront payment is completed there.
+                 */
                 if (prebookItems.length) {
-                    const upiId = window.prompt(
-                        "Enter your UPI ID to pay 50% of the pre-booked food bill:"
-                    );
+                    const bookingData = {
+                        restaurantId: restaurantId,
+                        restaurant: prebookData?.restaurant_name || "Restaurant",
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        guests: guestCount,
+                        date: date,
+                        time: timeValue,
+                        time24: time,
+                        message: message,
+                        items: prebookItems,
+                        prebookTotal: prebookItems.reduce(
+                            (sum, item) => sum + (Number(item.price) || 0) * (Number(item.quantity) || 1),
+                            0
+                        )
+                    };
 
-                    if (!upiId || !/^[A-Za-z0-9._-]+@[A-Za-z]{2,}$/.test(upiId.trim())) {
-                        alert("Please enter a valid UPI ID.");
-                        return;
-                    }
-
-                    const paymentResponse = await fetch(
-                        "/api/reservations/preorder-payment/",
-                        {
-                            method: "POST",
-                            credentials: "same-origin",
-                            headers: {"Content-Type": "application/json"},
-                            body: JSON.stringify({
-                                restaurant_id: restaurantId,
-                                items: prebookItems,
-                                upi_id: upiId.trim()
-                            })
-                        }
-                    );
-                    const paymentResult = await paymentResponse.json().catch(() => ({}));
-
-                    if (!paymentResponse.ok || !paymentResult.success) {
-                        throw new Error(paymentResult.message || "Unable to complete UPI payment.");
-                    }
-
-                    upfrontPayment = paymentResult;
+                    localStorage.setItem("foodieHubPendingReservation", JSON.stringify(bookingData));
+                    window.location.href = "payment.html";
+                    return;
                 }
 
+                /* No pre-booked food: continue directly to reservation creation. */
                 const response = await fetch(
                     "/api/reservations/",
                     {
                         method: "POST",
-
+                        credentials: "same-origin",
                         headers: {
                             "Content-Type": "application/json"
                         },
-
                         body: JSON.stringify({
                             ...reservationData,
-                            payment_method: prebookItems.length ? "UPI" : null,
-                            upfront_transaction_id: upfrontPayment?.transaction_id || ""
+                            payment_method: null,
+                            upfront_transaction_id: ""
                         })
                     }
                 );
 
+                const result = await response.json().catch(() => ({}));
 
-                /* ======================================
-                   READ DJANGO RESPONSE
-                ====================================== */
-
-                const result =
-                    await response.json();
-
-
-                /* ======================================
-                   SUCCESS
-                ====================================== */
-
-                if (
-                    response.ok &&
-                    result.success
-                ) {
-
+                if (response.ok && result.success) {
                     const bookingData = {
                         reservationId: result.reservation_id,
                         restaurantId: restaurantId,
                         restaurant: prebookData?.restaurant_name || "Restaurant",
-                        name: name, email: email, phone: phone, guests: guestCount,
-                        date: date, time: timeValue, message: message,
-                        items: result.items || prebookItems,
-                        prebookTotal: result.prebook_total || 0,
-                        upfrontAmount: result.upfront_amount || 0,
-                        remainingAmount: result.remaining_amount || 0,
-                        paymentTransactionId: result.upfront_transaction_id || upfrontPayment?.transaction_id || ""
+                        name: name,
+                        email: email,
+                        phone: phone,
+                        guests: guestCount,
+                        date: date,
+                        time: timeValue,
+                        message: message,
+                        items: [],
+                        prebookTotal: 0,
+                        upfrontAmount: 0,
+                        remainingAmount: 0,
+                        paymentTransactionId: ""
                     };
                     localStorage.setItem("foodieHubBooking", JSON.stringify(bookingData));
                     localStorage.removeItem("foodiePrebook");
                     window.location.href = "confirmation.html";
-
-
-                    /* Reset form */
-
-                    this.reset();
-
-
-                } else {
-
-
-                    /* ==================================
-                       SERVER ERROR
-                    ================================== */
-
-                    alert(
-
-                        "Reservation failed.\n\n" +
-
-                        (
-                            result.message ||
-                            "Please try again."
-                        )
-
-                    );
-
+                    return;
                 }
 
+                throw new Error(result.message || "Unable to create the reservation.");
 
             } catch (error) {
 
+                console.error("Reservation error:", error);
 
-                /* ======================================
-                   CONNECTION ERROR
-                ====================================== */
-
-                console.error(
-                    "Reservation error:",
-                    error
-                );
-
-
-                alert(
-
-                    "Unable to connect to the server.\n\n" +
-
-                    "Please make sure the Django backend " +
-                    "is running."
-
-                );
-
+                const errorBox = document.getElementById("agreementError");
+                if (errorBox) {
+                    errorBox.textContent = error.message || "Unable to continue. Please try again.";
+                }
 
             } finally {
-
-
-                /* ======================================
-                   ENABLE BUTTON AGAIN
-                ====================================== */
 
                 submitButton.disabled = false;
 
                 submitButton.innerHTML =
-                    'Confirm Reservation ' +
+                    'Next ' +
                     '<i class="bi bi-arrow-right"></i>';
 
             }
