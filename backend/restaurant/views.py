@@ -1,6 +1,7 @@
 import json
 import re
-from datetime import date
+import requests
+from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
 from django.conf import settings
@@ -10,6 +11,9 @@ from django.contrib.auth.tokens import default_token_generator
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.utils import timezone
+from django.core.signing import TimestampSigner, BadSignature, SignatureExpired
+from django.utils.html import escape
+from django.utils.http import url_has_allowed_host_and_scheme
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError
@@ -95,6 +99,58 @@ def _data(request):
         try: return json.loads(request.body or "{}")
         except json.JSONDecodeError: return {}
     return request.POST
+
+def _reservation_start(reservation):
+    naive = datetime.combine(reservation.date, reservation.time)
+    return timezone.make_aware(naive, timezone.get_current_timezone())
+
+
+def _reservation_attendance_token(reservation):
+    signer = TimestampSigner(salt="foodiehub-reservation-attendance")
+    return signer.sign(f"{reservation.id}:{reservation.user_id}")
+
+
+def _normalize_sms_phone(phone):
+    value = str(phone or "").strip().replace(" ", "").replace("-", "")
+    if value.isdigit() and len(value) == 10:
+        return "+91" + value
+    return value
+
+
+def _send_reservation_attendance_sms(reservation):
+    profile = getattr(reservation.user, "profile", None) if reservation.user_id else None
+    phone = _normalize_sms_phone(profile.phone if profile else "")
+    if not phone:
+        raise ValueError("Customer profile does not contain a mobile number.")
+
+    sid = getattr(settings, "TWILIO_ACCOUNT_SID", "")
+    auth_token = getattr(settings, "TWILIO_AUTH_TOKEN", "")
+    from_number = getattr(settings, "TWILIO_PHONE_NUMBER", "")
+    if not all((sid, auth_token, from_number)):
+        raise RuntimeError("Twilio SMS settings are not configured.")
+
+    base_url = str(getattr(settings, "PUBLIC_BASE_URL", settings.FRONTEND_BASE_URL)).rstrip("/")
+    token = _reservation_attendance_token(reservation)
+    coming_url = f"{base_url}/api/reservations/attendance/{reservation.id}/{token}/coming/"
+    not_coming_url = f"{base_url}/api/reservations/attendance/{reservation.id}/{token}/not-coming/"
+
+    start = _reservation_start(reservation)
+    message = (
+        f"FoodieHub: Reservation #{reservation.id} at {reservation.restaurant.name} "
+        f"is scheduled for {start.astimezone(timezone.get_current_timezone()).strftime('%d %b %Y, %I:%M %p')}. "
+        f"Are you coming? Coming: {coming_url} Not coming: {not_coming_url}"
+    )
+
+    response = requests.post(
+        f"https://api.twilio.com/2010-04-01/Accounts/{sid}/Messages.json",
+        auth=(sid, auth_token),
+        data={"From": from_number, "To": phone, "Body": message},
+        timeout=15,
+    )
+    response.raise_for_status()
+    return phone
+
+
 
 def _user_payload(user):
     profile, _ = Profile.objects.get_or_create(user=user)
@@ -489,6 +545,77 @@ def create_reservation(request):
         "message": "Table reserved successfully."
     })
 
+
+def reservation_attendance_response(request, reservation_id, token, response):
+    if response not in ("coming", "not-coming"):
+        return JsonResponse({"success": False, "message": "Invalid attendance response."}, status=400)
+
+    reservation = Reservation.objects.select_related("restaurant", "user__profile").filter(pk=reservation_id).first()
+    if not reservation:
+        return JsonResponse({"success": False, "message": "Reservation not found."}, status=404)
+
+    signer = TimestampSigner(salt="foodiehub-reservation-attendance")
+    try:
+        signed_value = signer.unsign(token, max_age=172800)
+    except SignatureExpired:
+        return JsonResponse({"success": False, "message": "This attendance link has expired."}, status=410)
+    except BadSignature:
+        return JsonResponse({"success": False, "message": "This attendance link is invalid."}, status=400)
+
+    if signed_value != f"{reservation.id}:{reservation.user_id}":
+        return JsonResponse({"success": False, "message": "This attendance link is not valid for this reservation."}, status=403)
+
+    now = timezone.now()
+    reservation_start = _reservation_start(reservation)
+    if now > reservation_start:
+        return _reservation_attendance_page(
+            "Attendance response received",
+            f"Reservation #{reservation.id} at {reservation.restaurant.name} has already reached its scheduled time.",
+            reservation.status,
+        )
+
+    if reservation.status == "cancelled":
+        return _reservation_attendance_page(
+            "Reservation cancelled",
+            "This reservation was already cancelled and cannot be confirmed.",
+            "Cancelled",
+        )
+
+    if response == "coming":
+        reservation.attendance_response = "coming"
+        reservation.status = "confirmed"
+        heading = "Reservation confirmed"
+        message = f"Thank you. Your reservation #{reservation.id} at {reservation.restaurant.name} is confirmed."
+        status_label = "Confirmed"
+    else:
+        reservation.attendance_response = "not_coming"
+        reservation.status = "cancelled"
+        heading = "Reservation cancelled"
+        message = f"Your reservation #{reservation.id} at {reservation.restaurant.name} has been cancelled."
+        status_label = "Cancelled"
+
+    reservation.attendance_responded_at = now
+    reservation.save(update_fields=["attendance_response", "status", "attendance_responded_at"])
+
+    return _reservation_attendance_page(heading, message, status_label)
+
+
+def _reservation_attendance_page(title, message, status_label):
+    safe_title = escape(title)
+    safe_message = escape(message)
+    safe_status = escape(status_label)
+    html = f"""<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>FoodieHub - {safe_title}</title>
+<style>
+body{{margin:0;font-family:Arial,sans-serif;background:#f7f7f8;display:grid;place-items:center;min-height:100vh;color:#222}}
+.card{{width:min(92%,460px);background:#fff;border-radius:18px;padding:32px;box-shadow:0 12px 35px rgba(0,0,0,.1);text-align:center}}
+h1{{margin:0 0 12px}} p{{color:#666;line-height:1.55}} .status{{display:inline-block;margin-top:10px;padding:9px 16px;border-radius:999px;background:#fff1e8;color:#e85c00;font-weight:700}}
+</style></head><body><main class="card"><h1>{safe_title}</h1><p>{safe_message}</p><div class="status">{safe_status}</div><p>You can close this page.</p></main></body></html>"""
+    from django.http import HttpResponse
+    return HttpResponse(html)
+
+
 @csrf_exempt
 @require_POST
 def create_order(request):
@@ -701,6 +828,9 @@ def reservation_history(request):
             "time": r.time.strftime("%H:%M"),
             "guests": r.guests,
             "status": r.status,
+            "attendance_response": r.attendance_response,
+            "attendance_notified_at": r.attendance_notified_at.isoformat() if r.attendance_notified_at else None,
+            "attendance_responded_at": r.attendance_responded_at.isoformat() if r.attendance_responded_at else None,
             "message": r.message,
             "created_at": r.created_at.isoformat(),
             "prebook_total": float(sum(item.price * item.quantity for item in r.items.all())),
@@ -849,7 +979,7 @@ def restaurant_reservations(request):
     if error: return error
     rows=[]
     for r in restaurant.reservations.prefetch_related("items").order_by("-date","-time"):
-        rows.append({"id":r.id,"name":r.name,"email":r.email,"phone":r.phone,"date":r.date.isoformat(),"time":r.time.strftime("%H:%M"),"guests":r.guests,"message":r.message,"status":r.status,"created_at":r.created_at.isoformat(),"prebook_total":float(sum(i.price*i.quantity for i in r.items.all())),"items":[{"name":i.name,"price":float(i.price),"quantity":i.quantity} for i in r.items.all()]})
+        rows.append({"id":r.id,"name":r.name,"email":r.email,"phone":r.phone,"date":r.date.isoformat(),"time":r.time.strftime("%H:%M"),"guests":r.guests,"message":r.message,"status":r.status,"attendance_response":r.attendance_response,"attendance_notified_at":r.attendance_notified_at.isoformat() if r.attendance_notified_at else None,"attendance_responded_at":r.attendance_responded_at.isoformat() if r.attendance_responded_at else None,"created_at":r.created_at.isoformat(),"prebook_total":float(sum(i.price*i.quantity for i in r.items.all())),"items":[{"name":i.name,"price":float(i.price),"quantity":i.quantity} for i in r.items.all()]})
     return JsonResponse({"success":True,"reservations":rows})
 
 @csrf_exempt
