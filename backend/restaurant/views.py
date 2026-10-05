@@ -498,6 +498,44 @@ def create_reservation(request):
     if guests < 1:
         return JsonResponse({"success": False, "message": "Guests must be at least 1."}, status=400)
 
+    # Reservation cutoff: bookings for today close at 10:00 PM
+    # in the project's configured local timezone (Asia/Kolkata).
+    try:
+        reservation_date = datetime.strptime(str(data["date"]).strip(), "%Y-%m-%d").date()
+        reservation_time = datetime.strptime(str(data["time"]).strip(), "%H:%M").time()
+    except (TypeError, ValueError):
+        return JsonResponse({"success": False, "message": "Please provide a valid reservation date and time."}, status=400)
+
+    now_local = timezone.localtime()
+    today = now_local.date()
+    cutoff_time = datetime.strptime("22:00", "%H:%M").time()
+
+    if reservation_date < today:
+        return JsonResponse({"success": False, "message": "Past reservation dates are not available."}, status=400)
+
+    if reservation_date == today:
+        if now_local.time() >= cutoff_time:
+            return JsonResponse({
+                "success": False,
+                "message": "Today's reservations are closed after 10:00 PM. Please reserve a table for tomorrow."
+            }, status=400)
+
+        selected_start = timezone.make_aware(
+            datetime.combine(reservation_date, reservation_time),
+            timezone.get_current_timezone(),
+        )
+        if selected_start <= now_local:
+            return JsonResponse({
+                "success": False,
+                "message": "That reservation time has already passed. Please choose a later time or tomorrow."
+            }, status=400)
+
+        if reservation_time > cutoff_time:
+            return JsonResponse({
+                "success": False,
+                "message": "Reservations for today are available only until 10:00 PM."
+            }, status=400)
+
     items = data.get("items", [])
     if isinstance(items, str):
         try:
