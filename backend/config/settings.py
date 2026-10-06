@@ -36,16 +36,30 @@ VAPID_CLAIMS_EMAIL = _env("VAPID_CLAIMS_EMAIL", default="mailto:admin@example.co
 
 SECRET_KEY = _env("DJANGO_SECRET_KEY", default="dev-only-change-me")
 DEBUG = _env_bool("DJANGO_DEBUG", default=True)
-ALLOWED_HOSTS = [
+
+# Allow the Railway-generated public domain automatically in production.
+# DJANGO_ALLOWED_HOSTS can still be used for custom domains or local hosts.
+_allowed_hosts = [
     host.strip()
     for host in _env("DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost").split(",")
     if host.strip()
 ]
-CSRF_TRUSTED_ORIGINS = [
+railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
+if railway_public_domain and railway_public_domain not in _allowed_hosts:
+    _allowed_hosts.append(railway_public_domain)
+ALLOWED_HOSTS = _allowed_hosts
+
+# Trust the Railway HTTPS origin automatically when Railway provides it.
+_trusted_origins = [
     origin.strip()
     for origin in _env("DJANGO_CSRF_TRUSTED_ORIGINS").split(",")
     if origin.strip()
 ]
+if railway_public_domain:
+    railway_origin = f"https://{railway_public_domain}"
+    if railway_origin not in _trusted_origins:
+        _trusted_origins.append(railway_origin)
+CSRF_TRUSTED_ORIGINS = _trusted_origins
 
 # Keep local development behavior unchanged, but allow Railway to disable the
 # public admin-registration endpoint without changing the frontend.
