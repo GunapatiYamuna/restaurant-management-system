@@ -718,7 +718,7 @@ def reservation_attendance_response(request, reservation_id, token, response):
             return _reservation_attendance_page(
                 reservation.id,
                 "Reservation cancelled",
-                f"Your reservation #{reservation.id} at {reservation.restaurant.name} has been cancelled. Please choose what you want to do with the 50% food payment already paid.",
+                f"Your reservation #{reservation.id} at {reservation.restaurant.name} has been cancelled",
                 "Cancelled",
                 True,
             )
