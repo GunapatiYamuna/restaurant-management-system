@@ -103,6 +103,34 @@ def _get_available_coupon_for_user(user, code, lock=False):
 
 
 
+@require_GET
+def available_coupons(request):
+    if not request.user.is_authenticated:
+        return JsonResponse({"success": False, "message": "Please login first."}, status=401)
+
+    now = timezone.now()
+    coupons = ReservationCoupon.objects.filter(
+        user=request.user,
+        used=False,
+        redeemed_order__isnull=True,
+        reserved_order__isnull=True,
+        expires_at__gt=now,
+    ).order_by("expires_at")
+
+    return JsonResponse({
+        "success": True,
+        "coupons": [
+            {
+                "code": coupon.code,
+                "amount": float(coupon.amount),
+                "expires_at": coupon.expires_at.isoformat(),
+                "uses": ["order_food", "preorder_reservation"],
+            }
+            for coupon in coupons
+        ],
+    })
+
+
 @csrf_exempt
 @require_POST
 def validate_coupon(request):

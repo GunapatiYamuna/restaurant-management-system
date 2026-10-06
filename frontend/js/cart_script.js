@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
     renderCheckoutPage();
     setupPaymentMethods();
     setupCoupon();
+    loadAvailableCoupons();
     setupPlaceOrder();
     renderOrderHistory();
 
@@ -691,6 +692,35 @@ function renderCheckoutPage() {
 /* =========================================================
    COUPON
 ========================================================= */
+async function loadAvailableCoupons() {
+    const container = document.getElementById("available-coupons");
+    if (!container) return;
+    try {
+        const response = await fetch("/api/coupons/", {credentials: "same-origin", cache: "no-store"});
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok || !data.success) return;
+        if (!Array.isArray(data.coupons) || !data.coupons.length) {
+            container.innerHTML = '<div class="small text-muted">No active coupons available.</div>';
+            return;
+        }
+        container.innerHTML = data.coupons.map(coupon =>
+            '<div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center gap-2">' +
+            '<div><strong>' + coupon.code + '</strong><div class="small text-muted">₹' + Number(coupon.amount).toFixed(2) +
+            ' off · Valid until ' + new Date(coupon.expires_at).toLocaleDateString() + '</div></div>' +
+            '<button type="button" class="btn btn-sm btn-outline-warning" data-use-coupon="' + coupon.code + '">Use Coupon</button></div>'
+        ).join("");
+        container.querySelectorAll("[data-use-coupon]").forEach(button => {
+            button.addEventListener("click", () => {
+                const input = document.getElementById("coupon-code");
+                if (input) input.value = button.dataset.useCoupon;
+                document.getElementById("apply-coupon-btn")?.click();
+            });
+        });
+    } catch (error) {
+        console.error("Available coupons load error:", error);
+    }
+}
+
 function setupCoupon() {
     const input = document.getElementById("coupon-code");
     const button = document.getElementById("apply-coupon-btn");
