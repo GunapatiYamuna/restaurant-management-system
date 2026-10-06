@@ -849,9 +849,7 @@ def _reservation_attendance_page(reservation_id, title, message, status_label, s
         </script>
         """
 
-    back_html = ""
-    if show_refund_choices:
-        back_html = '<div class="actions"><a class="back-action" href="/index.html">← Back to FoodieHub</a></div>'
+    back_html = '<div class="actions"><a class="back-action" href="/index.html">← Back to FoodieHub</a></div>'
 
     close_note = (
         "Your refund choice has been recorded. You can return to FoodieHub."
