@@ -11,4 +11,17 @@ if [ ! -x "$VENV_PYTHON" ]; then
 fi
 
 cd "$SCRIPT_DIR"
+
+run_once() {
+    "$VENV_PYTHON" manage.py send_reservation_push_reminders
+}
+
+if [ "${1:-}" = "--watch" ]; then
+    echo "FoodieHub reservation reminder watcher started (checking every 30 seconds)."
+    while true; do
+        run_once
+        sleep 30
+    done
+fi
+
 exec "$VENV_PYTHON" manage.py send_reservation_push_reminders
