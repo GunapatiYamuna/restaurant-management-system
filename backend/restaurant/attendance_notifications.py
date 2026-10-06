@@ -83,32 +83,11 @@ def _attendance_page(title, message, status_label, reservation=None, payment_act
         action_html = '<div class="actions"><a class="action" href="/login/pages/reservations.html">Pay Remaining Food Amount</a></div>'
     elif reservation and payment_action == "refund":
         action_html = f'''
-<p><strong>Choose how to receive your 50% food advance back:</strong></p>
-<div class="actions">
-<button onclick="refund('coupon')">Get 2-Week Coupon</button>
-<button class="secondary" onclick="refund('upi')">Refund to UPI</button>
-</div>
 <div id="result"></div>
-<script>
-async function refund(type) {{
-  const result = document.getElementById("result");
-  result.textContent = "Processing...";
-  try {{
-    const response = await fetch("/api/reservations/{reservation.id}/refund/", {{
-      method: "POST",
-      credentials: "same-origin",
-      headers: {{"Content-Type": "application/json"}},
-      body: JSON.stringify({{refund_type: type}})
-    }});
-    const data = await response.json().catch(() => ({{}}));
-    if (!response.ok || !data.success) throw new Error(data.message || "Unable to process refund.");
-    result.textContent = data.message + " | Reference: " + data.reference;
-    document.querySelectorAll("button").forEach(button => button.disabled = true);
-  }} catch (error) {{
-    result.textContent = error.message;
-  }}
-}}
-</script>'''
+<div class="actions">
+<a class="action" href="/login/index.html">Back to FoodieHub</a>
+</div>
+'''
 
     html = f"""<!doctype html>
 <html lang="en">
