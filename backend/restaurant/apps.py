@@ -26,6 +26,8 @@ class RestaurantConfig(AppConfig):
         )):
             return
 
-        from .push_scheduler import start_reservation_push_scheduler
+        from django.conf import settings
 
-        start_reservation_push_scheduler()
+        if getattr(settings, "RUN_PUSH_SCHEDULER_IN_WEB", True):
+            from .push_scheduler import start_reservation_push_scheduler
+            start_reservation_push_scheduler()
