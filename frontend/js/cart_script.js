@@ -693,27 +693,43 @@ function renderCheckoutPage() {
    COUPON
 ========================================================= */
 async function loadAvailableCoupons() {
-    const container = document.getElementById("available-coupons");
-    if (!container) return;
+    const menu = document.getElementById("available-coupons");
+    if (!menu) return;
+
     try {
         const response = await fetch("/api/coupons/", {credentials: "same-origin", cache: "no-store"});
         const data = await response.json().catch(() => ({}));
         if (!response.ok || !data.success) return;
+
         if (!Array.isArray(data.coupons) || !data.coupons.length) {
-            container.innerHTML = '<div class="small text-muted">No active coupons available.</div>';
+            menu.innerHTML = '<div class="dropdown-item-text small text-muted">No active coupons available.</div>';
             return;
         }
-        container.innerHTML = data.coupons.map(coupon =>
-            '<div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center gap-2">' +
-            '<div><strong>' + coupon.code + '</strong><div class="small text-muted">₹' + Number(coupon.amount).toFixed(2) +
-            ' off · Valid until ' + new Date(coupon.expires_at).toLocaleDateString() + '</div></div>' +
-            '<button type="button" class="btn btn-sm btn-outline-warning" data-use-coupon="' + coupon.code + '">Use Coupon</button></div>'
+
+        menu.innerHTML = data.coupons.map(coupon =>
+            '<button type="button" class="dropdown-item coupon-option rounded p-2" ' +
+            'data-coupon-code="' + coupon.code + '" data-coupon-amount="' + Number(coupon.amount).toFixed(2) + '">' +
+            '<strong>' + coupon.code + '</strong>' +
+            '<div class="small text-muted">₹' + Number(coupon.amount).toFixed(2) +
+            ' off · Valid until ' + new Date(coupon.expires_at).toLocaleDateString() + '</div>' +
+            '</button>'
         ).join("");
-        container.querySelectorAll("[data-use-coupon]").forEach(button => {
-            button.addEventListener("click", () => {
+
+        menu.querySelectorAll("[data-coupon-code]").forEach(option => {
+            option.addEventListener("click", function () {
                 const input = document.getElementById("coupon-code");
-                if (input) input.value = button.dataset.useCoupon;
-                document.getElementById("apply-coupon-btn")?.click();
+                const selectButton = document.getElementById("coupon-select-btn");
+                const message = document.getElementById("coupon-message");
+
+                if (input) input.value = this.dataset.couponCode;
+                if (selectButton) {
+                    selectButton.textContent = this.dataset.couponCode + " · ₹" + this.dataset.couponAmount + " off";
+                    selectButton.classList.add("border-warning");
+                }
+                if (message) {
+                    message.className = "small mt-2 text-muted";
+                    message.textContent = "Coupon selected. Click Apply Coupon to use it.";
+                }
             });
         });
     } catch (error) {
@@ -721,20 +737,36 @@ async function loadAvailableCoupons() {
     }
 }
 
+
 function setupCoupon() {
     const input = document.getElementById("coupon-code");
-    const button = document.getElementById("apply-coupon-btn");
+    const applyButton = document.getElementById("apply-coupon-btn");
+    const cancelButton = document.getElementById("cancel-coupon-btn");
+    const selectButton = document.getElementById("coupon-select-btn");
     const message = document.getElementById("coupon-message");
-    if (!input || !button || !message) return;
+    if (!input || !applyButton || !cancelButton || !selectButton || !message) return;
 
-    button.addEventListener("click", async function () {
+    function resetCoupon() {
+        appliedCouponCode = "";
+        appliedCouponDiscount = 0;
+        input.value = "";
+        selectButton.textContent = "Select Coupon";
+        selectButton.classList.remove("border-warning");
+        applyButton.classList.remove("d-none");
+        cancelButton.classList.add("d-none");
+        message.className = "small mt-2";
+        message.textContent = "";
+        updateCheckoutTotals(getCart());
+    }
+
+    applyButton.addEventListener("click", async function () {
         const code = input.value.trim().toUpperCase();
         const cart = getCart();
         const totals = calculateTotals(cart, 0);
 
         if (!code) {
             message.className = "small mt-2 text-danger";
-            message.textContent = "Please enter a coupon code.";
+            message.textContent = "Please select a coupon first.";
             return;
         }
         if (!cart.length || totals.subtotal <= 0) {
@@ -743,7 +775,7 @@ function setupCoupon() {
             return;
         }
 
-        button.disabled = true;
+        applyButton.disabled = true;
         message.className = "small mt-2 text-muted";
         message.textContent = "Checking coupon...";
 
@@ -763,8 +795,11 @@ function setupCoupon() {
 
             appliedCouponCode = data.coupon_code;
             appliedCouponDiscount = Number(data.discount) || 0;
+            applyButton.classList.add("d-none");
+            cancelButton.classList.remove("d-none");
+            selectButton.textContent = "Coupon " + appliedCouponCode + " applied";
             message.className = "small mt-2 text-success";
-            message.textContent = "Coupon applied. ₹" + appliedCouponDiscount.toFixed(2) + " discount will be used once when this order is placed.";
+            message.textContent = "₹" + appliedCouponDiscount.toFixed(2) + " coupon discount applied.";
             updateCheckoutTotals(cart);
         } catch (error) {
             appliedCouponCode = "";
@@ -773,9 +808,11 @@ function setupCoupon() {
             message.textContent = error.message;
             updateCheckoutTotals(cart);
         } finally {
-            button.disabled = false;
+            applyButton.disabled = false;
         }
     });
+
+    cancelButton.addEventListener("click", resetCoupon);
 }
 
 

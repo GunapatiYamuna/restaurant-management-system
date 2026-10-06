@@ -80,10 +80,14 @@ body{font-family:Poppins,Arial,sans-serif;background:#f7f8fa;color:#222;min-heig
 <div class="summary-row"><span>Food payable after coupon</span><strong>₹<span id="payableFoodTotal">0</span></strong></div>
 <div class="border rounded-3 p-3 mb-3">
     <div class="fw-semibold mb-2">FoodieHub Coupons</div>
-    <div id="available-reservation-coupons" class="mb-2"></div>
-    <div class="input-group">
-        <input type="text" id="reservationCouponCode" class="form-control" placeholder="Enter coupon code" maxlength="40">
-        <button type="button" id="applyReservationCoupon" class="btn btn-outline-warning">Apply</button>
+    <div class="dropdown">
+        <button type="button" id="reservationCouponSelect" class="btn btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown">Select Coupon</button>
+        <div id="available-reservation-coupons" class="dropdown-menu w-100 p-2"></div>
+    </div>
+    <input type="hidden" id="reservationCouponCode">
+    <div class="d-flex gap-2 mt-2">
+        <button type="button" id="applyReservationCoupon" class="btn btn-outline-warning">Apply Coupon</button>
+        <button type="button" id="cancelReservationCoupon" class="btn btn-outline-secondary d-none">Cancel Coupon</button>
     </div>
     <div id="reservationCouponMessage" class="small mt-2"></div>
 </div>
@@ -151,26 +155,27 @@ document.addEventListener("DOMContentLoaded", function () {
             if (!response.ok || !data.success) return;
             const coupons = (data.coupons || []).filter(coupon => (coupon.uses || []).includes("preorder_reservation"));
             if (!coupons.length) {
-                container.innerHTML = '<div class="small text-muted">No active coupons available.</div>';
+                container.innerHTML = '<div class="dropdown-item-text small text-muted">No active coupons available.</div>';
                 return;
             }
             container.innerHTML = coupons.map(coupon =>
-                '<div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center gap-2">' +
-                '<div><strong>' + coupon.code + '</strong><div class="small text-muted">₹' + Number(coupon.amount).toFixed(2) +
-                ' off · Valid until ' + new Date(coupon.expires_at).toLocaleDateString() + '</div></div>' +
-                '<button type="button" class="btn btn-sm btn-outline-warning" data-use-reservation-coupon="' + coupon.code + '">Use Coupon</button></div>'
+                '<button type="button" class="dropdown-item reservation-coupon-option rounded p-2" data-coupon-code="' + coupon.code + '" data-coupon-amount="' + Number(coupon.amount).toFixed(2) + '">' +
+                '<strong>' + coupon.code + '</strong><div class="small text-muted">₹' + Number(coupon.amount).toFixed(2) +
+                ' off · Valid until ' + new Date(coupon.expires_at).toLocaleDateString() + '</div></button>'
             ).join("");
-            container.querySelectorAll("[data-use-reservation-coupon]").forEach(button => {
-                button.addEventListener("click", () => {
-                    const input = document.getElementById("reservationCouponCode");
-                    if (input) input.value = button.dataset.useReservationCoupon;
-                    document.getElementById("applyReservationCoupon")?.click();
+            container.querySelectorAll("[data-coupon-code]").forEach(option => {
+                option.addEventListener("click", function () {
+                    document.getElementById("reservationCouponCode").value = this.dataset.couponCode;
+                    document.getElementById("reservationCouponSelect").textContent = this.dataset.couponCode + " · ₹" + this.dataset.couponAmount + " off";
+                    document.getElementById("reservationCouponMessage").textContent = "Coupon selected. Click Apply Coupon to use it.";
                 });
             });
         } catch (error) {
             console.error("Available reservation coupons load error:", error);
         }
     }
+
+
 
     const couponInput = document.getElementById("reservationCouponCode");
     const couponButton = document.getElementById("applyReservationCoupon");
@@ -191,11 +196,26 @@ document.addEventListener("DOMContentLoaded", function () {
 
     loadReservationCoupons();
 
+    const cancelCouponButton = document.getElementById("cancelReservationCoupon");
+    const couponSelect = document.getElementById("reservationCouponSelect");
+
+    function resetReservationCoupon() {
+        couponCode = "";
+        couponDiscount = 0;
+        couponInput.value = "";
+        couponSelect.textContent = "Select Coupon";
+        couponButton.classList.remove("d-none");
+        cancelCouponButton.classList.add("d-none");
+        couponMessage.className = "small mt-2";
+        couponMessage.textContent = "";
+        refreshPaymentAmounts();
+    }
+
     couponButton.addEventListener("click", async function () {
         const code = couponInput.value.trim().toUpperCase();
         if (!code) {
             couponMessage.className = "small mt-2 text-danger";
-            couponMessage.textContent = "Please enter a coupon code.";
+            couponMessage.textContent = "Please select a coupon first.";
             return;
         }
         couponButton.disabled = true;
@@ -203,21 +223,19 @@ document.addEventListener("DOMContentLoaded", function () {
         couponMessage.textContent = "Checking coupon...";
         try {
             const response = await fetch("/api/coupons/validate/", {
-                method: "POST",
-                credentials: "same-origin",
+                method: "POST", credentials: "same-origin",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({
-                    coupon_code: code,
-                    usage: "preorder",
-                    food_amount: originalTotal
-                })
+                body: JSON.stringify({coupon_code: code, usage: "preorder", food_amount: originalTotal})
             });
             const data = await response.json().catch(() => ({}));
             if (!response.ok || !data.success) throw new Error(data.message || "Unable to apply coupon.");
             couponCode = data.coupon_code;
             couponDiscount = Number(data.discount) || 0;
+            couponButton.classList.add("d-none");
+            cancelCouponButton.classList.remove("d-none");
+            couponSelect.textContent = "Coupon " + couponCode + " applied";
             couponMessage.className = "small mt-2 text-success";
-            couponMessage.textContent = "Coupon applied. ₹" + couponDiscount.toFixed(2) + " will be used once for this pre-order.";
+            couponMessage.textContent = "₹" + couponDiscount.toFixed(2) + " coupon discount applied.";
             refreshPaymentAmounts();
         } catch (error) {
             couponCode = "";
@@ -229,6 +247,8 @@ document.addEventListener("DOMContentLoaded", function () {
             couponButton.disabled = false;
         }
     });
+
+    cancelCouponButton.addEventListener("click", resetReservationCoupon);
 
     const foodItems = document.getElementById("foodItems");
     foodItems.innerHTML = pending.items.map(item => {

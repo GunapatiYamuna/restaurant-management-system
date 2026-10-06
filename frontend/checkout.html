@@ -479,10 +479,16 @@
 
                     <div class="border rounded-3 p-3 mb-3">
                         <div class="fw-semibold mb-2">FoodieHub Coupons</div>
-                        <div id="available-coupons" class="mb-2"></div>
-                        <div class="input-group">
-                            <input type="text" id="coupon-code" class="form-control" placeholder="Enter coupon code" maxlength="40">
-                            <button type="button" id="apply-coupon-btn" class="btn btn-outline-warning">Apply</button>
+                        <div class="dropdown">
+                            <button type="button" id="coupon-select-btn" class="btn btn-outline-secondary dropdown-toggle w-100 text-start" data-bs-toggle="dropdown" aria-expanded="false">
+                                Select Coupon
+                            </button>
+                            <div id="available-coupons" class="dropdown-menu w-100 p-2"></div>
+                        </div>
+                        <input type="hidden" id="coupon-code">
+                        <div class="d-flex gap-2 mt-2">
+                            <button type="button" id="apply-coupon-btn" class="btn btn-outline-warning">Apply Coupon</button>
+                            <button type="button" id="cancel-coupon-btn" class="btn btn-outline-secondary d-none">Cancel Coupon</button>
                         </div>
                         <div id="coupon-message" class="small mt-2"></div>
                     </div>
