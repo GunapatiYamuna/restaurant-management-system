@@ -178,6 +178,11 @@ def validate_coupon(request):
 
 
 
+@require_GET
+def health_check(request):
+    return JsonResponse({"success": True, "status": "ok"})
+
+
 def frontend_page(request, path=""):
     clean = path.strip("/") or "index.html"
     if clean.startswith(("api/", "admin/", "static/")):
