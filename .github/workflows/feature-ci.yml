@@ -3,6 +3,7 @@ name: FoodieHub Feature CI
 on:
   push:
     branches:
+      - main
       - feature/delivery-tracking-google-map
 
 jobs:
@@ -33,7 +34,7 @@ jobs:
       - name: Install backend dependencies
         run: pip install -r backend/requirements.txt
       - name: Python syntax check
-        run: python -m py_compile backend/restaurant/models.py backend/restaurant/views.py backend/restaurant/urls.py backend/config/settings.py
+        run: python -m py_compile backend/restaurant/models.py backend/restaurant/views.py backend/restaurant/urls.py backend/config/settings.py backend/restaurant/apps.py backend/restaurant/push_scheduler.py backend/restaurant/push_notifications.py backend/restaurant/vapid.py backend/push_worker.py
       - name: Django system check
         working-directory: backend
         env:
