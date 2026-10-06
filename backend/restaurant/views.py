@@ -767,7 +767,7 @@ def _reservation_attendance_page(reservation_id, title, message, status_label, s
             </button>
             <button class="refund-option" data-refund="upi" type="button">
               <span class="option-title">Refund to UPI</span>
-              <span class="option-text">Receive the full paid amount as a simulated refund to your UPI account.</span>
+              <span class="option-text">The half of your payment will be refunded.</span>
               <span class="option-valid">Refund reference will be generated</span>
             </button>
           </div>
