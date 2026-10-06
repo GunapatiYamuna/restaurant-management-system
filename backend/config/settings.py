@@ -6,23 +6,53 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 PROJECT_ROOT = BASE_DIR.parent
 load_dotenv(BASE_DIR / ".env")
 
-FRONTEND_BASE_URL = os.getenv(
-    "FRONTEND_BASE_URL",
-    "http://127.0.0.1:8000"
-)
-GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
-RAZORPAY_KEY_ID = os.getenv("RAZORPAY_KEY_ID", "")
-RAZORPAY_KEY_SECRET = os.getenv("RAZORPAY_KEY_SECRET", "")
-RAZORPAY_WEBHOOK_SECRET = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
+
+def _env(*names, default=""):
+    for name in names:
+        value = os.getenv(name)
+        if value not in (None, ""):
+            return value
+    return default
+
+
+def _env_bool(name, default=False):
+    return _env(name, default=str(default)).strip().lower() in ("1", "true", "yes", "on")
+
+
+FRONTEND_BASE_URL = _env("FRONTEND_BASE_URL", default="http://127.0.0.1:8000")
+GOOGLE_CLIENT_ID = _env("GOOGLE_CLIENT_ID")
+RAZORPAY_KEY_ID = _env("RAZORPAY_KEY_ID")
+RAZORPAY_KEY_SECRET = _env("RAZORPAY_KEY_SECRET")
+RAZORPAY_WEBHOOK_SECRET = _env("RAZORPAY_WEBHOOK_SECRET")
 
 # Free browser Web Push (VAPID). Keep the private key secret and never commit it.
-VAPID_PUBLIC_KEY = os.getenv("VAPID_PUBLIC_KEY", "")
-VAPID_PRIVATE_KEY_FILE = os.getenv("VAPID_PRIVATE_KEY_FILE", str(BASE_DIR / "vapid_private_key.pem"))
-VAPID_CLAIMS_EMAIL = os.getenv("VAPID_CLAIMS_EMAIL", "mailto:admin@example.com")
+VAPID_PUBLIC_KEY = _env("VAPID_PUBLIC_KEY")
+VAPID_PRIVATE_KEY_B64 = _env("VAPID_PRIVATE_KEY_B64")
+VAPID_PRIVATE_KEY_FILE = _env(
+    "VAPID_PRIVATE_KEY_FILE",
+    default=str(BASE_DIR / "vapid_private_key.pem"),
+)
+VAPID_CLAIMS_EMAIL = _env("VAPID_CLAIMS_EMAIL", default="mailto:admin@example.com")
 
-SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "dev-only-change-me")
-DEBUG = os.getenv("DJANGO_DEBUG", "True").lower() == "true"
-ALLOWED_HOSTS = [h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",") if h.strip()]
+SECRET_KEY = _env("DJANGO_SECRET_KEY", default="dev-only-change-me")
+DEBUG = _env_bool("DJANGO_DEBUG", default=True)
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in _env("DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost").split(",")
+    if host.strip()
+]
+CSRF_TRUSTED_ORIGINS = [
+    origin.strip()
+    for origin in _env("DJANGO_CSRF_TRUSTED_ORIGINS").split(",")
+    if origin.strip()
+]
+
+# Keep local development behavior unchanged, but allow Railway to disable the
+# public admin-registration endpoint without changing the frontend.
+ALLOW_ADMIN_REGISTRATION = _env_bool(
+    "ALLOW_ADMIN_REGISTRATION",
+    default=DEBUG,
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -36,6 +66,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -59,11 +90,11 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {"default": {
     "ENGINE": "django.db.backends.mysql",
-    "NAME": os.getenv("MYSQL_DATABASE", "foodiehub"),
-    "USER": os.getenv("MYSQL_USER", "root"),
-    "PASSWORD": os.getenv("MYSQL_PASSWORD", ""),
-    "HOST": os.getenv("MYSQL_HOST", "127.0.0.1"),
-    "PORT": os.getenv("MYSQL_PORT", "3306"),
+    "NAME": _env("MYSQL_DATABASE", "MYSQLDATABASE", default="foodiehub"),
+    "USER": _env("MYSQL_USER", "MYSQLUSER", default="root"),
+    "PASSWORD": _env("MYSQL_PASSWORD", "MYSQLPASSWORD", default=""),
+    "HOST": _env("MYSQL_HOST", "MYSQLHOST", default="127.0.0.1"),
+    "PORT": _env("MYSQL_PORT", "MYSQLPORT", default="3306"),
     "OPTIONS": {"charset": "utf8mb4"},
 }}
 
@@ -77,17 +108,24 @@ LANGUAGE_CODE = "en-us"
 TIME_ZONE = "Asia/Kolkata"
 USE_I18N = True
 USE_TZ = True
+
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Railway terminates HTTPS at its proxy. Preserve the original scheme for Django.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SESSION_COOKIE_SECURE = not DEBUG
+CSRF_COOKIE_SECURE = not DEBUG
+SECURE_SSL_REDIRECT = not DEBUG
 
 # Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
-
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-
 DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
