@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 import json
 
+from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.core.signing import TimestampSigner
 from django.utils import timezone
@@ -83,7 +84,7 @@ class Command(BaseCommand):
                         },
                         data=json.dumps(payload),
                         vapid_private_key=private_key_path,
-                        vapid_claims={"sub": "mailto:admin@example.com"},
+                        vapid_claims={"sub": settings.VAPID_CLAIMS_EMAIL},
                     )
                     delivered = True
                 except WebPushException as exc:
