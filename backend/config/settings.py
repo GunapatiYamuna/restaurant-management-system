@@ -41,9 +41,17 @@ DEBUG = _env_bool("DJANGO_DEBUG", default=True)
 # DJANGO_ALLOWED_HOSTS can still be used for custom domains or local hosts.
 _allowed_hosts = [
     host.strip()
-    for host in _env("DJANGO_ALLOWED_HOSTS", default="127.0.0.1,localhost").split(",")
+    for host in _env(
+        "DJANGO_ALLOWED_HOSTS",
+        default="127.0.0.1,localhost,web-production-09472.up.railway.app",
+    ).split(",")
     if host.strip()
 ]
+
+# Railway may not expose RAILWAY_PUBLIC_DOMAIN to the application container,
+# so keep the current public Railway domain explicitly allowed as well.
+if "web-production-09472.up.railway.app" not in _allowed_hosts:
+    _allowed_hosts.append("web-production-09472.up.railway.app")
 railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
 if railway_public_domain and railway_public_domain not in _allowed_hosts:
     _allowed_hosts.append(railway_public_domain)
