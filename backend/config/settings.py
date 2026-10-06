@@ -53,6 +53,10 @@ ALLOW_ADMIN_REGISTRATION = _env_bool(
     "ALLOW_ADMIN_REGISTRATION",
     default=DEBUG,
 )
+RUN_PUSH_SCHEDULER_IN_WEB = _env_bool(
+    "RUN_PUSH_SCHEDULER_IN_WEB",
+    default=DEBUG,
+)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
