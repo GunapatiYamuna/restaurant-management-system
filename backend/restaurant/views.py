@@ -1065,7 +1065,7 @@ def process_reservation_refund(request, reservation_id):
     if refund_type not in {"coupon", "upi"}:
         return JsonResponse({"success": False, "message": "Choose coupon or UPI refund."}, status=400)
 
-    amount = payment.upfront_amount
+    amount = payment.upfront_amount if refund_type == "coupon" else (payment.upfront_amount / Decimal("2"))
     reference = f"REF-{reservation_id}-{timezone.now().strftime('%Y%m%d%H%M%S')}"
     now = timezone.now()
     with transaction.atomic():
