@@ -752,8 +752,45 @@ def _reservation_attendance_page(reservation_id, title, message, status_label, s
     safe_title = escape(title)
     safe_message = escape(message)
     safe_status = escape(status_label)
+
     refund_html = ""
-    if show_refund_choices:
+    refund_processed = False
+    payment = ReservationPayment.objects.filter(reservation_id=reservation_id).first()
+
+    if show_refund_choices and payment and payment.refund_status == "processed":
+        refund_processed = True
+        refund_type = payment.refund_type
+        amount = float(payment.refund_amount or 0)
+        reference = escape(payment.refund_reference or "")
+
+        if refund_type == "coupon":
+            coupon = ReservationCoupon.objects.filter(reservation_id=reservation_id).first()
+            coupon_code = escape(coupon.code) if coupon else ""
+            refund_html = f"""
+            <section class="refund-box">
+              <h2>Your 50% Food Payment</h2>
+              <p class="refund-intro">Your refund choice has already been processed.</p>
+              <div class="refund-result success">
+                <strong>Coupon issued successfully</strong><br>
+                Use coupon <span class="code">{coupon_code}</span> for ₹{amount:.2f}.<br>
+                <small>Valid for 2 weeks.</small>
+              </div>
+            </section>
+            """
+        else:
+            refund_html = f"""
+            <section class="refund-box">
+              <h2>Your 50% Food Payment</h2>
+              <p class="refund-intro">Your refund choice has already been processed.</p>
+              <div class="refund-result success">
+                <strong>Refund initiated</strong><br>
+                ₹{amount:.2f} has been initiated to your UPI account.<br>
+                <small>Reference: {reference}</small>
+              </div>
+            </section>
+            """
+
+    elif show_refund_choices:
         refund_html = f"""
         <section class="refund-box">
           <h2>Your 50% Food Payment</h2>
@@ -796,11 +833,12 @@ def _reservation_attendance_page(reservation_id, title, message, status_label, s
               if (!response.ok || !data.success) throw new Error(data.message || 'Unable to process your choice.');
               result.className = 'refund-result success';
               if (data.refund_type === 'coupon') {{
-                result.innerHTML = '<strong>Coupon issued successfully</strong><br>Use coupon <span class="code">' + String(data.coupon_code || '') + '</span> for ₹' + Number(data.refund_amount || 0).toFixed(2) + '.<br><small>Valid for 2 weeks.</small>'; 
+                result.innerHTML = '<strong>Coupon issued successfully</strong><br>Use coupon <span class="code">' + String(data.coupon_code || '') + '</span> for ₹' + Number(data.refund_amount || 0).toFixed(2) + '.<br><small>Valid for 2 weeks.</small>';
               }} else {{
-                result.innerHTML = '<strong>Refund initiated</strong><br>' + String(data.message || 'Refund initiated to your UPI account.') + '.<br><small>Reference: ' + String(data.reference || '') + '</small>';
+                result.innerHTML = '<strong>Refund initiated</strong><br>₹' + Number(data.refund_amount || 0).toFixed(2) + ' has been initiated to your UPI account.<br><small>Reference: ' + String(data.reference || '') + '</small>';
               }}
               buttons.forEach(b => b.style.display = 'none');
+              document.querySelector('.refund-intro').textContent = 'Your refund choice has been recorded.';
             }} catch (e) {{
               result.innerHTML = '';
               error.textContent = e.message || 'Unable to process your choice.';
@@ -810,6 +848,19 @@ def _reservation_attendance_page(reservation_id, title, message, status_label, s
         }})();
         </script>
         """
+
+    back_html = ""
+    if show_refund_choices:
+        back_html = '<div class="actions"><a class="back-action" href="/login/index.html">← Back to FoodieHub</a></div>'
+
+    close_note = (
+        "Your refund choice has been recorded. You can return to FoodieHub."
+        if refund_processed
+        else "Choose a refund option to continue."
+        if show_refund_choices
+        else "You can close this page and return to FoodieHub."
+    )
+
     html = f"""<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
 <title>FoodieHub - {safe_title}</title>
@@ -821,8 +872,9 @@ h1{{margin:0 0 12px}} p{{color:#666;line-height:1.55}} .status{{display:inline-b
 .refund-options{{display:grid;gap:12px}} .refund-option{{position:relative;width:100%;padding:18px;text-align:left;border:2px solid #e2e2e2;border-radius:14px;background:#fff;cursor:pointer;box-sizing:border-box}} .refund-option:hover{{border-color:#ff6b00;background:#fffaf6}} .refund-option.recommended{{border-color:#ff6b00;background:#fff8f1}} .refund-option:disabled{{opacity:.6;cursor:wait}}
 .badge{{display:inline-block;background:#ff6b00;color:#fff;font-size:10px;font-weight:700;padding:4px 8px;border-radius:20px;margin-bottom:8px}} .option-title{{display:block;font-size:17px;font-weight:700;color:#222;margin-bottom:5px}} .option-text{{display:block;color:#666;font-size:14px;line-height:1.45}} .option-valid{{display:block;color:#e85c00;font-size:13px;font-weight:700;margin-top:8px}}
 .refund-error{{color:#b42318;text-align:center;margin-top:12px}} .refund-result{{margin-top:14px;padding:15px;border-radius:12px;background:#f6f6f6;text-align:center;line-height:1.6}} .refund-result.success{{background:#eefaf2;color:#166534}} .code{{font-weight:700;font-size:18px}} .spinner{{display:inline-block;width:13px;height:13px;border:2px solid #ccc;border-top-color:#ff6b00;border-radius:50%;animation:spin .7s linear infinite;margin-right:6px}} @keyframes spin{{to{{transform:rotate(360deg)}}}}
+.actions{{display:flex;justify-content:center;margin-top:22px}} .back-action{{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#ff6b00;color:#fff;padding:12px 22px;border-radius:10px;font-weight:700}} .back-action:hover{{background:#e55f00}}
 .close-note{{font-size:13px;color:#888;margin-top:20px}}
-</style></head><body><main class="card"><h1>{safe_title}</h1><p>{safe_message}</p><div class="status">{safe_status}</div>{refund_html}<p class="close-note">You can close this page after choosing your refund option.</p></main></body></html>"""
+</style></head><body><main class="card"><h1>{safe_title}</h1><p>{safe_message}</p><div class="status">{safe_status}</div>{refund_html}{back_html}<p class="close-note">{close_note}</p></main></body></html>"""
     return HttpResponse(html)
 
 
