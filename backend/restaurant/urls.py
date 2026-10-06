@@ -20,6 +20,7 @@ urlpatterns = [
     path("admin-login/", views.admin_login),
     path("logout/", views.logout_user),
     path("me/", views.current_user),
+    path("health/", views.health_check),
     path("contact/", views.submit_contact_message),
     path("admin/contact-messages/", views.admin_contact_messages),
     path("admin/contact-messages/<int:message_id>/read/", views.admin_mark_contact_message_read),
