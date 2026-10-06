@@ -182,6 +182,24 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
     // =====================================================
+    // DISTRICT HELPER
+    // =====================================================
+
+    function getDistrict(address) {
+        return (
+            address.state_district ||
+            address.district ||
+            address.county ||
+            address.city_district ||
+            address.municipality ||
+            address.city ||
+            address.town ||
+            address.village ||
+            ""
+        );
+    }
+
+    // =====================================================
     // REVERSE GEOCODING
     // =====================================================
 
@@ -236,12 +254,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
 
             if (cityInput) {
-                cityInput.value =
-                    address.city ||
-                    address.town ||
-                    address.village ||
-                    address.municipality ||
-                    "";
+                cityInput.value = getDistrict(address);
             }
 
             if (pincodeInput) {
@@ -306,12 +319,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 result.address || {};
 
             if (cityInput) {
-                cityInput.value =
-                    address.city ||
-                    address.town ||
-                    address.village ||
-                    address.municipality ||
-                    "";
+                cityInput.value = getDistrict(address);
             }
 
             if (pincodeInput) {
@@ -571,12 +579,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
             if (cityInput) {
 
-                cityInput.value =
-                    resultAddress.city ||
-                    resultAddress.town ||
-                    resultAddress.village ||
-                    resultAddress.municipality ||
-                    "";
+                cityInput.value = getDistrict(resultAddress);
 
             }
 
