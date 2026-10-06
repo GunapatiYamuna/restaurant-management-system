@@ -955,6 +955,21 @@ def create_demo_payment(request):
 
 @csrf_exempt
 @require_POST
+
+VALID_UPI_HANDLES = {
+    "ybl", "axl", "ibl", "sbi", "okaxis", "oksbi", "okhdfcbank", "okicici",
+    "paytm", "upi", "apl", "airtel", "fbl", "kotak", "icici", "hdfcbank",
+    "axisbank", "barodampay", "pnb", "unionbank", "idbi", "indus", "yesbank",
+    "freecharge", "slice", "jupiteraxis", "dbs", "rbl", "aubank", "federal",
+}
+
+
+def is_valid_upi_id(upi_id):
+    return bool(re.fullmatch(
+        r"[A-Za-z0-9][A-Za-z0-9._-]{1,49}@[A-Za-z0-9]{2,30}",
+        upi_id,
+    )) and upi_id.rsplit("@", 1)[1].lower() in VALID_UPI_HANDLES
+
 def create_reservation_upfront_payment(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Please login first."}, status=401)
@@ -964,8 +979,8 @@ def create_reservation_upfront_payment(request):
     except (TypeError, ValueError, Restaurant.DoesNotExist):
         return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
     upi_id = str(data.get("upi_id", "")).strip()
-    if not re.fullmatch(r"^[A-Za-z0-9._-]+@[A-Za-z]{2,}$", upi_id):
-        return JsonResponse({"success": False, "message": "Please enter a valid UPI ID."}, status=400)
+    if not is_valid_upi_id(upi_id):
+        return JsonResponse({"success": False, "message": "Please enter a valid UPI ID such as name@ybl or name@axl."}, status=400)
     items = data.get("items", [])
     if isinstance(items, str):
         try:
