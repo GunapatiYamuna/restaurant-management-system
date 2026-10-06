@@ -1,24 +1,27 @@
 import hashlib
 import json
 
-from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 
 from .models import PushSubscription
+from .vapid import ensure_vapid_keys
 
 
 @require_GET
 def push_public_key(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Login required."}, status=401)
-    public_key = getattr(settings, "VAPID_PUBLIC_KEY", "")
-    if not public_key:
+
+    try:
+        public_key, _ = ensure_vapid_keys()
+    except Exception as exc:
         return JsonResponse({
             "success": False,
-            "message": "Web Push is not configured on the server."
+            "message": f"Web Push is not configured: {exc}",
         }, status=503)
+
     return JsonResponse({"success": True, "public_key": public_key})
 
 
