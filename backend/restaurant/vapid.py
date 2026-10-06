@@ -49,7 +49,7 @@ def ensure_vapid_keys():
     )
     derived_public = _public_key_string(private_key.public_key())
 
-    configured_public = str(getattr(settings, "VAPID_PUBLIC_KEY", "") or "").strip()
+    configured_public = str(getattr(settings, "VAPID_PUBLIC_KEY", "") or "").strip().rstrip("=")
     if configured_public and configured_public != derived_public:
         raise RuntimeError(
             "VAPID_PUBLIC_KEY does not match the configured private key."
