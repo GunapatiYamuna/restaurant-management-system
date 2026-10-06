@@ -79,7 +79,8 @@ body{font-family:Poppins,Arial,sans-serif;background:#f7f8fa;color:#222;min-heig
 <div class="summary-row"><span>Coupon discount</span><strong>-₹<span id="couponDiscountAmount">0</span></strong></div>
 <div class="summary-row"><span>Food payable after coupon</span><strong>₹<span id="payableFoodTotal">0</span></strong></div>
 <div class="border rounded-3 p-3 mb-3">
-    <div class="fw-semibold mb-2">FoodieHub Coupon</div>
+    <div class="fw-semibold mb-2">FoodieHub Coupons</div>
+    <div id="available-reservation-coupons" class="mb-2"></div>
     <div class="input-group">
         <input type="text" id="reservationCouponCode" class="form-control" placeholder="Enter coupon code" maxlength="40">
         <button type="button" id="applyReservationCoupon" class="btn btn-outline-warning">Apply</button>
@@ -141,6 +142,36 @@ document.addEventListener("DOMContentLoaded", function () {
     document.getElementById("remainingAmount").textContent = remaining.toFixed(2);
     document.getElementById("payAmount").textContent = upfront.toFixed(2);
 
+    async function loadReservationCoupons() {
+        const container = document.getElementById("available-reservation-coupons");
+        if (!container) return;
+        try {
+            const response = await fetch("/api/coupons/", {credentials: "same-origin", cache: "no-store"});
+            const data = await response.json().catch(() => ({}));
+            if (!response.ok || !data.success) return;
+            const coupons = (data.coupons || []).filter(coupon => (coupon.uses || []).includes("preorder_reservation"));
+            if (!coupons.length) {
+                container.innerHTML = '<div class="small text-muted">No active coupons available.</div>';
+                return;
+            }
+            container.innerHTML = coupons.map(coupon =>
+                '<div class="border rounded p-2 mb-2 d-flex justify-content-between align-items-center gap-2">' +
+                '<div><strong>' + coupon.code + '</strong><div class="small text-muted">₹' + Number(coupon.amount).toFixed(2) +
+                ' off · Valid until ' + new Date(coupon.expires_at).toLocaleDateString() + '</div></div>' +
+                '<button type="button" class="btn btn-sm btn-outline-warning" data-use-reservation-coupon="' + coupon.code + '">Use Coupon</button></div>'
+            ).join("");
+            container.querySelectorAll("[data-use-reservation-coupon]").forEach(button => {
+                button.addEventListener("click", () => {
+                    const input = document.getElementById("reservationCouponCode");
+                    if (input) input.value = button.dataset.useReservationCoupon;
+                    document.getElementById("applyReservationCoupon")?.click();
+                });
+            });
+        } catch (error) {
+            console.error("Available reservation coupons load error:", error);
+        }
+    }
+
     const couponInput = document.getElementById("reservationCouponCode");
     const couponButton = document.getElementById("applyReservationCoupon");
     const couponMessage = document.getElementById("reservationCouponMessage");
@@ -157,6 +188,8 @@ document.addEventListener("DOMContentLoaded", function () {
         document.getElementById("remainingAmount").textContent = remaining.toFixed(2);
         document.getElementById("payAmount").textContent = upfront.toFixed(2);
     }
+
+    loadReservationCoupons();
 
     couponButton.addEventListener("click", async function () {
         const code = couponInput.value.trim().toUpperCase();
