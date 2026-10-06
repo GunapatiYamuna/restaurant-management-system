@@ -353,6 +353,8 @@ def register_user(request):
 @csrf_exempt
 @require_POST
 def admin_register(request):
+    if not settings.ALLOW_ADMIN_REGISTRATION:
+        return JsonResponse({"success": False, "message": "Administrator registration is disabled."}, status=403)
     data = _data(request)
     name, email, phone, password = [str(data.get(k, "")).strip() for k in ("name", "email", "phone", "password")]
     if not all((name, email, phone, password)):
