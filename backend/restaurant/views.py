@@ -953,9 +953,6 @@ def create_demo_payment(request):
     })
 
 
-@csrf_exempt
-@require_POST
-
 VALID_UPI_HANDLES = {
     "ybl", "axl", "ibl", "sbi", "okaxis", "oksbi", "okhdfcbank", "okicici",
     "paytm", "upi", "apl", "airtel", "fbl", "kotak", "icici", "hdfcbank",
@@ -970,6 +967,8 @@ def is_valid_upi_id(upi_id):
         upi_id,
     )) and upi_id.rsplit("@", 1)[1].lower() in VALID_UPI_HANDLES
 
+@csrf_exempt
+@require_POST
 def create_reservation_upfront_payment(request):
     if not request.user.is_authenticated:
         return JsonResponse({"success": False, "message": "Please login first."}, status=401)
