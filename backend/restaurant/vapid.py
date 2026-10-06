@@ -1,4 +1,4 @@
-from base64 import urlsafe_b64encode
+import base64
 from pathlib import Path
 
 from cryptography.hazmat.primitives import serialization
@@ -10,14 +10,29 @@ def _public_key_string(public_key):
         encoding=serialization.Encoding.X962,
         format=serialization.PublicFormat.UncompressedPoint,
     )
-    return urlsafe_b64encode(raw_public).rstrip(b"=").decode("ascii")
+    return base64.urlsafe_b64encode(raw_public).rstrip(b"=").decode("ascii")
+
+
+def _write_private_key_from_env(private_path):
+    encoded = str(getattr(settings, "VAPID_PRIVATE_KEY_B64", "") or "").strip()
+    if not encoded:
+        return False
+    try:
+        private_pem = base64.b64decode(encoded)
+    except Exception as exc:
+        raise RuntimeError("VAPID_PRIVATE_KEY_B64 is not valid base64.") from exc
+    private_path.parent.mkdir(parents=True, exist_ok=True)
+    private_path.write_bytes(private_pem)
+    return True
 
 
 def ensure_vapid_keys():
-    """Return (public_key, private_key_path), creating a persistent pair when needed."""
+    """Return (public_key, private_key_path), keeping the key pair stable in production."""
     private_path = Path(settings.VAPID_PRIVATE_KEY_FILE)
     public_path = private_path.with_name("vapid_public_key.pem")
-    configured_public = str(getattr(settings, "VAPID_PUBLIC_KEY", "") or "").strip()
+
+    if not private_path.exists():
+        _write_private_key_from_env(private_path)
 
     if not private_path.exists():
         from py_vapid import Vapid
@@ -27,15 +42,17 @@ def ensure_vapid_keys():
         vapid.generate_keys()
         private_path.write_bytes(vapid.private_pem())
         public_path.write_bytes(vapid.public_pem())
-        return _public_key_string(vapid.public_key), str(private_path)
 
-    if configured_public:
-        return configured_public, str(private_path)
-
-    if public_path.exists():
-        public_key = serialization.load_pem_public_key(public_path.read_bytes())
-        return _public_key_string(public_key), str(private_path)
-
-    raise RuntimeError(
-        "VAPID public key is unavailable. Run generate_vapid_keys or configure VAPID_PUBLIC_KEY."
+    private_key = serialization.load_pem_private_key(
+        private_path.read_bytes(),
+        password=None,
     )
+    derived_public = _public_key_string(private_key.public_key())
+
+    configured_public = str(getattr(settings, "VAPID_PUBLIC_KEY", "") or "").strip()
+    if configured_public and configured_public != derived_public:
+        raise RuntimeError(
+            "VAPID_PUBLIC_KEY does not match the configured private key."
+        )
+
+    return derived_public, str(private_path)
