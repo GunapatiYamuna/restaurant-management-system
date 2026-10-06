@@ -94,7 +94,7 @@ def _attendance_page(title, message, status_label, reservation=None, payment_act
 </div>
 <div class="refund-option">
 <h3>Refund to UPI</h3>
-<p>Half of your paid amount will be refunded to your UPI account.</p>
+<p>The half of your payment will be refunded.</p>
 <strong>Refund reference will be generated</strong>
 <button class="secondary" onclick="refund('upi')">Refund to UPI</button>
 </div>
