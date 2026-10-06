@@ -187,9 +187,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function getDistrict(address) {
         return (
-            address.state_district ||
             address.district ||
             address.county ||
+            address.state_district ||
             address.city_district ||
             address.municipality ||
             address.city ||
@@ -544,7 +544,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
             }
 
+            // Prefer a result whose PIN matches the customer-entered PIN.
+            // This avoids selecting a same-named village from another district.
+            const normalizedPin = pincode.replace(/\\D/g, "");
             const result =
+                (normalizedPin
+                    ? results.find(item => String(item.address?.postcode || "").replace(/\\D/g, "") === normalizedPin)
+                    : null) ||
                 results[0];
 
             const lat =
