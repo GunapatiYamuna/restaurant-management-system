@@ -20,6 +20,8 @@ def _env_bool(name, default=False):
 
 
 FRONTEND_BASE_URL = _env("FRONTEND_BASE_URL", default="http://127.0.0.1:8000")
+RESEND_API_KEY = _env("RESEND_API_KEY")
+RESEND_FROM_EMAIL = _env("RESEND_FROM_EMAIL", default="onboarding@resend.dev")
 GOOGLE_CLIENT_ID = _env("GOOGLE_CLIENT_ID")
 RAZORPAY_KEY_ID = _env("RAZORPAY_KEY_ID")
 RAZORPAY_KEY_SECRET = _env("RAZORPAY_KEY_SECRET")
