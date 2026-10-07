@@ -133,3 +133,43 @@ body > .foodie-shared-navbar{
     justify-content:flex-start !important;
   }
 }
+
+
+/* Mobile top bar: keep cart + authentication beside the brand/hamburger.
+   The collapsible menu contains only Home/Restaurants/Menu/About/Contact. */
+@media(max-width:991px){
+  .foodie-shared-navbar > .container{
+    flex-wrap:wrap !important;
+  }
+  .foodie-shared-navbar .navbar-brand{
+    order:1 !important;
+  }
+  .foodie-shared-navbar .shared-navbar-actions{
+    order:2 !important;
+    width:auto !important;
+    flex:0 0 auto !important;
+    margin-left:auto !important;
+    padding:0 !important;
+    justify-content:flex-end !important;
+    align-items:center !important;
+    gap:8px !important;
+  }
+  .foodie-shared-navbar .navbar-toggler{
+    order:3 !important;
+    margin-left:8px !important;
+  }
+  .foodie-shared-navbar .navbar-collapse{
+    order:4 !important;
+    width:100% !important;
+    flex-basis:100% !important;
+  }
+  .foodie-shared-navbar .shared-auth-buttons{
+    margin:0 !important;
+  }
+  .foodie-shared-navbar .navbar-user{
+    margin:0 !important;
+  }
+  .foodie-shared-navbar .nav-cart{
+    margin:0 !important;
+  }
+}
