@@ -16,12 +16,14 @@
         <li class="nav-item"><a class="nav-link" data-nav="/about.html" href="/about.html">About</a></li>
         <li class="nav-item"><a class="nav-link" data-nav="/contact.html" href="/contact.html">Contact</a></li>
       </ul>
+      <!-- Cart stays inside the collapsible menu, in its original location.
+           Only authentication stays visible in the top bar when the menu is closed. -->
+      <a href="/cart.html" class="nav-cart" aria-label="Cart"><i class="bi bi-cart3"></i><span class="cart-count"></span></a>
     </div>
 
-    <!-- Cart + authentication stay visible in the top bar even when the
-         mobile navigation menu is closed. Only the page links collapse. -->
+    <!-- Login / user greeting stays visible in the top bar even when the
+         mobile navigation menu is closed. -->
     <div class="shared-navbar-actions">
-      <a href="/cart.html" class="nav-cart" aria-label="Cart"><i class="bi bi-cart3"></i><span class="cart-count"></span></a>
       <div id="authButtons" class="shared-auth-buttons"><a href="/login/login-options.html" class="login-btn">Login</a></div>
       <a id="userSection" class="navbar-user" href="/login/pages/profile.html" style="display:none;" aria-label="Open profile">
         <div class="navbar-avatar" id="navbarAvatar"></div>
