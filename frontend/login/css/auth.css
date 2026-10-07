@@ -127,3 +127,89 @@ a:hover{color:var(--orange-dark)}
   .navbar .nav-link{margin-left:0}
   .profile-avatar{width:100px;height:100px}
 }
+
+/* Profile page responsive polish with the shared fixed navbar. */
+body:has(.profile-card){
+  padding-top:var(--foodie-navbar-height,67px);
+}
+body:has(.profile-card) .page-banner{
+  position:relative;
+  z-index:1;
+}
+body:has(.profile-card) main.container{
+  padding-top:24px!important;
+  padding-bottom:20px;
+}
+body:has(.profile-card) .section-card{
+  overflow:hidden;
+}
+body:has(.profile-card) #passwordForm{
+  flex:1 1 100%;
+  width:100%;
+}
+body:has(.profile-card) #passwordForm .row{
+  width:100%;
+}
+@media(max-width:991px){
+  body:has(.profile-card) .profile-nav-card{
+    margin-bottom:0;
+  }
+}
+@media(max-width:576px){
+  body:has(.profile-card) .page-banner{
+    padding:24px 0;
+  }
+  body:has(.profile-card) .page-banner h1{
+    font-size:25px;
+  }
+  body:has(.profile-card) .page-banner p{
+    font-size:12px;
+    line-height:1.5;
+  }
+  body:has(.profile-card) main.container{
+    padding:16px 12px 24px!important;
+  }
+  body:has(.profile-card) .profile-card{
+    padding:22px 16px;
+  }
+  body:has(.profile-card) .section-card{
+    padding:18px 16px;
+  }
+  body:has(.profile-card) .section-title{
+    font-size:17px;
+    margin-bottom:16px;
+  }
+  body:has(.profile-card) #passwordForm{
+    margin-top:14px!important;
+  }
+  body:has(.profile-card) #passwordForm .row{
+    display:grid;
+    grid-template-columns:1fr!important;
+    gap:8px!important;
+  }
+  body:has(.profile-card) #passwordForm .col-md-4{
+    width:100%;
+  }
+  body:has(.profile-card) #passwordForm .form-control{
+    min-height:44px;
+  }
+  body:has(.profile-card) #passwordForm .btn{
+    width:100%;
+    margin-top:10px!important;
+  }
+  body:has(.profile-card) .section-card .d-flex.justify-content-between{
+    flex-direction:column;
+    align-items:stretch!important;
+    gap:12px;
+  }
+  body:has(.profile-card) .section-card .d-flex.justify-content-between > .btn,
+  body:has(.profile-card) .section-card .d-flex.justify-content-between > a{
+    width:100%;
+    text-align:center;
+  }
+  body:has(.profile-card) .profile-nav-card .nav-link{
+    min-height:44px;
+    display:flex;
+    align-items:center;
+  }
+}
