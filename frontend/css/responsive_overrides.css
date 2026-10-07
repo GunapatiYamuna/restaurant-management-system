@@ -1,0 +1,128 @@
+/* FoodieHub responsive pass — shared across pages */
+html,body{width:100%;max-width:100%;overflow-x:hidden}
+*,*::before,*::after{max-width:100%}
+img,video,iframe{max-width:100%;height:auto}
+iframe{border:0}
+button,input,select,textarea{max-width:100%}
+table{max-width:100%}
+.container,.container-fluid{width:100%}
+
+@media(max-width:1024px){
+  .container{padding-left:18px!important;padding-right:18px!important}
+  .section-title,.contact-heading h1{font-size:36px}
+  .hero-content h1{font-size:40px}
+  .hero-image{height:340px}
+  .newsletter{gap:18px}
+}
+
+@media(max-width:768px){
+  .container{padding-left:15px!important;padding-right:15px!important}
+  .row{--bs-gutter-x:1.25rem}
+  .hero-section{padding:38px 0}
+  .hero-content h1{font-size:32px;line-height:1.18}
+  .hero-content p{font-size:13px;line-height:1.7}
+  .hero-buttons{flex-wrap:wrap}
+  .hero-buttons .btn-orange,.hero-buttons .btn-outline-orange{flex:1 1 180px;text-align:center}
+  .hero-image{height:280px;margin-top:24px}
+  .about-image{height:280px}
+  .about-content{padding-left:0}
+  .about-title{font-size:29px}
+  .section-title,.contact-heading h1{font-size:30px}
+  .contact-form,.contact-info{padding:22px}
+  .newsletter{width:100%;padding:20px}
+  .newsletter-form{width:100%;max-width:100%}
+  .footer-bottom{gap:10px}
+  
+  /* Common cards/grids used by menu and restaurant pages */
+  .restaurant-grid,.menu-grid,.food-grid,.card-grid,.restaurant-cards,.menu-cards{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+  .restaurant-card,.menu-card,.food-card,.simple-card{min-width:0}
+  .restaurant-card img,.menu-card img,.food-card img{max-width:100%;height:auto;object-fit:cover}
+  
+  /* Prevent wide forms from escaping phone width */
+  .form-row,.form-grid,.checkout-grid,.payment-grid{
+    grid-template-columns:1fr!important;
+  }
+  .form-group,.form-control,.form-select,.form-control-lg{width:100%;min-width:0}
+  
+  /* Tables remain usable without widening the whole page */
+  .table-responsive,.tablewrap{width:100%;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .table-responsive table,.tablewrap table{min-width:650px}
+  
+  /* Tracking / booking / confirmation content */
+  .tracking,.booking-section,.confirmation,.payment-container,.checkout-container{
+    width:100%;max-width:100%;
+  }
+  .steps{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+}
+
+@media(max-width:576px){
+  .container{padding-left:12px!important;padding-right:12px!important}
+  .hero-content h1{font-size:29px}
+  .hero-image{height:235px}
+  .section-heading h2,.why-heading h2{font-size:25px}
+  .section-title,.contact-heading h1{font-size:27px}
+  .about-title{font-size:26px}
+  .contact-form,.contact-info{padding:18px}
+  .contact-item{gap:10px}
+  .contact-item p{overflow-wrap:anywhere}
+  
+  .restaurant-grid,.menu-grid,.food-grid,.card-grid,.restaurant-cards,.menu-cards{
+    grid-template-columns:1fr!important;
+  }
+  .hero-buttons{flex-direction:column}
+  .hero-buttons .btn-orange,.hero-buttons .btn-outline-orange{width:100%;flex-basis:auto}
+  
+  .newsletter{padding:16px}
+  .newsletter-form{display:flex;flex-direction:column}
+  .newsletter-form input{width:100%;border-right:1px solid #344452;margin-bottom:8px}
+  .newsletter-form button{width:100%;min-height:42px}
+  .footer-bottom{flex-direction:column;text-align:center}
+  .footer-bottom a{margin-left:10px;margin-right:10px}
+  
+  /* Long text, prices and action rows */
+  .cardhead,.top-actions,.order-actions,.checkout-actions,.payment-actions{
+    flex-wrap:wrap;
+  }
+  .cardhead>*,.top-actions>*{min-width:0}
+  .btn,.btn-orange,.btn-outline-orange{white-space:normal}
+  
+  /* Make common fixed-width media/content blocks fluid */
+  .hero-image,.about-image{width:100%;max-width:100%}
+  .map-container,.map-container iframe{width:100%;max-width:100%}
+}
+
+@media(max-width:430px){
+  body{font-size:14px}
+  .container{padding-left:10px!important;padding-right:10px!important}
+  .hero-section{padding:30px 0}
+  .hero-content h1{font-size:27px}
+  .hero-image{height:210px}
+  .about-section,.contact-section{padding-top:30px}
+  .about-title{font-size:24px}
+  .contact-form,.contact-info{padding:16px}
+  .simple-card,.stat-card,.why-card{padding-left:14px;padding-right:14px}
+  
+  /* Login/auth cards */
+  .auth-card,.login-card,.login-option-card,.forgot-card{
+    width:calc(100% - 20px)!important;
+    max-width:420px;
+    margin-left:auto;margin-right:auto;
+  }
+  
+  /* Keep action buttons easy to tap */
+  .btn,.btn-orange,.btn-outline-orange,.book-btn,.login-btn{
+    min-height:42px;
+  }
+}
+
+@media(max-width:360px){
+  .container{padding-left:8px!important;padding-right:8px!important}
+  .hero-content h1{font-size:25px}
+  .hero-image{height:190px}
+  .section-title,.contact-heading h1{font-size:24px}
+  .about-title{font-size:22px}
+  .contact-form,.contact-info{padding:14px}
+  .auth-card,.login-card,.login-option-card,.forgot-card{width:calc(100% - 12px)!important}
+}
