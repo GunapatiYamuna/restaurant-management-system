@@ -28,6 +28,43 @@ from .push_notifications import push_public_key, push_subscribe, push_unsubscrib
 
 FRONTEND = settings.PROJECT_ROOT / "frontend"
 
+MAX_MENU_IMAGE_BYTES = 5 * 1024 * 1024
+ALLOWED_MENU_IMAGE_TYPES = {"image/jpeg", "image/png", "image/webp"}
+
+
+def _menu_image_url(item):
+    if item.image_data:
+        return f"/api/menu-images/{item.id}/"
+    return item.image or ""
+
+
+def _set_menu_image(item, uploaded):
+    if uploaded is None:
+        return
+    content_type = (uploaded.content_type or "").lower()
+    if content_type not in ALLOWED_MENU_IMAGE_TYPES:
+        raise ValueError("Please upload a JPG, PNG, or WEBP image.")
+    if uploaded.size > MAX_MENU_IMAGE_BYTES:
+        raise ValueError("Image must be 5 MB or smaller.")
+    item.image_data = uploaded.read()
+    item.image_content_type = content_type
+    item.image = ""
+
+
+def _clear_menu_image(item):
+    item.image_data = None
+    item.image_content_type = ""
+
+
+@require_GET
+def menu_image(request, item_id):
+    item = MenuItem.objects.filter(pk=item_id).only("image_data", "image_content_type").first()
+    if not item or not item.image_data:
+        raise Http404
+    response = HttpResponse(bytes(item.image_data), content_type=item.image_content_type or "image/jpeg")
+    response["Cache-Control"] = "public, max-age=86400"
+    return response
+
 def _reservation_start(reservation):
     naive = datetime.combine(reservation.date, reservation.time)
     return timezone.make_aware(naive, timezone.get_current_timezone())
@@ -501,20 +538,18 @@ def restaurants(request):
 
 @require_GET
 def menu_items(request):
-    rows = MenuItem.objects.filter(available=True).select_related("restaurant").values(
-        "id", "restaurant_id", "restaurant__name", "name", "category", "description", "price", "image"
-    )
+    rows = MenuItem.objects.filter(available=True).select_related("restaurant")
     items = []
     for row in rows:
         items.append({
-            "id": row["id"],
-            "restaurant_id": row["restaurant_id"],
-            "restaurant_name": row["restaurant__name"],
-            "name": row["name"],
-            "category": row["category"],
-            "description": row["description"],
-            "price": float(row["price"]),
-            "image": row["image"],
+            "id": row.id,
+            "restaurant_id": row.restaurant_id,
+            "restaurant_name": row.restaurant.name,
+            "name": row.name,
+            "category": row.category,
+            "description": row.description,
+            "price": float(row.price),
+            "image": _menu_image_url(row),
         })
     return JsonResponse({"success": True, "items": items})
 
@@ -522,7 +557,8 @@ def menu_items(request):
 def restaurant_detail(request, restaurant_id):
     try: r = Restaurant.objects.get(pk=restaurant_id)
     except Restaurant.DoesNotExist: return JsonResponse({"success": False, "message": "Restaurant not found."}, status=404)
-    items = list(r.menu_items.filter(available=True).values("id", "name", "category", "description", "price", "image"))
+    items = list(r.menu_items.filter(available=True))
+    items = [{"id": x.id, "name": x.name, "category": x.category, "description": x.description, "price": float(x.price), "image": _menu_image_url(x)} for x in items]
     return JsonResponse({"success": True, "restaurant": {"id": r.id, "name": r.name, "cuisine": r.cuisine, "rating": float(r.rating), "reviews": r.reviews, "price": r.price, "location": r.location, "description": r.description, "image": r.image, "menu": items}})
 
 @csrf_exempt
@@ -1388,9 +1424,9 @@ def restaurant_menu(request):
     restaurant, error = _restaurant_owner(request)
     if error: return error
     if request.method == "GET":
-        items = list(restaurant.menu_items.order_by("category", "name").values("id", "name", "category", "description", "price", "image", "available"))
-        for x in items: x["price"] = float(x["price"])
-        return JsonResponse({"success": True, "items": items})
+        items = list(restaurant.menu_items.order_by("category", "name"))
+        payload = [{"id": item.id, "name": item.name, "category": item.category, "description": item.description, "price": float(item.price), "image": _menu_image_url(item), "available": item.available} for item in items]
+        return JsonResponse({"success": True, "items": payload})
     data = _data(request)
     name = str(data.get("name", "")).strip()
     if not name or data.get("price") in (None, ""):
@@ -1399,7 +1435,13 @@ def restaurant_menu(request):
     except Exception: return JsonResponse({"success": False, "message": "Invalid price."}, status=400)
     if price < 0: return JsonResponse({"success": False, "message": "Price cannot be negative."}, status=400)
     item = MenuItem.objects.create(restaurant=restaurant, name=name, category=str(data.get("category", "Other")).strip(), description=str(data.get("description", "")).strip(), price=price, image=str(data.get("image", "")).strip(), available=bool(data.get("available", True)))
-    return JsonResponse({"success": True, "item": {"id": item.id, "name": item.name, "category": item.category, "description": item.description, "price": float(item.price), "image": item.image, "available": item.available}})
+    try:
+        _set_menu_image(item, request.FILES.get("image_file"))
+    except ValueError as error:
+        item.delete()
+        return JsonResponse({"success": False, "message": str(error)}, status=400)
+    item.save()
+    return JsonResponse({"success": True, "item": {"id": item.id, "name": item.name, "category": item.category, "description": item.description, "price": float(item.price), "image": _menu_image_url(item), "available": item.available}})
 
 @csrf_exempt
 @require_http_methods(["PUT", "PATCH", "DELETE"])
@@ -1413,6 +1455,13 @@ def restaurant_menu_item(request, item_id):
     data = _data(request)
     for field in ("name", "category", "description", "image"):
         if field in data: setattr(item, field, str(data.get(field, "")).strip())
+    if request.FILES.get("image_file") is not None:
+        try:
+            _set_menu_image(item, request.FILES.get("image_file"))
+        except ValueError as error:
+            return JsonResponse({"success": False, "message": str(error)}, status=400)
+    elif str(data.get("remove_image", "")).lower() in ("true", "1", "yes"):
+        _clear_menu_image(item)
     if "price" in data:
         try: item.price = Decimal(str(data.get("price")))
         except Exception: return JsonResponse({"success": False, "message": "Invalid price."}, status=400)
