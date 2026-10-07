@@ -97,6 +97,17 @@ function setupAddToCartButtons() {
 
         let cart = getCart();
 
+        const currentRestaurantId = cart.length ? Number(cart[0].restaurant_id || 0) : 0;
+        if (cart.length && currentRestaurantId && restaurantId && currentRestaurantId !== restaurantId) {
+            const currentRestaurantName = cart[0].restaurant_name || "another restaurant";
+            const newRestaurantName = restaurantName || "this restaurant";
+            const replaceCart = window.confirm(
+                `Your cart contains items from ${currentRestaurantName}.\\n\\nDo you want to clear that cart and start a new order from ${newRestaurantName}?`
+            );
+            if (!replaceCart) return;
+            cart = [];
+        }
+
         const existingItem = cart.find(function (item) {
             if (id && Number(item.id) === id) {
                 return true;
@@ -217,6 +228,11 @@ function renderCartPage() {
 
     container.innerHTML = "";
 
+    const restaurantName = cart[0]?.restaurant_name || "Restaurant";
+    const restaurantHeader = document.createElement("div");
+    restaurantHeader.className = "alert alert-light border d-flex align-items-center gap-2 mb-4";
+    restaurantHeader.innerHTML = '<i class="bi bi-shop"></i><strong>Ordering from ' + restaurantName + '</strong>';
+    container.appendChild(restaurantHeader);
 
     cart.forEach(function (item, index) {
 
@@ -640,6 +656,18 @@ function renderCheckoutPage() {
 
             <div class="d-flex align-items-center">
 
+                <div>
+
+                    <span class="badge bg-light text-dark border">
+                        <i class="bi bi-shop"></i> ${item.restaurant_name || "Restaurant"}
+                    </span>
+
+                </div>
+
+            </div>
+
+            <div class="d-flex align-items-center">
+
                 <img
                     src="${image}"
                     alt="${item.name}"
@@ -944,6 +972,11 @@ function setupPlaceOrder() {
         event.preventDefault();
         const cart = getCart();
         if (!cart.length) { alert("Your cart is empty."); return; }
+        const restaurantIds = [...new Set(cart.map(item => Number(item.restaurant_id || 0)).filter(Boolean))];
+        if (restaurantIds.length > 1) {
+            alert("Your cart contains items from different restaurants. Please keep only one restaurant in the cart.");
+            return;
+        }
         if (!form.checkValidity()) { form.reportValidity(); return; }
 
         const selected = document.querySelector('input[name="payment"]:checked');
