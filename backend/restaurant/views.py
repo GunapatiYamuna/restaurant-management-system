@@ -48,6 +48,7 @@ def _validate_order_items(items):
         raise ValueError("Your cart is empty.")
     validated = []
     subtotal = Decimal("0.00")
+    restaurant_id = None
     for item in items:
         try:
             qty = max(1, int(item.get("quantity", 1)))
@@ -59,6 +60,10 @@ def _validate_order_items(items):
             menu_item = MenuItem.objects.filter(pk=item_id, available=True).first()
             if menu_item is None:
                 raise ValueError("One of the selected menu items is unavailable.")
+            if restaurant_id is None:
+                restaurant_id = menu_item.restaurant_id
+            elif menu_item.restaurant_id != restaurant_id:
+                raise ValueError("You can order items from only one restaurant at a time. Please clear your cart and choose one restaurant.")
             price = menu_item.price
         else:
             try:
