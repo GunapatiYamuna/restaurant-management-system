@@ -126,3 +126,22 @@ table{max-width:100%}
   .contact-form,.contact-info{padding:14px}
   .auth-card,.login-card,.login-option-card,.forgot-card{width:calc(100% - 12px)!important}
 }
+
+/* Leaflet must keep its internal geometry independent of global responsive rules. */
+.leaflet-container,
+.leaflet-container *{
+  max-width:none;
+}
+#deliveryMap .leaflet-container{
+  width:100%;
+  height:100%;
+}
+#deliveryMap .leaflet-tile{
+  max-width:none!important;
+  width:256px!important;
+  height:256px!important;
+}
+#deliveryMap .leaflet-marker-icon,
+#deliveryMap .leaflet-marker-shadow{
+  max-width:none!important;
+}
