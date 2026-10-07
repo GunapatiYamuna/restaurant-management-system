@@ -237,8 +237,8 @@ document.addEventListener("DOMContentLoaded", function () {
             const queries = [];
 
             if (address) {
-                queries.push(address);
-
+                // Prefer the complete user-provided context. A name such as
+                // "SSN College" is ambiguous without its city/PIN.
                 if (city || pincode) {
                     queries.push(
                         [address, city, pincode, "India"]
@@ -246,6 +246,7 @@ document.addEventListener("DOMContentLoaded", function () {
                             .join(", ")
                     );
                 }
+                queries.push([address, "India"].join(", "));
             } else {
                 queries.push(
                     [city, pincode, "India"]
@@ -301,10 +302,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
 
 
-            // Reverse-geocode the exact selected coordinates once, so the
-            // displayed address is tied to the actual marker position.
-            await reverseGeocode(lat, lng);
-
+            // Do NOT reverse-geocode a successful address search here.
+            // Reverse geocoding can replace a specific place name such as
+            // "SSN College" with a broader nearby street/address.
             console.log("Selected address:", selected.address);
             console.log("Selected coordinates:", lat, lng);
         } catch (error) {
