@@ -965,7 +965,8 @@ def create_order(request):
             coupon.redeemed_order = order
             coupon.redeemed_at = timezone.now()
             coupon.save(update_fields=["used", "redeemed_order", "redeemed_at"])
-    return JsonResponse({"success": True, "order_id": order.id, "total": float(total), "discount": float(discount), "coupon_code": coupon.code if coupon else None, "payment_status": order.payment_status, "message": "Order placed successfully."})
+    restaurant_name = validated_items[0][0].restaurant.name if validated_items and validated_items[0][0] else ""
+    return JsonResponse({"success": True, "order_id": order.id, "restaurant_id": validated_items[0][0].restaurant_id if validated_items and validated_items[0][0] else None, "restaurant_name": restaurant_name, "total": float(total), "discount": float(discount), "coupon_code": coupon.code if coupon else None, "payment_status": order.payment_status, "message": "Order placed successfully."})
 
 
 @require_POST
