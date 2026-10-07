@@ -142,24 +142,6 @@ document.addEventListener("DOMContentLoaded", function () {
         return data;
     }
 
-    async function geocodeReverse(lat, lng) {
-        const url =
-            "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode" +
-            "?location=" + encodeURIComponent(lng + "," + lat) +
-            "&distance=100" +
-            "&f=json";
-
-        const response = await fetch(url, {
-            headers: { Accept: "application/json" }
-        });
-
-        if (!response.ok) {
-            throw new Error("Reverse location service is unavailable.");
-        }
-
-        return response.json();
-    }
-
     function applyReverseResult(data) {
         const address = data?.address || {};
 
