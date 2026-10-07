@@ -1520,28 +1520,80 @@ def forgot_password(request):
         reset_url = f"{settings.FRONTEND_BASE_URL}{reset_path}"
 
         try:
-            send_mail(
-                "FoodieHub Password Reset",
-                (
-                    "Hello,\n\n"
-                    "We received a request to reset your FoodieHub password.\n\n"
-                    "Click the link below to reset your password:\n\n"
-                    f"{reset_url}\n\n"
-                    "If you did not request a password reset, you can ignore this email.\n\n"
-                    "FoodieHub Team"
-                ),
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=False,
+            resend_api_key = getattr(settings, "RESEND_API_KEY", "")
+            resend_from_email = getattr(
+                settings,
+                "RESEND_FROM_EMAIL",
+                "onboarding@resend.dev",
             )
 
-        except Exception as error:
-            print("Password reset email error:", error)
+            if not resend_api_key:
+                print("Password reset email error: RESEND_API_KEY is not configured.")
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Password reset email service is not configured. Please try again later.",
+                    },
+                    status=503,
+                )
 
+            email_response = requests.post(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_api_key}",
+                    "Content-Type": "application/json",
+                },
+                json={
+                    "from": resend_from_email,
+                    "to": [user.email],
+                    "subject": "FoodieHub Password Reset",
+                    "html": (
+                        "<p>Hello,</p>"
+                        "<p>We received a request to reset your FoodieHub password.</p>"
+                        f'<p><a href="{reset_url}">Click here to reset your password</a></p>'
+                        "<p>If you did not request a password reset, you can ignore this email.</p>"
+                        "<p>FoodieHub Team</p>"
+                    ),
+                    "text": (
+                        "Hello,\n\n"
+                        "We received a request to reset your FoodieHub password.\n\n"
+                        f"Reset your password: {reset_url}\n\n"
+                        "If you did not request a password reset, you can ignore this email.\n\n"
+                        "FoodieHub Team"
+                    ),
+                },
+                timeout=15,
+            )
+
+            if not email_response.ok:
+                print(
+                    "Password reset email error:",
+                    email_response.status_code,
+                    email_response.text[:500],
+                )
+                return JsonResponse(
+                    {
+                        "success": False,
+                        "message": "Unable to send the password reset email. Please try again.",
+                    },
+                    status=502,
+                )
+
+        except requests.RequestException as error:
+            print("Password reset email connection error:", error)
             return JsonResponse(
                 {
                     "success": False,
-                    "message": "Unable to send the password reset email. Please try again."
+                    "message": "Unable to send the password reset email. Please try again.",
+                },
+                status=502,
+            )
+        except Exception as error:
+            print("Password reset email error:", error)
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Unable to send the password reset email. Please try again.",
                 },
                 status=500,
             )
