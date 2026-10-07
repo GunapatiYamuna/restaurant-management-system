@@ -20,8 +20,6 @@ document.addEventListener("DOMContentLoaded", function () {
         worldCopyJump: true
     }).setView([DEFAULT_LAT, DEFAULT_LNG], 12);
 
-    // Use Esri's public street-map tiles instead of the OSM tile endpoint
-    // that is returning HTTP 403 in the deployed browser environment.
     L.tileLayer(
         "https://server.arcgisonline.com/ArcGIS/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
         {
@@ -35,11 +33,19 @@ document.addEventListener("DOMContentLoaded", function () {
     setTimeout(() => map.invalidateSize(true), 100);
     window.addEventListener("resize", () => map.invalidateSize());
 
+    function clean(value) {
+        return String(value || "").trim();
+    }
+
+    function digits(value) {
+        return clean(value).replace(/\D/g, "");
+    }
+
     function setPoint(lat, lng, zoom = 16, popupText = "Delivery location") {
         lat = Number(lat);
         lng = Number(lng);
 
-        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return;
+        if (!Number.isFinite(lat) || !Number.isFinite(lng)) return false;
 
         latInput.value = lat.toFixed(6);
         lngInput.value = lng.toFixed(6);
@@ -60,186 +66,265 @@ document.addEventListener("DOMContentLoaded", function () {
         marker.bindPopup(popupText);
         map.setView([lat, lng], zoom, { animate: true });
         setTimeout(() => map.invalidateSize(true), 50);
+        return true;
+    }
+
+    function setButton(button, disabled, html) {
+        if (!button) return;
+        button.disabled = disabled;
+        button.innerHTML = html;
     }
 
     function getCity(address) {
-        return address.city ||
+        return address.City ||
+            address.city ||
+            address.Town ||
             address.town ||
+            address.Municipality ||
             address.municipality ||
-            address.city_district ||
+            address.District ||
             address.district ||
-            address.county ||
-            address.state_district ||
             "";
     }
 
-    function clean(value) {
-        return String(value || "").trim().toLowerCase();
+    function getPostal(address) {
+        return address.Postal ||
+            address.postal ||
+            address.postcode ||
+            "";
     }
 
-    function digits(value) {
-        return String(value || "").replace(/\D/g, "");
+    function getDisplayAddress(attributes, fallback) {
+        return attributes.Match_addr ||
+            attributes.LongLabel ||
+            attributes.Address ||
+            fallback ||
+            "";
     }
 
-    async function reverseGeocode(lat, lng) {
-        try {
-            const url =
-                "https://nominatim.openstreetmap.org/reverse" +
-                "?format=jsonv2&lat=" + encodeURIComponent(lat) +
-                "&lon=" + encodeURIComponent(lng) +
-                "&zoom=18&addressdetails=1";
-
-            const response = await fetch(url, {
-                headers: { Accept: "application/json" }
-            });
-
-            if (!response.ok) {
-                throw new Error("Reverse geocoding failed.");
-            }
-
-            const result = await response.json();
-            const address = result.address || {};
-
-            const parts = [
-                address.house_number,
-                address.road,
-                address.neighbourhood || address.suburb,
-                address.village || address.town || address.city
-            ].filter(Boolean);
-
-            if (addressInput) addressInput.value = parts.join(", ");
-            if (cityInput) cityInput.value = getCity(address);
-            if (pincodeInput) pincodeInput.value = address.postcode || "";
-
-            console.log("Delivery location details:", result);
-        } catch (error) {
-            console.error("Reverse geocoding error:", error);
-        }
-    }
-
-    map.on("click", async event => {
-        setPoint(event.latlng.lat, event.latlng.lng);
-        await reverseGeocode(event.latlng.lat, event.latlng.lng);
-    });
-
-    function scoreResult(item, address, city, pincode) {
-        const a = item.address || {};
-        const display = clean(item.display_name);
-        const wantedAddress = clean(address);
-        const wantedCity = clean(city);
-        const wantedPin = digits(pincode);
-        let score = Number(item.importance || 0) * 10;
-
-        if (wantedPin && digits(a.postcode) === wantedPin) score += 100;
-        if (wantedCity) {
-            const resultCity = clean(getCity(a));
-            if (resultCity === wantedCity) score += 50;
-            if (display.includes(wantedCity)) score += 20;
-        }
-
-        const tokens = wantedAddress
-            .split(/[\s,]+/)
-            .map(clean)
-            .filter(token => token.length >= 4);
-
-        tokens.forEach(token => {
-            if (display.includes(token)) score += 3;
-        });
-
-        if (item.type === "house" || item.type === "building") score += 12;
-        if (item.type === "road") score += 5;
-
-        return score;
-    }
-
-    async function searchNominatim(query) {
+    // ArcGIS is used for both forward and reverse geocoding so that the
+    // address -> map and GPS -> address operations use the same provider.
+    async function arcgisSearch(singleLine) {
         const url =
-            "https://nominatim.openstreetmap.org/search" +
-            "?format=jsonv2&limit=10&countrycodes=in&addressdetails=1&q=" +
-            encodeURIComponent(query);
+            "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates" +
+            "?SingleLine=" + encodeURIComponent(singleLine) +
+            "&f=json" +
+            "&outFields=*" +
+            "&maxLocations=8" +
+            "&countryCode=IND";
 
         const response = await fetch(url, {
             headers: { Accept: "application/json" }
         });
 
-        if (!response.ok) return [];
-        const found = await response.json();
-        return Array.isArray(found) ? found : [];
+        if (!response.ok) {
+            throw new Error("Address search service is unavailable.");
+        }
+
+        const data = await response.json();
+
+        return (data.candidates || []).filter(candidate =>
+            candidate.location &&
+            Number.isFinite(Number(candidate.location.x)) &&
+            Number.isFinite(Number(candidate.location.y))
+        );
+    }
+
+    async function arcgisReverse(lat, lng) {
+        const url =
+            "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode" +
+            "?location=" + encodeURIComponent(lng + "," + lat) +
+            "&distance=100" +
+            "&f=json";
+
+        const response = await fetch(url, {
+            headers: { Accept: "application/json" }
+        });
+
+        if (!response.ok) {
+            throw new Error("Reverse location service is unavailable.");
+        }
+
+        return response.json();
+    }
+
+    function applyReverseResult(data) {
+        const address = data?.address || {};
+
+        if (addressInput) {
+            addressInput.value =
+                address.Address ||
+                address.Match_addr ||
+                data?.address?.LongLabel ||
+                "";
+        }
+
+        if (cityInput) {
+            cityInput.value = getCity(address);
+        }
+
+        if (pincodeInput) {
+            pincodeInput.value = getPostal(address);
+        }
+
+        return address;
+    }
+
+    async function reverseGeocode(lat, lng) {
+        try {
+            const data = await arcgisReverse(lat, lng);
+            const address = applyReverseResult(data);
+
+            if (marker) {
+                marker.bindPopup(
+                    "<strong>Delivery location</strong><br>" +
+                    (address.Match_addr || address.Address || "Selected location")
+                );
+            }
+
+            console.log("Reverse geocoded delivery location:", data);
+            return address;
+        } catch (error) {
+            console.error("Reverse geocoding error:", error);
+            return null;
+        }
+    }
+
+    function scoreCandidate(candidate, wantedAddress, wantedCity, wantedPin) {
+        const a = candidate.attributes || {};
+        const label = clean(candidate.address).toLowerCase();
+        const city = clean(
+            a.City || a.Town || a.Municipality || a.District
+        ).toLowerCase();
+
+        const requested = clean(wantedAddress).toLowerCase();
+        const requestedCity = clean(wantedCity).toLowerCase();
+        const requestedPin = digits(wantedPin);
+
+        let score = Number(candidate.score || 0);
+
+        // ArcGIS score is the primary ranking.
+        if (requestedCity && city === requestedCity) score += 20;
+
+        if (requestedPin && digits(a.Postal) === requestedPin) {
+            score += 100;
+        }
+
+        // Prefer a result that actually contains the important address text.
+        const importantWords = requested
+            .split(/[\s,/-]+/)
+            .filter(word => word.length >= 4);
+
+        for (const word of importantWords) {
+            if (label.includes(word)) score += 2;
+        }
+
+        return score;
     }
 
     async function findAddress() {
-        const address = addressInput?.value.trim() || "";
-        const city = cityInput?.value.trim() || "";
-        const pincode = pincodeInput?.value.trim() || "";
+        const address = clean(addressInput?.value);
+        const city = clean(cityInput?.value);
+        const pincode = clean(pincodeInput?.value);
 
         if (!address && !city && !pincode) {
-            alert("Please enter a delivery address, city, or PIN code first.");
+            alert("Please enter your delivery address first.");
             return;
         }
 
-        if (findAddressButton) {
-            findAddressButton.disabled = true;
-            findAddressButton.innerHTML =
-                '<i class="bi bi-hourglass-split"></i> Searching...';
-        }
+        setButton(
+            findAddressButton,
+            true,
+            '<i class="bi bi-hourglass-split"></i> Finding...'
+        );
 
         try {
-            // Search the address by itself first. This prevents an old City
-            // value from forcing a new address into the wrong city.
+            // Do NOT trust an old city/PIN blindly. Search the complete
+            // address first, then use city/PIN only as additional context.
             const queries = [];
 
             if (address) {
                 queries.push(address);
 
                 if (city || pincode) {
-                    queries.push([address, city, pincode].filter(Boolean).join(", "));
+                    queries.push(
+                        [address, city, pincode, "India"]
+                            .filter(Boolean)
+                            .join(", ")
+                    );
                 }
             } else {
-                queries.push([city, pincode].filter(Boolean).join(", "));
+                queries.push(
+                    [city, pincode, "India"]
+                        .filter(Boolean)
+                        .join(", ")
+                );
             }
 
-            let results = [];
+            let candidates = [];
 
             for (const query of [...new Set(queries)]) {
-                if (!query) continue;
-                results = await searchNominatim(query);
-                if (results.length) break;
+                candidates = await arcgisSearch(query);
+
+                if (candidates.length) break;
             }
 
-            if (!results.length) {
-                alert("Address not found. Try entering the street/locality together with the city or PIN code.");
+            if (!candidates.length) {
+                alert(
+                    "Address not found. Please enter the street/locality and city, or use your current location."
+                );
                 return;
             }
 
-            const result = [...results].sort(
+            const selected = [...candidates].sort(
                 (a, b) =>
-                    scoreResult(b, address, city, pincode) -
-                    scoreResult(a, address, city, pincode)
+                    scoreCandidate(b, address, city, pincode) -
+                    scoreCandidate(a, address, city, pincode)
             )[0];
 
-            const lat = Number(result.lat);
-            const lng = Number(result.lon);
+            const lat = Number(selected.location.y);
+            const lng = Number(selected.location.x);
 
-            if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+            if (!setPoint(lat, lng, 17, "Delivery location")) {
                 alert("The address returned an invalid map location.");
                 return;
             }
 
-            setPoint(lat, lng, 17, "Delivery location");
-            await reverseGeocode(lat, lng);
+            // Use the selected geocoder result immediately so the form does
+            // not depend on a second provider giving a different answer.
+            const attrs = selected.attributes || {};
+
+            if (addressInput) {
+                addressInput.value = getDisplayAddress(attrs, selected.address);
+            }
+
+            if (cityInput) {
+                cityInput.value = getCity(attrs);
+            }
+
+            if (pincodeInput) {
+                pincodeInput.value = getPostal(attrs);
+            }
+
             marker?.openPopup();
 
-            console.log("Selected delivery address:", result.display_name);
+            // Reverse-geocode the exact selected coordinates once, so the
+            // displayed address is tied to the actual marker position.
+            await reverseGeocode(lat, lng);
+
+            console.log("Selected address:", selected.address);
             console.log("Selected coordinates:", lat, lng);
         } catch (error) {
             console.error("Address search error:", error);
-            alert("Unable to find the address right now. Please try again.");
+            alert(
+                "Unable to find the address right now. Please try again."
+            );
         } finally {
-            if (findAddressButton) {
-                findAddressButton.disabled = false;
-                findAddressButton.innerHTML =
-                    '<i class="bi bi-search"></i> Find Address';
-            }
+            setButton(
+                findAddressButton,
+                false,
+                '<i class="bi bi-search"></i> Find Address'
+            );
         }
     }
 
@@ -251,40 +336,113 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
 
-        useLocationButton.disabled = true;
-        useLocationButton.innerHTML =
-            '<i class="bi bi-hourglass-split"></i> Finding...';
+        setButton(
+            useLocationButton,
+            true,
+            '<i class="bi bi-hourglass-split"></i> Finding...'
+        );
 
         navigator.geolocation.getCurrentPosition(
             async position => {
-                const { latitude, longitude } = position.coords;
+                try {
+                    const { latitude, longitude, accuracy } = position.coords;
 
-                setPoint(latitude, longitude, 17, "Your current location");
-                await reverseGeocode(latitude, longitude);
-                marker?.openPopup();
+                    // Always use the browser's actual GPS coordinates.
+                    // Never use the old address/city/PIN fields for this action.
+                    setPoint(
+                        latitude,
+                        longitude,
+                        17,
+                        "Your current location"
+                    );
 
-                useLocationButton.disabled = false;
-                useLocationButton.innerHTML =
-                    '<i class="bi bi-crosshair"></i> Use my location';
+                    const address = await reverseGeocode(latitude, longitude);
+
+                    if (marker) {
+                        marker.bindPopup(
+                            "<strong>Your current location</strong><br>" +
+                            (address?.Match_addr ||
+                                address?.Address ||
+                                "GPS location")
+                        ).openPopup();
+                    }
+
+                    console.log(
+                        "GPS location:",
+                        latitude,
+                        longitude,
+                        "accuracy:",
+                        accuracy,
+                        "meters"
+                    );
+
+                    if (accuracy > 100) {
+                        console.warn(
+                            "Browser reported low GPS accuracy:",
+                            accuracy,
+                            "meters"
+                        );
+                    }
+                } catch (error) {
+                    console.error("GPS reverse-geocoding error:", error);
+                    alert(
+                        "Your GPS location was found, but the address could not be loaded. The map marker is still at your actual location."
+                    );
+                } finally {
+                    setButton(
+                        useLocationButton,
+                        false,
+                        '<i class="bi bi-crosshair"></i> Use my location'
+                    );
+                }
             },
             error => {
                 console.error("Geolocation error:", error);
-                alert("Unable to access your location. Please allow location permission or use Find Address.");
 
-                useLocationButton.disabled = false;
-                useLocationButton.innerHTML =
-                    '<i class="bi bi-crosshair"></i> Use my location';
+                let message =
+                    "Unable to get your current location.";
+
+                if (error.code === 1) {
+                    message =
+                        "Location permission was denied. Allow location access in Chrome and try again.";
+                } else if (error.code === 2) {
+                    message =
+                        "Your location could not be determined. Try again or use Find Address.";
+                } else if (error.code === 3) {
+                    message =
+                        "Location request timed out. Try again.";
+                }
+
+                alert(message);
+
+                setButton(
+                    useLocationButton,
+                    false,
+                    '<i class="bi bi-crosshair"></i> Use my location'
+                );
             },
             {
                 enableHighAccuracy: true,
-                timeout: 10000,
+                timeout: 15000,
                 maximumAge: 0
             }
         );
     });
 
-    // Restore only a previously selected location. Otherwise show the
-    // neutral Hyderabad fallback until the customer searches or uses GPS.
+    map.on("click", async event => {
+        setPoint(
+            event.latlng.lat,
+            event.latlng.lng,
+            Math.max(map.getZoom(), 16),
+            "Selected delivery location"
+        );
+
+        await reverseGeocode(
+            event.latlng.lat,
+            event.latlng.lng
+        );
+    });
+
     try {
         const saved = JSON.parse(
             localStorage.getItem("foodieDeliveryLocation") || "null"
@@ -295,12 +453,26 @@ document.addEventListener("DOMContentLoaded", function () {
             Number.isFinite(Number(saved.lat)) &&
             Number.isFinite(Number(saved.lng))
         ) {
-            setPoint(Number(saved.lat), Number(saved.lng), 16);
+            setPoint(
+                Number(saved.lat),
+                Number(saved.lng),
+                16
+            );
         } else {
-            setPoint(DEFAULT_LAT, DEFAULT_LNG, 12);
+            setPoint(
+                DEFAULT_LAT,
+                DEFAULT_LNG,
+                12,
+                "Default map location"
+            );
         }
     } catch (_) {
-        setPoint(DEFAULT_LAT, DEFAULT_LNG, 12);
+        setPoint(
+            DEFAULT_LAT,
+            DEFAULT_LNG,
+            12,
+            "Default map location"
+        );
     }
 
     document.getElementById("checkout-form")?.addEventListener(
