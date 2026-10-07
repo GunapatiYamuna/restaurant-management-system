@@ -1,4 +1,5 @@
 import json
+import requests
 import re
 from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
@@ -397,8 +398,7 @@ def admin_login(request):
     password = str(data.get("password", ""))
     try:
         user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        user = None
+    except User.DoesNotExist:        user = None
     auth_user = authenticate(request, username=user.username if user else email, password=password)
     if not auth_user or not auth_user.is_staff:
         return JsonResponse({"success": False, "message": "Invalid administrator credentials."}, status=401)
@@ -797,8 +797,7 @@ def _reservation_attendance_page(reservation_id, title, message, status_label, s
             </section>
             """
 
-    elif show_refund_choices:
-        refund_html = f"""
+    elif show_refund_choices:        refund_html = f"""
         <section class="refund-box">
           <h2>Your 50% Food Payment</h2>
           <p class="refund-intro">Since you chose <strong>Not Coming</strong>, you can receive the 50% you already paid back. Please choose one option below.</p>
@@ -1197,8 +1196,7 @@ def create_razorpay_order(request):
                 city=str(data.get("city", "")).strip(), pincode=str(data.get("pincode", "")).strip(),
                 delivery_lat=data.get("delivery_lat") or None, delivery_lng=data.get("delivery_lng") or None,
                 payment_method="Razorpay", payment_status="pending", status="pending_payment", total=total,
-            )
-            for menu_item, name, price, qty in validated_items:
+            )            for menu_item, name, price, qty in validated_items:
                 OrderItem.objects.create(order=order, menu_item=menu_item, name=name, price=price, quantity=qty)
             razorpay_order = client.order.create({"amount": amount_paise, "currency": "INR", "receipt": f"foodiehub-{order.id}", "notes": {"foodiehub_order_id": str(order.id)}})
             order.razorpay_order_id = razorpay_order["id"]
@@ -1597,7 +1595,6 @@ def forgot_password(request):
                 },
                 status=500,
             )
-
     return JsonResponse(response)
 
 
@@ -1997,8 +1994,7 @@ def order_tracking(request, order_id):
         "restaurant": ({
             "id": restaurant.id,
             "name": restaurant.name,
-            "location": restaurant.location,
-            "image": restaurant.image,
+            "location": restaurant.location,            "image": restaurant.image,
         } if restaurant else None),
         "partner": ({
             "id": partner.id, "name": partner.user.first_name or partner.user.username,
