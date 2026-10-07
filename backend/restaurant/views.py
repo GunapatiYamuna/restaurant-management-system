@@ -2,6 +2,7 @@ import json
 import re
 import urllib.parse
 import urllib.request
+import urllib.error
 from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
