@@ -276,8 +276,8 @@ document.addEventListener("DOMContentLoaded", function () {
                     scoreCandidate(a, address, city, pincode)
             )[0];
 
-            const lat = Number(selected.location.y);
-            const lng = Number(selected.location.x);
+            const lat = Number(selected.location.lat);
+            const lng = Number(selected.location.lng);
 
             if (!setPoint(lat, lng, 17, "Delivery location")) {
                 alert("The address returned an invalid map location.");
