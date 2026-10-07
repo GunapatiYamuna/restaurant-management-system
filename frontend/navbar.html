@@ -16,14 +16,17 @@
         <li class="nav-item"><a class="nav-link" data-nav="/about.html" href="/about.html">About</a></li>
         <li class="nav-item"><a class="nav-link" data-nav="/contact.html" href="/contact.html">Contact</a></li>
       </ul>
-      <div class="shared-navbar-actions">
-        <a href="/cart.html" class="nav-cart" aria-label="Cart"><i class="bi bi-cart3"></i><span class="cart-count"></span></a>
-        <div id="authButtons" class="shared-auth-buttons"><a href="/login/login-options.html" class="login-btn">Login</a></div>
-        <a id="userSection" class="navbar-user" href="/login/pages/profile.html" style="display:none;" aria-label="Open profile">
-          <div class="navbar-avatar" id="navbarAvatar"></div>
-          <div class="navbar-greeting"><span>Hi,</span><strong id="navbarUserName"></strong><small id="navbarUserRole"></small></div>
-        </a>
-      </div>
+    </div>
+
+    <!-- Cart + authentication stay visible in the top bar even when the
+         mobile navigation menu is closed. Only the page links collapse. -->
+    <div class="shared-navbar-actions">
+      <a href="/cart.html" class="nav-cart" aria-label="Cart"><i class="bi bi-cart3"></i><span class="cart-count"></span></a>
+      <div id="authButtons" class="shared-auth-buttons"><a href="/login/login-options.html" class="login-btn">Login</a></div>
+      <a id="userSection" class="navbar-user" href="/login/pages/profile.html" style="display:none;" aria-label="Open profile">
+        <div class="navbar-avatar" id="navbarAvatar"></div>
+        <div class="navbar-greeting"><span>Hi,</span><strong id="navbarUserName"></strong><small id="navbarUserRole"></small></div>
+      </a>
     </div>
   </div>
 </nav>
