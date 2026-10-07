@@ -1196,7 +1196,8 @@ def create_razorpay_order(request):
                 city=str(data.get("city", "")).strip(), pincode=str(data.get("pincode", "")).strip(),
                 delivery_lat=data.get("delivery_lat") or None, delivery_lng=data.get("delivery_lng") or None,
                 payment_method="Razorpay", payment_status="pending", status="pending_payment", total=total,
-            )            for menu_item, name, price, qty in validated_items:
+            )
+            for menu_item, name, price, qty in validated_items:
                 OrderItem.objects.create(order=order, menu_item=menu_item, name=name, price=price, quantity=qty)
             razorpay_order = client.order.create({"amount": amount_paise, "currency": "INR", "receipt": f"foodiehub-{order.id}", "notes": {"foodiehub_order_id": str(order.id)}})
             order.razorpay_order_id = razorpay_order["id"]
