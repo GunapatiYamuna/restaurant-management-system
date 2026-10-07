@@ -63,8 +63,7 @@ document.addEventListener("DOMContentLoaded", function () {
             marker.setLatLng([lat, lng]);
         }
 
-        marker.bindPopup(popupText);
-        map.setView([lat, lng], zoom, { animate: true });
+        // Keep the map clean on mobile. The previous popup was being squeezed by global responsive CSS.\n        marker.unbindPopup();\n        map.setView([lat, lng], zoom, { animate: true });
         setTimeout(() => map.invalidateSize(true), 50);
         return true;
     }
@@ -300,7 +299,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 pincodeInput.value = getPostal(attrs);
             }
 
-            marker?.openPopup();
+
 
             // Reverse-geocode the exact selected coordinates once, so the
             // displayed address is tied to the actual marker position.
