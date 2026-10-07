@@ -1517,27 +1517,64 @@ def forgot_password(request):
         reset_path = f"/login/pages/reset-password.html?uid={uid}&token={token}"
         reset_url = f"{settings.FRONTEND_BASE_URL}{reset_path}"
 
-        try:
-            send_mail(
-                subject="FoodieHub Password Reset",
-                message=(
-                    "Hello,\n\n"
-                    "We received a request to reset your FoodieHub password.\n\n"
-                    f"Reset your password: {reset_url}\n\n"
-                    "If you did not request this, you can ignore this email.\n\n"
-                    "FoodieHub Team"
-                ),
-                from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=[user.email],
-                html_message=(
-                    "<p>Hello,</p>"
-                    "<p>We received a request to reset your FoodieHub password.</p>"
-                    f'<p><a href="{reset_url}">Click here to reset your password</a></p>'
-                    "<p>If you did not request this, you can ignore this email.</p>"
-                    "<p>FoodieHub Team</p>"
-                ),
-                fail_silently=False,
+        if not settings.BREVO_API_KEY or not settings.BREVO_FROM_EMAIL:
+            print("Password reset email error: BREVO_API_KEY or BREVO_FROM_EMAIL is not configured.")
+            return JsonResponse(
+                {
+                    "success": False,
+                    "message": "Password reset email service is not configured. Please try again later.",
+                },
+                status=503,
             )
+
+        payload = {
+            "sender": {
+                "name": settings.BREVO_FROM_NAME,
+                "email": settings.BREVO_FROM_EMAIL,
+            },
+            "to": [
+                {
+                    "email": user.email,
+                }
+            ],
+            "subject": "FoodieHub Password Reset",
+            "textContent": (
+                "Hello,\n\n"
+                "We received a request to reset your FoodieHub password.\n\n"
+                f"Reset your password: {reset_url}\n\n"
+                "If you did not request this, you can ignore this email.\n\n"
+                "FoodieHub Team"
+            ),
+            "htmlContent": (
+                "<p>Hello,</p>"
+                "<p>We received a request to reset your FoodieHub password.</p>"
+                f'<p><a href="{reset_url}">Click here to reset your password</a></p>'
+                "<p>If you did not request this, you can ignore this email.</p>"
+                "<p>FoodieHub Team</p>"
+            ),
+        }
+
+        try:
+            import urllib.error
+            import urllib.request
+
+            request_data = json.dumps(payload).encode("utf-8")
+            api_request = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                data=request_data,
+                headers={
+                    "accept": "application/json",
+                    "api-key": settings.BREVO_API_KEY,
+                    "content-type": "application/json",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(api_request, timeout=10) as api_response:
+                response_body = api_response.read().decode("utf-8")
+                if api_response.status < 200 or api_response.status >= 300:
+                    raise RuntimeError(
+                        f"Brevo returned HTTP {api_response.status}: {response_body[:500]}"
+                    )
         except Exception as error:
             print("Password reset email error:", error)
             return JsonResponse(
@@ -1547,6 +1584,7 @@ def forgot_password(request):
                 },
                 status=502,
             )
+
     return JsonResponse(response)
 
 
