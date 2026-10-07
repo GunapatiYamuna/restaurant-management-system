@@ -1,3 +1,4 @@
+:root{--foodie-navbar-height:67px}
 .foodie-shared-navbar{background:#15191e;border-bottom:1px solid #263746;padding:13px 0}
 .foodie-shared-navbar .navbar-brand{color:#fff!important;font-size:21px;font-weight:700}
 .foodie-shared-navbar .navbar-brand i{color:#ff6b00;margin-right:6px}.foodie-shared-navbar .navbar-brand span{color:#ff6b00}
@@ -15,6 +16,11 @@
 /* Global alignment guard: keep the shared navbar identical to the index page
    even when a page has its own .navbar/.container/body layout rules. */
 body > .foodie-shared-navbar{
+  position:fixed !important;
+  top:0 !important;
+  left:0 !important;
+  right:0 !important;
+  z-index:1000 !important;
   width:100% !important;
   min-height:0 !important;
   height:auto !important;
@@ -173,3 +179,8 @@ body > .foodie-shared-navbar{
     margin:0 !important;
   }
 }
+
+
+/* Keep the shared FoodieHub navbar visible while the page scrolls on every device. */
+body{padding-top:var(--foodie-navbar-height) !important;}
+@media(max-width:991px){body{padding-top:var(--foodie-navbar-height) !important;}}
