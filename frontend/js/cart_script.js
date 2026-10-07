@@ -261,81 +261,38 @@ function renderCartPage() {
             document.createElement("div");
 
 
-        itemDiv.className =
-            "cart-item d-flex align-items-center justify-content-between mb-3 p-3";
-
-
+        itemDiv.className = "cart-item mb-3 p-3";
         itemDiv.innerHTML = `
+            <div class="cart-item-main">
+                <img class="cart-item-image"
+                     src="${image}"
+                     alt="${item.name}"
+                     onerror="this.src='images/default-food.png';">
 
-            <div class="d-flex align-items-center">
+                <div class="cart-item-info">
+                    <h5 class="cart-item-name">${item.name}</h5>
+                    <p class="cart-item-unit-price">₹${price} each</p>
+                </div>
+            </div>
 
-                <img
-                    src="${image}"
-                    alt="${item.name}"
-                    style="
-                        width:90px;
-                        height:70px;
-                        object-fit:cover;
-                        border-radius:10px;
-                        margin-right:20px;
-                    "
-                    onerror="
-                        this.src='images/default-food.png';
-                    "
-                >
-
-                <div>
-
-                    <h5 class="fw-bold mb-1">
-                        ${item.name}
-                    </h5>
-
-                    <p class="mb-0">
-                        ₹${price}
-                    </p>
-
+            <div class="cart-item-actions">
+                <div class="cart-quantity">
+                    <button class="btn btn-outline-dark quantity-minus"
+                            data-index="${index}" aria-label="Decrease quantity">−</button>
+                    <span class="cart-quantity-value">${quantity}</span>
+                    <button class="btn btn-outline-dark quantity-plus"
+                            data-index="${index}" aria-label="Increase quantity">+</button>
                 </div>
 
-            </div>
+                <strong class="cart-item-total">₹${itemTotal}</strong>
 
-
-            <div class="d-flex align-items-center">
-
-                <button
-                    class="btn btn-outline-dark quantity-minus"
-                    data-index="${index}" >
-                    −
+                <button class="btn btn-danger delete-cart-item"
+                        data-index="${index}" aria-label="Remove ${item.name}">
+                    <i class="bi bi-trash"></i>
                 </button>
-
-
-                <span
-                    class="mx-3 fw-bold">
-                    ${quantity}
-                </span>
-
-
-                <button
-                    class="btn btn-outline-dark quantity-plus"
-                    data-index="${index}">
-                    +
-                </button>
-
             </div>
-
-
-            <strong>
-                ₹${itemTotal}
-            </strong>
-
-
-            <button
-                class="btn btn-danger delete-cart-item"
-                data-index="${index}">
-                <i class="bi bi-trash"></i>
-                
-            </button>
-
         `;
+
 
 
         container.appendChild(itemDiv);
