@@ -1,5 +1,7 @@
 import json
 import re
+import urllib.parse
+import urllib.request
 from datetime import date, datetime
 from decimal import Decimal, ROUND_HALF_UP
 from datetime import timedelta
@@ -218,6 +220,81 @@ def validate_coupon(request):
         **extra,
     })
 
+
+
+@require_GET
+def geocode_location(request):
+    """
+    Server-side proxy for checkout geocoding.
+    Keeps geocoding consistent and avoids browser CORS/tile-provider issues.
+    """
+    mode = str(request.GET.get("mode", "search")).strip().lower()
+
+    try:
+        if mode == "reverse":
+            lat = float(request.GET.get("lat", ""))
+            lng = float(request.GET.get("lng", ""))
+            params = {
+                "location": f"{lng},{lat}",
+                "distance": "100",
+                "f": "json",
+            }
+            endpoint = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode"
+        else:
+            query = str(request.GET.get("q", "")).strip()
+            if not query:
+                return JsonResponse({"success": False, "message": "Address is required."}, status=400)
+            params = {
+                "SingleLine": query,
+                "sourceCountry": "IND",
+                "outFields": "*",
+                "maxLocations": "8",
+                "f": "json",
+            }
+            endpoint = "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates"
+
+        url = endpoint + "?" + urllib.parse.urlencode(params)
+        req = urllib.request.Request(
+            url,
+            headers={
+                "Accept": "application/json",
+                "User-Agent": "FoodieHub/1.0 delivery-location",
+            },
+        )
+
+        with urllib.request.urlopen(req, timeout=10) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+
+        if mode == "reverse":
+            return JsonResponse({
+                "success": True,
+                "address": payload.get("address") or {},
+                "location": payload.get("location") or {},
+            })
+
+        candidates = []
+        for item in payload.get("candidates") or []:
+            location = item.get("location") or {}
+            if "x" not in location or "y" not in location:
+                continue
+            candidates.append({
+                "address": item.get("address", ""),
+                "score": item.get("score", 0),
+                "attributes": item.get("attributes") or {},
+                "location": {
+                    "lng": location.get("x"),
+                    "lat": location.get("y"),
+                },
+            })
+
+        return JsonResponse({"success": True, "candidates": candidates})
+
+    except (ValueError, urllib.error.URLError, urllib.error.HTTPError, TimeoutError) as exc:
+        return JsonResponse({
+            "success": False,
+            "message": "Location service is temporarily unavailable.",
+            "error": str(exc),
+        }, status=502)
 
 
 @require_GET
