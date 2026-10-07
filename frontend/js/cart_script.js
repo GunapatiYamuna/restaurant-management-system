@@ -98,6 +98,11 @@ function setupAddToCartButtons() {
         let cart = getCart();
 
         const currentRestaurantId = cart.length ? Number(cart[0].restaurant_id || 0) : 0;
+        if (cart.length && !currentRestaurantId && restaurantId) {
+            const resetLegacyCart = window.confirm("Your existing cart has no restaurant information. Clear it and start this order from " + (restaurantName || "this restaurant") + "?");
+            if (!resetLegacyCart) return;
+            cart = [];
+        }
         if (cart.length && currentRestaurantId && restaurantId && currentRestaurantId !== restaurantId) {
             const currentRestaurantName = cart[0].restaurant_name || "another restaurant";
             const newRestaurantName = restaurantName || "this restaurant";
