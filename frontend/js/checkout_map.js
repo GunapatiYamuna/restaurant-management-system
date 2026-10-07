@@ -104,33 +104,45 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // ArcGIS is used for both forward and reverse geocoding so that the
     // address -> map and GPS -> address operations use the same provider.
-    async function arcgisSearch(singleLine) {
-        const url =
-            "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/findAddressCandidates" +
-            "?SingleLine=" + encodeURIComponent(singleLine) +
-            "&f=json" +
-            "&outFields=*" +
-            "&maxLocations=8" +
-            "&countryCode=IND";
-
-        const response = await fetch(url, {
-            headers: { Accept: "application/json" }
-        });
+    async function geocodeSearch(singleLine) {
+        const response = await fetch(
+            "/api/geocode/?mode=search&q=" + encodeURIComponent(singleLine),
+            { credentials: "same-origin", cache: "no-store" }
+        );
 
         if (!response.ok) {
             throw new Error("Address search service is unavailable.");
         }
 
         const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.message || "Address search failed.");
+        }
 
-        return (data.candidates || []).filter(candidate =>
-            candidate.location &&
-            Number.isFinite(Number(candidate.location.x)) &&
-            Number.isFinite(Number(candidate.location.y))
-        );
+        return data.candidates || [];
     }
 
-    async function arcgisReverse(lat, lng) {
+    async function geocodeReverse(lat, lng) {
+        const response = await fetch(
+            "/api/geocode/?mode=reverse&lat=" +
+            encodeURIComponent(lat) +
+            "&lng=" + encodeURIComponent(lng),
+            { credentials: "same-origin", cache: "no-store" }
+        );
+
+        if (!response.ok) {
+            throw new Error("Reverse location service is unavailable.");
+        }
+
+        const data = await response.json();
+        if (!data.success) {
+            throw new Error(data.message || "Reverse geocoding failed.");
+        }
+
+        return data;
+    }
+
+    async function geocodeReverse(lat, lng) {
         const url =
             "https://geocode.arcgis.com/arcgis/rest/services/World/GeocodeServer/reverseGeocode" +
             "?location=" + encodeURIComponent(lng + "," + lat) +
@@ -172,7 +184,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
     async function reverseGeocode(lat, lng) {
         try {
-            const data = await arcgisReverse(lat, lng);
+            const data = await geocodeReverse(lat, lng);
             const address = applyReverseResult(data);
 
             if (marker) {
@@ -264,7 +276,7 @@ document.addEventListener("DOMContentLoaded", function () {
             let candidates = [];
 
             for (const query of [...new Set(queries)]) {
-                candidates = await arcgisSearch(query);
+                candidates = await geocodeSearch(query);
 
                 if (candidates.length) break;
             }
