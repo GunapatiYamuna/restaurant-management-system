@@ -213,3 +213,50 @@ body:has(.profile-card) #passwordForm .row{
     align-items:center;
   }
 }
+
+/* Final mobile profile banner fix: keep the title fully below the fixed navbar. */
+@media(max-width:576px){
+  body:has(.profile-card) .page-banner{
+    display:block!important;
+    position:relative!important;
+    min-height:124px!important;
+    padding:28px 0 26px!important;
+    overflow:visible!important;
+  }
+  body:has(.profile-card) .page-banner .container{
+    display:block!important;
+    position:relative!important;
+    min-height:70px!important;
+    padding-left:16px!important;
+    padding-right:16px!important;
+  }
+  body:has(.profile-card) .page-banner h1{
+    display:block!important;
+    visibility:visible!important;
+    position:relative!important;
+    margin:0 0 8px!important;
+    padding:0!important;
+    font-size:26px!important;
+    line-height:1.25!important;
+    color:#fff!important;
+    opacity:1!important;
+  }
+  body:has(.profile-card) .page-banner p{
+    display:block!important;
+    visibility:visible!important;
+    position:relative!important;
+    margin:0!important;
+    font-size:12px!important;
+    line-height:1.5!important;
+    color:#b9c5cc!important;
+  }
+}
+@media(max-width:380px){
+  body:has(.profile-card) .page-banner{
+    min-height:126px!important;
+    padding:27px 0 25px!important;
+  }
+  body:has(.profile-card) .page-banner h1{
+    font-size:25px!important;
+  }
+}
