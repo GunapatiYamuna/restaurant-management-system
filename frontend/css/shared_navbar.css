@@ -184,3 +184,65 @@ body > .foodie-shared-navbar{
 /* Keep the shared FoodieHub navbar visible while the page scrolls on every device. */
 body{padding-top:var(--foodie-navbar-height) !important;}
 @media(max-width:991px){body{padding-top:var(--foodie-navbar-height) !important;}}
+
+/* Mobile navbar: keep brand, user profile and hamburger in one compact row. */
+@media(max-width:991px){
+  body > .foodie-shared-navbar{
+    padding:10px 0!important;
+  }
+  .foodie-shared-navbar > .container{
+    min-height:48px!important;
+    flex-wrap:nowrap!important;
+  }
+  .foodie-shared-navbar .navbar-brand{
+    flex:0 0 auto!important;
+  }
+  .foodie-shared-navbar .navbar-brand{
+    font-size:18px!important;
+  }
+  .foodie-shared-navbar .shared-navbar-actions{
+    width:auto!important;
+    flex:0 0 auto!important;
+    padding:0!important;
+    margin-left:auto!important;
+    display:flex!important;
+    align-items:center!important;
+  }
+  .foodie-shared-navbar .navbar-user{
+    margin:0!important;
+    gap:7px!important;
+  }
+  .foodie-shared-navbar .navbar-avatar{
+    width:36px!important;
+    height:36px!important;
+    min-width:36px!important;
+    font-size:13px!important;
+  }
+  .foodie-shared-navbar .navbar-greeting span{
+    font-size:9px!important;
+  }
+  .foodie-shared-navbar .navbar-greeting strong{
+    font-size:11px!important;
+  }
+  .foodie-shared-navbar .navbar-greeting small{
+    font-size:7px!important;
+  }
+  .foodie-shared-navbar .navbar-toggler{
+    flex:0 0 auto!important;
+    margin:0 0 0 10px!important;
+  }
+  .foodie-shared-navbar .navbar-collapse{
+    display:none!important;
+  }
+}
+@media(max-width:380px){
+  .foodie-shared-navbar .navbar-greeting{
+    max-width:72px!important;
+    overflow:hidden!important;
+  }
+  .foodie-shared-navbar .navbar-greeting strong{
+    overflow:hidden!important;
+    text-overflow:ellipsis!important;
+    white-space:nowrap!important;
+  }
+}
