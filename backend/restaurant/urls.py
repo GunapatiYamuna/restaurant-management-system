@@ -30,6 +30,7 @@ urlpatterns = [
     path("reset-password/", views.reset_password),
     path("restaurants/", views.restaurants),
     path("menu-items/", views.menu_items),
+    path("menu-images/<int:item_id>/", views.menu_image),
     path("restaurants/<int:restaurant_id>/", views.restaurant_detail),
     path("reservations/", views.create_reservation),
     path("reservations/history/", views.reservation_history),
