@@ -96,4 +96,6 @@ async function loadReports(){
   document.getElementById('orderChart').innerHTML=Object.entries(status).filter(([k])=>k!=='cancelled').map(([k,v])=>`<div class="bar" style="height:${Math.max(8,(v/max)*155)}px" title="${k}: ${v}"><span>${k.replaceAll('_',' ').slice(0,8)}</span></div>`).join('');
  }catch(e){console.error(e)}
 }
-\n\ndocument.addEventListener('DOMContentLoaded',()=>{const input=document.getElementById('mImage');const preview=document.getElementById('mImagePreview');input?.addEventListener('change',()=>{const file=input.files?.[0];if(!file){preview.hidden=true;return;}if(file.size>5*1024*1024){alert('Image must be 5 MB or smaller.');input.value='';preview.hidden=true;return;}preview.src=URL.createObjectURL(file);preview.hidden=false;});});\n
+
+
+document.addEventListener('DOMContentLoaded',()=>{const input=document.getElementById('mImage');const preview=document.getElementById('mImagePreview');input?.addEventListener('change',()=>{const file=input.files?.[0];if(!file){preview.hidden=true;return;}if(file.size>5*1024*1024){alert('Image must be 5 MB or smaller.');input.value='';preview.hidden=true;return;}preview.src=URL.createObjectURL(file);preview.hidden=false;});});
