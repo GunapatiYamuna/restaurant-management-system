@@ -5,10 +5,26 @@ class Migration(migrations.Migration):
     dependencies = [("restaurant", "0002_order_checkout_and_seed")]
 
     operations = [
-        migrations.AddField(
-            model_name="profile",
-            name="google_sub",
-            field=models.CharField(blank=True, max_length=255, null=True, unique=True),
+        migrations.SeparateDatabaseAndState(
+            database_operations=[
+                migrations.RunSQL(
+                    sql=[
+                        "ALTER TABLE restaurant_profile ADD COLUMN google_sub VARCHAR(255) NULL",
+                        "CREATE UNIQUE INDEX restaurant_profile_google_sub_uniq ON restaurant_profile (google_sub)",
+                    ],
+                    reverse_sql=[
+                        "DROP INDEX restaurant_profile_google_sub_uniq ON restaurant_profile",
+                        "ALTER TABLE restaurant_profile DROP COLUMN google_sub",
+                    ],
+                ),
+            ],
+            state_operations=[
+                migrations.AddField(
+                    model_name="profile",
+                    name="google_sub",
+                    field=models.CharField(blank=True, max_length=255, null=True, unique=True),
+                ),
+            ],
         ),
         migrations.AddField(
             model_name="order",
