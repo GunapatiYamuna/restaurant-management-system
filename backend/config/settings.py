@@ -39,8 +39,6 @@ VAPID_CLAIMS_EMAIL = _env("VAPID_CLAIMS_EMAIL", default="mailto:admin@example.co
 SECRET_KEY = _env("DJANGO_SECRET_KEY", default="dev-only-change-me")
 DEBUG = _env_bool("DJANGO_DEBUG", default=True)
 
-# Allow Railway and Render public hostnames automatically in production.
-# DJANGO_ALLOWED_HOSTS can still be used for custom domains or local hosts.
 _allowed_hosts = [
     host.strip()
     for host in _env(
@@ -49,9 +47,6 @@ _allowed_hosts = [
     ).split(",")
     if host.strip()
 ]
-
-# Railway may not expose RAILWAY_PUBLIC_DOMAIN to the application container,
-# so keep the current public Railway domain explicitly allowed as well.
 if "web-production-09472.up.railway.app" not in _allowed_hosts:
     _allowed_hosts.append("web-production-09472.up.railway.app")
 railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
@@ -62,7 +57,6 @@ if render_external_hostname and render_external_hostname not in _allowed_hosts:
     _allowed_hosts.append(render_external_hostname)
 ALLOWED_HOSTS = _allowed_hosts
 
-# Trust the Railway HTTPS origin automatically when Railway provides it.
 _trusted_origins = [
     origin.strip()
     for origin in _env("DJANGO_CSRF_TRUSTED_ORIGINS").split(",")
@@ -78,16 +72,8 @@ if render_external_hostname:
         _trusted_origins.append(render_origin)
 CSRF_TRUSTED_ORIGINS = _trusted_origins
 
-# Keep local development behavior unchanged, but allow Railway to disable the
-# public admin-registration endpoint without changing the frontend.
-ALLOW_ADMIN_REGISTRATION = _env_bool(
-    "ALLOW_ADMIN_REGISTRATION",
-    default=DEBUG,
-)
-RUN_PUSH_SCHEDULER_IN_WEB = _env_bool(
-    "RUN_PUSH_SCHEDULER_IN_WEB",
-    default=DEBUG,
-)
+ALLOW_ADMIN_REGISTRATION = _env_bool("ALLOW_ADMIN_REGISTRATION", default=DEBUG)
+RUN_PUSH_SCHEDULER_IN_WEB = _env_bool("RUN_PUSH_SCHEDULER_IN_WEB", default=DEBUG)
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -123,9 +109,14 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = "config.wsgi.application"
 
-_mysql_options = {"charset": "utf8mb4"}
-# TiDB Cloud public endpoints require TLS. Upload its CA certificate to
-# Render as a Secret File and set MYSQL_SSL_CA to that file's mounted path.
+# TiDB Cloud public endpoints require TLS. Bound connection timeouts ensure
+# Render emits a useful connection error instead of waiting for port-scan timeout.
+_mysql_options = {
+    "charset": "utf8mb4",
+    "connect_timeout": 10,
+    "read_timeout": 20,
+    "write_timeout": 20,
+}
 _mysql_ssl_ca = _env("MYSQL_SSL_CA")
 if _mysql_ssl_ca:
     _mysql_options["ssl"] = {"ca": _mysql_ssl_ca}
@@ -154,16 +145,13 @@ USE_TZ = True
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_STORAGE = "whitenoise.storage.CompressedStaticFilesStorage"
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# Railway terminates HTTPS at its proxy. Preserve the original scheme for Django.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 SESSION_COOKIE_SECURE = not DEBUG
 CSRF_COOKIE_SECURE = not DEBUG
 SECURE_SSL_REDIRECT = not DEBUG
 
-# Email configuration
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = "smtp.gmail.com"
 EMAIL_PORT = 465
