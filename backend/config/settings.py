@@ -39,7 +39,7 @@ VAPID_CLAIMS_EMAIL = _env("VAPID_CLAIMS_EMAIL", default="mailto:admin@example.co
 SECRET_KEY = _env("DJANGO_SECRET_KEY", default="dev-only-change-me")
 DEBUG = _env_bool("DJANGO_DEBUG", default=True)
 
-# Allow the Railway-generated public domain automatically in production.
+# Allow Railway and Render public hostnames automatically in production.
 # DJANGO_ALLOWED_HOSTS can still be used for custom domains or local hosts.
 _allowed_hosts = [
     host.strip()
@@ -57,6 +57,9 @@ if "web-production-09472.up.railway.app" not in _allowed_hosts:
 railway_public_domain = os.getenv("RAILWAY_PUBLIC_DOMAIN", "").strip()
 if railway_public_domain and railway_public_domain not in _allowed_hosts:
     _allowed_hosts.append(railway_public_domain)
+render_external_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip()
+if render_external_hostname and render_external_hostname not in _allowed_hosts:
+    _allowed_hosts.append(render_external_hostname)
 ALLOWED_HOSTS = _allowed_hosts
 
 # Trust the Railway HTTPS origin automatically when Railway provides it.
@@ -69,6 +72,10 @@ if railway_public_domain:
     railway_origin = f"https://{railway_public_domain}"
     if railway_origin not in _trusted_origins:
         _trusted_origins.append(railway_origin)
+if render_external_hostname:
+    render_origin = f"https://{render_external_hostname}"
+    if render_origin not in _trusted_origins:
+        _trusted_origins.append(render_origin)
 CSRF_TRUSTED_ORIGINS = _trusted_origins
 
 # Keep local development behavior unchanged, but allow Railway to disable the
@@ -116,6 +123,13 @@ TEMPLATES = [{
 }]
 WSGI_APPLICATION = "config.wsgi.application"
 
+_mysql_options = {"charset": "utf8mb4"}
+# TiDB Cloud public endpoints require TLS. Upload its CA certificate to
+# Render as a Secret File and set MYSQL_SSL_CA to that file's mounted path.
+_mysql_ssl_ca = _env("MYSQL_SSL_CA")
+if _mysql_ssl_ca:
+    _mysql_options["ssl"] = {"ca": _mysql_ssl_ca}
+
 DATABASES = {"default": {
     "ENGINE": "django.db.backends.mysql",
     "NAME": _env("MYSQL_DATABASE", "MYSQLDATABASE", default="foodiehub"),
@@ -123,7 +137,7 @@ DATABASES = {"default": {
     "PASSWORD": _env("MYSQL_PASSWORD", "MYSQLPASSWORD", default=""),
     "HOST": _env("MYSQL_HOST", "MYSQLHOST", default="127.0.0.1"),
     "PORT": _env("MYSQL_PORT", "MYSQLPORT", default="3306"),
-    "OPTIONS": {"charset": "utf8mb4"},
+    "OPTIONS": _mysql_options,
 }}
 
 AUTH_PASSWORD_VALIDATORS = [
