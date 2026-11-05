@@ -1,2 +1,2 @@
 [phases.setup]
-aptPkgs = ["pkg-config", "libmysqlclient-dev"]
+aptPkgs = ["pkg-config", "build-essential", "libmariadb-dev", "libmariadb-dev-compat"]
