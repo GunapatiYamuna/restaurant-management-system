@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+from urllib.parse import unquote, urlparse
 from dotenv import load_dotenv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -55,6 +56,14 @@ if railway_public_domain and railway_public_domain not in _allowed_hosts:
 render_external_hostname = os.getenv("RENDER_EXTERNAL_HOSTNAME", "").strip()
 if render_external_hostname and render_external_hostname not in _allowed_hosts:
     _allowed_hosts.append(render_external_hostname)
+for hostname in (
+    os.getenv("ETHIODEPLOY_HOSTNAME", "").strip(),
+    os.getenv("ETHIODEPLOY_PUBLIC_DOMAIN", "").strip(),
+    os.getenv("APP_HOSTNAME", "").strip(),
+):
+    hostname = hostname.removeprefix("https://").removeprefix("http://").split("/", 1)[0]
+    if hostname and hostname not in _allowed_hosts:
+        _allowed_hosts.append(hostname)
 ALLOWED_HOSTS = _allowed_hosts
 
 _trusted_origins = [
@@ -70,6 +79,21 @@ if render_external_hostname:
     render_origin = f"https://{render_external_hostname}"
     if render_origin not in _trusted_origins:
         _trusted_origins.append(render_origin)
+for app_url in (
+    os.getenv("ETHIODEPLOY_URL", "").strip(),
+    os.getenv("APP_BASE_URL", "").strip(),
+):
+    if app_url and app_url not in _trusted_origins:
+        _trusted_origins.append(app_url.rstrip("/"))
+for hostname in (
+    os.getenv("ETHIODEPLOY_HOSTNAME", "").strip(),
+    os.getenv("ETHIODEPLOY_PUBLIC_DOMAIN", "").strip(),
+    os.getenv("APP_HOSTNAME", "").strip(),
+):
+    hostname = hostname.removeprefix("https://").removeprefix("http://").split("/", 1)[0]
+    origin = f"https://{hostname}" if hostname else ""
+    if origin and origin not in _trusted_origins:
+        _trusted_origins.append(origin)
 CSRF_TRUSTED_ORIGINS = _trusted_origins
 
 ALLOW_ADMIN_REGISTRATION = _env_bool("ALLOW_ADMIN_REGISTRATION", default=DEBUG)
@@ -121,15 +145,34 @@ _mysql_ssl_ca = _env("MYSQL_SSL_CA")
 if _mysql_ssl_ca:
     _mysql_options["ssl"] = {"ca": _mysql_ssl_ca}
 
-DATABASES = {"default": {
-    "ENGINE": "django.db.backends.mysql",
-    "NAME": _env("MYSQL_DATABASE", "MYSQLDATABASE", default="foodiehub"),
-    "USER": _env("MYSQL_USER", "MYSQLUSER", default="root"),
-    "PASSWORD": _env("MYSQL_PASSWORD", "MYSQLPASSWORD", default=""),
-    "HOST": _env("MYSQL_HOST", "MYSQLHOST", default="127.0.0.1"),
-    "PORT": _env("MYSQL_PORT", "MYSQLPORT", default="3306"),
-    "OPTIONS": _mysql_options,
-}}
+# EthioDeploy's MySQL add-on supplies DATABASE_URL. Existing MYSQL_* variables remain supported.
+_database_url = _env("DATABASE_URL")
+if _database_url:
+    _parsed_database_url = urlparse(_database_url)
+    if _parsed_database_url.scheme not in ("mysql", "mysql2", "mariadb"):
+        raise ValueError("DATABASE_URL must use mysql://, mysql2://, or mariadb://.")
+    _database_name = unquote(_parsed_database_url.path.lstrip("/"))
+    if not _database_name:
+        raise ValueError("DATABASE_URL is missing the database name.")
+    DATABASES = {"default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": _database_name,
+        "USER": unquote(_parsed_database_url.username or ""),
+        "PASSWORD": unquote(_parsed_database_url.password or ""),
+        "HOST": _parsed_database_url.hostname or "127.0.0.1",
+        "PORT": str(_parsed_database_url.port or 3306),
+        "OPTIONS": _mysql_options,
+    }}
+else:
+    DATABASES = {"default": {
+        "ENGINE": "django.db.backends.mysql",
+        "NAME": _env("MYSQL_DATABASE", "MYSQLDATABASE", default="foodiehub"),
+        "USER": _env("MYSQL_USER", "MYSQLUSER", default="root"),
+        "PASSWORD": _env("MYSQL_PASSWORD", "MYSQLPASSWORD", default=""),
+        "HOST": _env("MYSQL_HOST", "MYSQLHOST", default="127.0.0.1"),
+        "PORT": _env("MYSQL_PORT", "MYSQLPORT", default="3306"),
+        "OPTIONS": _mysql_options,
+    }}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
